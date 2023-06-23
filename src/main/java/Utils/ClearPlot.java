@@ -1,0 +1,10 @@
+package Utils;
+
+import com.sk89q.worldedit.WorldEditException;
+
+public class ClearPlot implements Workload{
+    @Override
+    public void compute() throws WorldEditException {
+
+    }
+}
