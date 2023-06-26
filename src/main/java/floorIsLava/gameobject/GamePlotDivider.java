@@ -1,4 +1,4 @@
-package GameObjects;
+package floorIsLava.gameobject;
 
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -7,24 +7,23 @@ import java.util.ArrayList;
 
 public class GamePlotDivider {
 
+    public int plotSize;
     ArrayList<GamePlot> plotList = new ArrayList<>();
-
     World world;
     int plotMargin;
-    public int plotSize;
 
-    public GamePlotDivider(World world, int plotMargin, int plotSize, int plotAmountWidth){
+    public GamePlotDivider(World world, int plotMargin, int plotSize, int plotAmountWidth) {
         this.world = world;
         this.plotMargin = plotMargin;
         this.plotSize = plotSize;
         for (int plotZ = 0; plotZ < plotAmountWidth; plotZ++) {
             for (int plotX = 0; plotX < plotAmountWidth; plotX++) {
-                createNewPlot(plotX,plotZ);
+                createNewPlot(plotX, plotZ);
             }
         }
     }
 
-    public void createNewPlot(int x,int z){
+    public void createNewPlot(int x, int z) {
         int mag_x = x * plotMargin;
         int mag_z = z * plotMargin;
         GamePlot plot = new GamePlot(world,
@@ -34,9 +33,9 @@ public class GamePlotDivider {
         plotList.add(plot);
     }
 
-    public GamePlot getFirstEmptyPlot(){
-        for (GamePlot gp: plotList) {
-            if(!gp.inUse){
+    public GamePlot getFirstEmptyPlot() {
+        for (GamePlot gp : plotList) {
+            if (!gp.inUse) {
                 return gp;
             }
         }

@@ -1,6 +1,6 @@
-package Commands.InviteCommands;
+package floorIsLava.command.invite;
 
-import Utils.Tools;
+import floorIsLava.util.Tools;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -14,21 +14,18 @@ public class RemovePlayerCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) return true;
         Player owner = (Player) sender;
-        if(!Tools.checkOwnerInLobby(owner)){
-            owner.sendMessage("You are "+ ChatColor.RED + "not the owner" + ChatColor.RESET + " of a lobby to do that.");
+        if (!Tools.checkOwnerInLobby(owner)) {
+            owner.sendMessage("You are " + ChatColor.RED + "not the owner" + ChatColor.RESET + " of a lobby to do that.");
             return true;
         }
-
-        for (String playername: args) {
-            if((Bukkit.getPlayer(playername) == null)||!(Bukkit.getPlayer(playername).isOnline())){
+        for (String playername : args) {
+            if ((Bukkit.getPlayer(playername) == null) || !(Bukkit.getPlayer(playername).isOnline())) {
                 owner.sendMessage(ChatColor.RED + playername + ChatColor.RESET + " either does not exist or is offline. Ignoring that player.");
                 continue;
             }
             Player removingPlayer = Bukkit.getPlayer(playername);
             Tools.getLobbyFromOwner(owner).removePlayer(removingPlayer);
         }
-
-
         return true;
     }
 }

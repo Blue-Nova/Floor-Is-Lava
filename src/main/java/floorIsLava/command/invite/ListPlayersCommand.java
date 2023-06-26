@@ -1,6 +1,6 @@
-package Commands.InviteCommands;
+package floorIsLava.command.invite;
 
-import Utils.Tools;
+import floorIsLava.util.Tools;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -13,11 +13,10 @@ public class ListPlayersCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) return true;
         Player player = (Player) sender;
-        if(!Tools.checkPlayerInLobby(player)){
+        if (!Tools.checkPlayerInLobby(player)) {
             player.sendMessage("You " + ChatColor.RED + "are not in a lobby");
             return true;
         }
-
         Tools.getLobbyFromOwner(player).listPlayers();
         return true;
     }

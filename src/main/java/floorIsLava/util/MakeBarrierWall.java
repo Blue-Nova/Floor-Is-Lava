@@ -1,4 +1,4 @@
-package Utils;
+package floorIsLava.util;
 
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
@@ -15,14 +15,14 @@ import com.sk89q.worldedit.regions.Region;
 import floorIsLava.FloorIsLava;
 import org.bukkit.Material;
 
-public class MakeBarrierWall implements Workload{
+public class MakeBarrierWall implements Workload {
 
     int x_start;
     int z_start;
     int x_end;
     int z_end;
 
-    public MakeBarrierWall(int x_start,int z_start, int x_end, int z_end){
+    public MakeBarrierWall(int x_start, int z_start, int x_end, int z_end) {
         this.x_start = x_start;
         this.z_start = z_start;
         this.x_end = x_end;
@@ -31,12 +31,12 @@ public class MakeBarrierWall implements Workload{
 
     @Override
     public void compute() {
-        try (EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(FloorIsLava.VOID_WORLD))) {
-            Region region = new CuboidRegion(BlockVector3.at(x_start,-64,z_start),
-                    BlockVector3.at(x_end,319,z_end));
+        try (EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(FloorIsLava.getInstance().getVoidWorld()))) {
+            Region region = new CuboidRegion(BlockVector3.at(x_start, -64, z_start),
+                    BlockVector3.at(x_end, 319, z_end));
             Pattern lavaPattern = BukkitAdapter.adapt(Material.BARRIER.createBlockData());
-            RegionFunction lavaFunction = new BlockReplace(editSession,lavaPattern);
-            RegionVisitor lavaVisitor = new RegionVisitor(region,lavaFunction);
+            RegionFunction lavaFunction = new BlockReplace(editSession, lavaPattern);
+            RegionVisitor lavaVisitor = new RegionVisitor(region, lavaFunction);
             Operations.complete(lavaVisitor);
         } catch (WorldEditException e) {
             throw new RuntimeException(e);

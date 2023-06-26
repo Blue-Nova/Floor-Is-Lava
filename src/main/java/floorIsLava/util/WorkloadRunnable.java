@@ -1,4 +1,4 @@
-package Utils;
+package floorIsLava.util;
 
 import com.sk89q.worldedit.WorldEditException;
 import floorIsLava.FloorIsLava;
@@ -7,21 +7,21 @@ import org.bukkit.Bukkit;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-public class WorkloadRunnable implements Runnable{
+public class WorkloadRunnable implements Runnable {
 
     private static final double MAX_MILLIS_PER_TICK = 10;
     private static final int MAX_NANOS_PER_TICK = (int) (MAX_MILLIS_PER_TICK * 1E6);
 
     public final Deque<Workload> workloadDeque = new ArrayDeque<>();
 
-    public void addWorkload(Workload workload){
+    public void addWorkload(Workload workload) {
         this.workloadDeque.add(workload);
     }
 
-    public void startWLR(){
-        Bukkit.getScheduler().runTaskTimer(FloorIsLava.plugin, BukkitTask ->{
-            FloorIsLava.WLR.run();
-        },0L,1L);
+    public void startWLR() {
+        Bukkit.getScheduler().runTaskTimer(FloorIsLava.getInstance(), BukkitTask -> {
+            FloorIsLava.getInstance().getWorkloadRunnable().run();
+        }, 0L, 1L);
     }
 
     @Override
@@ -30,11 +30,11 @@ public class WorkloadRunnable implements Runnable{
 
         Workload nextload;
 
-        while (System.nanoTime() <= stopTime && (nextload = this.workloadDeque.poll()) !=null) {
+        while (System.nanoTime() <= stopTime && (nextload = this.workloadDeque.poll()) != null) {
             try {
                 nextload.compute();
-            } catch (WorldEditException e) {
-                throw new RuntimeException(e);
+            } catch (WorldEditException ex) {
+                throw new RuntimeException(ex);
             }
         }
     }
