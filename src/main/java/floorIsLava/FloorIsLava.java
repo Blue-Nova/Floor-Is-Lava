@@ -23,7 +23,6 @@ public final class FloorIsLava extends JavaPlugin {
     private World normalWorld;
     private GamePlotDivider gamePlotDivider;
     private WorkloadRunnable workloadRunnable;
-    private MultiverseCore multiverseCore;
 
     public static FloorIsLava getInstance() {
         return instance;
