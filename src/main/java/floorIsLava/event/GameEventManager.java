@@ -26,7 +26,7 @@ public class GameEventManager implements Listener {
         if (!(event.getEntity() instanceof Player)) return;
         Player player = (Player) event.getEntity();
         if ((event.getDamage() >= player.getHealth()))
-            if (Tools.checkPlayerInGame(player)) {
+            if (Tools.isPlayerIngame(player)) {
                 event.setCancelled(true);
                 Tools.getGameFromPlayer(player).remove(player, true);
                 player.setHealth(20);
@@ -36,8 +36,8 @@ public class GameEventManager implements Listener {
     @EventHandler
     public void onPlayerQuitEvent(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        if (Tools.checkPlayerInGame(player)) Tools.getGameFromPlayer(player).remove(player, false);
-        if (Tools.checkOwnerInLobby(player)) Tools.getLobbyFromOwner(player).removePlayer(player);
-        if (Tools.checkPlayerInLobby(player)) Tools.getLobbyFromPlayer(player).removePlayer(player);
+        if (Tools.isPlayerIngame(player)) Tools.getGameFromPlayer(player).remove(player, false);
+        if (Tools.isLobbyOwner(player)) Tools.getLobbyFromOwner(player).removePlayer(player);
+        if (Tools.isPlayerInLobby(player)) Tools.getLobbyFromPlayer(player).removePlayer(player);
     }
 }

@@ -10,7 +10,7 @@ public class GamePlot {
     public World plotWorld;
 
     boolean inUse = false;
-    boolean hasBordeers = false;
+    boolean hasBorders = false;
 
     public GamePlot(World world, Location start, Location end) {
         plotWorld = world;
