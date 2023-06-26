@@ -1,4 +1,4 @@
-package Utils;
+package floorIsLava.util;
 
 import com.sk89q.worldedit.WorldEditException;
 
