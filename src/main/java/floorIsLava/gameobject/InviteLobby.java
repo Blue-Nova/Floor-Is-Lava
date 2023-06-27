@@ -87,7 +87,12 @@ public class InviteLobby {
 
     public void startGame() throws WorldEditException {
         GamePlot gp = FloorIsLava.getInstance().getGamePlotDivider().getFirstEmptyPlot();
-        FloorIsLava.getInstance().getGamePlotDivider().getFirstEmptyPlot().inUse = true;
-        new GameLobby(Tools.getLobbyFromOwner(ownerPlayer).joinedList, ownerPlayer, gp);
+        gp.inUse = true;
+        if (gp == null){
+            OWNER.sendMessage(ChatColor.RED + "No free plots" + ChatColor.RESET + " available. Please wait a moment for a game to end" +
+                    "or message a server admin to increase max amount of plots allowed");
+            return;
+        }
+        new GameLobby(joinedList,OWNER,gp);
     }
 }
