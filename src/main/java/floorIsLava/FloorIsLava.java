@@ -1,14 +1,14 @@
 package floorIsLava;
 
+import co.aikar.commands.PaperCommandManager;
 import com.onarandombox.MultiverseCore.MultiverseCore;
-import floorIsLava.command.LeaveLobbyCommand;
-import floorIsLava.command.game.StartGameCommand;
-import floorIsLava.command.invite.*;
+import floorIsLava.command.MainCommand;
 import floorIsLava.event.GameEventManager;
 import floorIsLava.gameobject.GamePlotDivider;
 import floorIsLava.util.WorkloadRunnable;
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.WorldType;
 import org.bukkit.command.ConsoleCommandSender;
@@ -23,6 +23,9 @@ public final class FloorIsLava extends JavaPlugin {
     private World normalWorld;
     private GamePlotDivider gamePlotDivider;
     private WorkloadRunnable workloadRunnable;
+    private MultiverseCore multiverseCore;
+    private PaperCommandManager paperCommandManager;
+    private String prefix;
 
     public static FloorIsLava getInstance() {
         return instance;
@@ -31,6 +34,7 @@ public final class FloorIsLava extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        prefix = ChatColor.GRAY + "[" + ChatColor.WHITE + "F" + ChatColor.YELLOW + "I" + ChatColor.RED + "L" + ChatColor.GRAY + "] ";
         registerCommands();
         registerEvents();
         setupMVC();
@@ -44,16 +48,8 @@ public final class FloorIsLava extends JavaPlugin {
     }
 
     private void registerCommands() {
-        /*Lobby floorIsLava.Commands*/
-        this.getCommand("fillobby").setExecutor(new StartLobbyCommand());
-        this.getCommand("filinvite").setExecutor(new InvitePlayersCommand());
-        this.getCommand("fillist").setExecutor(new ListPlayersCommand());
-        this.getCommand("filaccept").setExecutor(new AcceptInviteCommand());
-        this.getCommand("filleave").setExecutor(new LeaveLobbyCommand());
-        this.getCommand("filremove").setExecutor(new RemovePlayerCommand());
-
-        /*Game floorIsLava.Commands*/
-        this.getCommand("filstart").setExecutor(new StartGameCommand());
+        paperCommandManager = new PaperCommandManager(this);
+        paperCommandManager.registerCommand(new MainCommand());
     }
 
     private void registerEvents() {

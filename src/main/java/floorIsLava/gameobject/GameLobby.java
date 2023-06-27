@@ -53,13 +53,13 @@ public class GameLobby {
     }
 
     public void generatePlot(int x, int z) {
-        if (!gamePlot.hasBordeers) {
+        if (!gamePlot.hasBorders) {
             FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new MakeBarrierWall((int) gamePlot.plotStart.getX() - 1, (int) gamePlot.plotStart.getZ() - 1, (int) gamePlot.plotStart.getX() + FloorIsLava.getInstance().getGamePlotDivider().plotSize + 1, (int) gamePlot.plotStart.getZ() - 1));
             FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new MakeBarrierWall((int) gamePlot.plotStart.getX() - 1, (int) gamePlot.plotStart.getZ() - 1, (int) gamePlot.plotStart.getX() - 1, (int) gamePlot.plotStart.getZ() + FloorIsLava.getInstance().getGamePlotDivider().plotSize + 1));
             FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new MakeBarrierWall((int) gamePlot.plotStart.getX() + FloorIsLava.getInstance().getGamePlotDivider().plotSize, (int) gamePlot.plotStart.getZ() + FloorIsLava.getInstance().getGamePlotDivider().plotSize, (int) gamePlot.plotStart.getX() + FloorIsLava.getInstance().getGamePlotDivider().plotSize, (int) gamePlot.plotStart.getZ() - 1));
             FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new MakeBarrierWall((int) gamePlot.plotStart.getX() + FloorIsLava.getInstance().getGamePlotDivider().plotSize, (int) gamePlot.plotStart.getZ() + FloorIsLava.getInstance().getGamePlotDivider().plotSize, (int) gamePlot.plotStart.getX() - 1, (int) gamePlot.plotStart.getZ() + FloorIsLava.getInstance().getGamePlotDivider().plotSize));
         }
-        gamePlot.hasBordeers = true;
+        gamePlot.hasBorders = true;
         int x_copy = x;
         int z_copy = z;
         int x_paste = (int) gamePlot.plotStart.getX();
@@ -90,7 +90,7 @@ public class GameLobby {
                     savePlayerInfo(player);
                 }
                 runBackMusic();
-                InviteLobby.INVITE_LOBBY_LIST.remove(Tools.getLobbyFromOwner(owner));
+                InviteLobby.inviteLobbyList.remove(Tools.getLobbyFromOwner(owner));
                 beginLavaTimer();
                 task.cancel();
             }

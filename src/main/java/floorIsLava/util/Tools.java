@@ -33,57 +33,59 @@ public class Tools {
         }
     }
 
-    public static boolean checkOwnerInLobby(Player owner) {
-        for (InviteLobby lobby : InviteLobby.INVITE_LOBBY_LIST) {
-            if (lobby.OWNER == owner) {
-                return true;
-            }
+    /*Is the player the owner of the Lobby?*/
+    public static boolean isLobbyOwner(Player owner) {
+        for (InviteLobby lobby : InviteLobby.inviteLobbyList) {
+            if (lobby.ownerPlayer == owner) return true;
         }
         return false;
     }
 
+    /*Checks in what lobby the player is the owner*/
     public static InviteLobby getLobbyFromOwner(Player owner) {
-        for (InviteLobby lobby : InviteLobby.INVITE_LOBBY_LIST) {
-            if (lobby.OWNER == owner) return lobby;
+        for (InviteLobby lobby : InviteLobby.inviteLobbyList) {
+            if (lobby.ownerPlayer == owner) return lobby;
         }
         return null;
     }
 
+    /*Checks who invited the player*/
     public static boolean checkPlayerInvitedBy(Player owner, Player player) {
-        for (InviteLobby lobby : InviteLobby.INVITE_LOBBY_LIST) {
-            if (lobby.OWNER == owner) {
+        for (InviteLobby lobby : InviteLobby.inviteLobbyList) {
+            if (lobby.ownerPlayer == owner) {
                 return lobby.sentList.contains(player);
             }
         }
         return false;
     }
 
-    public static boolean checkPlayerInLobby(Player player) {
-        for (InviteLobby lobby : InviteLobby.INVITE_LOBBY_LIST) {
+    /*Checks if the player is in a lobby*/
+    public static boolean isPlayerInLobby(Player player) {
+        for (InviteLobby lobby : InviteLobby.inviteLobbyList) {
             if (lobby.joinedList.contains(player)) return true;
         }
         return false;
     }
 
+    /*Gets the lobby the player is currently in*/
     public static InviteLobby getLobbyFromPlayer(Player player) {
-        for (InviteLobby lobby : InviteLobby.INVITE_LOBBY_LIST) {
+        for (InviteLobby lobby : InviteLobby.inviteLobbyList) {
             if (lobby.joinedList.contains(player)) return lobby;
         }
         return null;
     }
 
-    public static boolean checkPlayerInOwnerLobby(Player player, Player owner) {
-        for (InviteLobby lobby : InviteLobby.INVITE_LOBBY_LIST) {
-            if (lobby.OWNER == owner) {
-                if (lobby.joinedList.contains(player)) return true;
-            }
+    /*Checks if the Owner of the lobby is in the lobby*/
+    public static boolean isOwnerInLobby(Player player, Player owner) {
+        for (InviteLobby lobby : InviteLobby.inviteLobbyList) {
+            if (lobby.ownerPlayer != owner) return false;
+            if (lobby.joinedList.contains(player)) return true;
         }
         return false;
     }
 
-    //GAME TOOLS
-
-    public static boolean checkPlayerInGame(Player player) {
+    /*Checks if the player is in a game*/
+    public static boolean isPlayerIngame(Player player) {
         for (GameLobby game : GameLobby.GAME_LOBBY_LIST) {
             if (game.playerList.contains(player)) return true;
         }
@@ -93,6 +95,7 @@ public class Tools {
         return false;
     }
 
+    /*Gets the game the player is currently in*/
     public static GameLobby getGameFromPlayer(Player player) {
         for (GameLobby game : GameLobby.GAME_LOBBY_LIST) {
             if (game.playerList.contains(player)) return game;
@@ -103,6 +106,7 @@ public class Tools {
         return null;
     }
 
+    /*Gets a safe location*/
     public static Location getSafeLocation(World gameWorld, GamePlot plot) {
         int x_local = new Random().nextInt(FloorIsLava.getInstance().getGamePlotDivider().plotSize);
         int z_local = new Random().nextInt(FloorIsLava.getInstance().getGamePlotDivider().plotSize);
@@ -116,6 +120,7 @@ public class Tools {
         return safeLoc;
     }
 
+    /*Gets the highest usable block in the world*/
     public static Block getHighestUsableBlockAt(World world, int x, int z) {
         Block block = world.getHighestBlockAt(x, z);
 
