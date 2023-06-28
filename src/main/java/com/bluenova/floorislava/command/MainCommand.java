@@ -3,6 +3,7 @@ package com.bluenova.floorislava.command;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.CommandAlias;
+import co.aikar.commands.annotation.Default;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Subcommand;
 import com.bluenova.floorislava.FloorIsLava;
@@ -18,10 +19,11 @@ import org.bukkit.entity.Player;
 public class MainCommand extends BaseCommand {
 
     @Subcommand("lobby")
-    public class lobbyCommands {
+    public class lobbyCommands extends BaseCommand {
+
         @Subcommand("create")
         @Description("Create a lobby")
-        public void createCommand(Player player) {
+        public void createLobbyCommand(Player player) {
             if (Tools.isPlayerIngame(player)) {
                 player.sendMessage(FloorIsLava.getInstance().getPrefix() + ChatColor.RED + "You are already in a game");
                 return;
@@ -29,11 +31,77 @@ public class MainCommand extends BaseCommand {
             new InviteLobby(player);
             player.sendMessage(FloorIsLava.getInstance().getPrefix() + ChatColor.GREEN + "Successfully created Game!");
         }
+
+        @Subcommand("list")
+        @Description("List's all player(s), in current lobby")
+        public void listLobbyPlayersCommand(Player player) {
+            if (!Tools.isPlayerInLobby(player)) {
+                player.sendMessage(FloorIsLava.getInstance().getPrefix() + ChatColor.RED + "You are not in a lobby!");
+                return;
+            }
+            Tools.getLobbyFromOwner(player).listPlayers();
+        }
+
+        @Subcommand("leave")
+        @Description("Leaves the current Lobby")
+        public void leaveLobbyCommand(Player player) {
+            if (Tools.isPlayerIngame(player)) {
+                Tools.getGameFromPlayer(player).remove(player, false);
+                return;
+            }
+            if (!(Tools.isLobbyOwner(player) || !Tools.isPlayerInLobby(player))) {
+                player.sendMessage(FloorIsLava.getInstance().getPrefix() + ChatColor.RED + "You are not in a lobby!");
+            } else {
+                InviteLobby lobby;
+                if (Tools.isLobbyOwner(player)) lobby = Tools.getLobbyFromOwner(player);
+                else lobby = Tools.getLobbyFromPlayer(player);
+                lobby.removePlayer(player);
+            }
+        }
+
+        @Subcommand("remove")
+        @Description("Removed player(s) from Lobby")
+        public void removeCommand(Player player, String[] args) {
+            if (!Tools.isLobbyOwner(player)) {
+                player.sendMessage(FloorIsLava.getInstance().getPrefix() + ChatColor.RED + "You're not the owner of this lobby!");
+                return;
+            }
+            for (String playername : args) {
+                if ((Bukkit.getPlayer(playername) == null) || !(Bukkit.getPlayer(playername).isOnline())) {
+                    player.sendMessage(FloorIsLava.getInstance().getPrefix() + ChatColor.GRAY + "'" + playername + ChatColor.GRAY + "'" + ChatColor.RED + " Either doesnt exist, or is offline. Ignoring player.");
+                    continue;
+                }
+                Tools.getLobbyFromOwner(player).removePlayer(Bukkit.getPlayer(playername));
+            }
+        }
+
+        @Subcommand("start")
+        @Description("Starts the game")
+        public void startCommand(Player player) {
+            if (Tools.isPlayerIngame(player)) {
+                player.sendMessage(FloorIsLava.getInstance().getPrefix() + ChatColor.RED + "You are already in a game!");
+                return;
+            }
+            if (!Tools.isLobbyOwner(player)) {
+                player.sendMessage(FloorIsLava.getInstance().getPrefix() + ChatColor.RED + "You aren't the owner of a lobby!");
+                return;
+            }
+            if (!(Tools.getLobbyFromOwner(player).joinedList.size() >= 2)) {
+                player.sendMessage(FloorIsLava.getInstance().getPrefix() + ChatColor.RED + "Your lobby must have at least 2 players to begin a game!");
+                return;
+            }
+            try {
+                Tools.getLobbyFromOwner(player).startGame();
+            } catch (WorldEditException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
     }
 
-    @Subcommand("game")
-    public class gameCommands {
-        @Subcommand("invite")
+    @Subcommand("invite")
+    public class inviteCommands extends BaseCommand {
+
+        @Default
         @Description("Invite player(s)")
         public void inviteCommand(Player player, String[] users) {
             if (!Tools.isLobbyOwner(player)) {
@@ -93,54 +161,10 @@ public class MainCommand extends BaseCommand {
             }
         }
 
-        @Subcommand("list")
-        @Description("List's all player(s), in current lobby")
-        public void listCommand(Player player) {
-            if (!Tools.isPlayerInLobby(player)) {
-                player.sendMessage(FloorIsLava.getInstance().getPrefix() + ChatColor.RED + "You are not in a lobby!");
-                return;
-            }
-            Tools.getLobbyFromOwner(player).listPlayers();
-        }
+    }
 
-        @Subcommand("remove")
-        @Description("Removed player(s) from Lobby")
-        public void removeCommand(Player player, String[] args) {
-            if (!Tools.isLobbyOwner(player)) {
-                player.sendMessage(FloorIsLava.getInstance().getPrefix() + ChatColor.RED + "You're not the owner of this lobby!");
-                return;
-            }
-            for (String playername : args) {
-                if ((Bukkit.getPlayer(playername) == null) || !(Bukkit.getPlayer(playername).isOnline())) {
-                    player.sendMessage(FloorIsLava.getInstance().getPrefix() + ChatColor.GRAY + "'" + playername + ChatColor.GRAY + "'" + ChatColor.RED + " Either doesnt exist, or is offline. Ignoring player.");
-                    continue;
-                }
-                Tools.getLobbyFromOwner(player).removePlayer(Bukkit.getPlayer(playername));
-            }
-        }
-
-        @Subcommand("start")
-        @Description("Starts the game")
-        public void startCommand(Player player) {
-            if (Tools.isPlayerIngame(player)) {
-                player.sendMessage(FloorIsLava.getInstance().getPrefix() + ChatColor.RED + "You are already in a game!");
-                return;
-            }
-            if (!Tools.isLobbyOwner(player)) {
-                player.sendMessage(FloorIsLava.getInstance().getPrefix() + ChatColor.RED + "You aren't the owner of a lobby!");
-                return;
-            }
-            if (!(Tools.getLobbyFromOwner(player).joinedList.size() >= 2)) {
-                player.sendMessage(FloorIsLava.getInstance().getPrefix() + ChatColor.RED + "Your lobby must have at least 2 players to begin a game!");
-                return;
-            }
-            try {
-                Tools.getLobbyFromOwner(player).startGame();
-            } catch (WorldEditException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-
+    @Subcommand("game")
+    public class gameCommands extends BaseCommand {
         @Subcommand("leave")
         @Description("Leaves the game/lobby")
         public void leaveCommand(Player player) {
@@ -148,7 +172,7 @@ public class MainCommand extends BaseCommand {
                 Tools.getGameFromPlayer(player).remove(player, false);
                 return;
             }
-            if (!(Tools.isPlayerInLobby(player) || Tools.isPlayerInLobby(player))) {
+            if (!(Tools.isLobbyOwner(player) || !Tools.isPlayerInLobby(player))) {
                 player.sendMessage(FloorIsLava.getInstance().getPrefix() + ChatColor.RED + "You are not in a lobby!");
             } else {
                 InviteLobby lobby;
