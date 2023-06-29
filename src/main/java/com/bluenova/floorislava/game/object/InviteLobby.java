@@ -1,6 +1,7 @@
 package com.bluenova.floorislava.game.object;
 
 import com.bluenova.floorislava.FloorIsLava;
+import com.bluenova.floorislava.util.MessageUtil;
 import com.sk89q.worldedit.WorldEditException;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
@@ -10,13 +11,13 @@ import java.util.ArrayList;
 
 public class InviteLobby {
 
-    public static ArrayList<InviteLobby> inviteLobbyList = new ArrayList<InviteLobby>();
+    public static ArrayList<InviteLobby> inviteLobbyList = new ArrayList<>();
 
     public final Player ownerPlayer;
 
 
-    public ArrayList<Player> sentList = new ArrayList<Player>();
-    public ArrayList<Player> joinedList = new ArrayList<Player>();
+    public ArrayList<Player> sentList = new ArrayList<>();
+    public ArrayList<Player> joinedList = new ArrayList<>();
 
     public InviteLobby(Player owner) {
         inviteLobbyList.add(this);
@@ -29,14 +30,11 @@ public class InviteLobby {
             return;
         }
         if (joinedList.contains(invitedPlayer)) {
-            ownerPlayer.sendMessage(ChatColor.RED + invitedPlayer.getName() + ChatColor.RESET + " is already in your lobby.");
+            invitedPlayer.sendMessage(FloorIsLava.getInstance().getPrefix() + ChatColor.GRAY + "'" + invitedPlayer.getName() + ChatColor.GRAY + "'" + ChatColor.RED + " is already in your lobby!");
             return;
         }
         invitedPlayer.playSound(invitedPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-        invitedPlayer.sendMessage(ChatColor.GREEN + ownerPlayer.getName() + ChatColor.RESET + " has invited you to a game of " + ChatColor.YELLOW + "The Floor is Lava");
-        invitedPlayer.sendMessage("Type " + ChatColor.ITALIC + ChatColor.AQUA + "/filaccept <inviter's name>" + ChatColor.RESET + " to join the game.");
-        invitedPlayer.sendMessage("If you " + ChatColor.RED + "do not" + ChatColor.RESET + " wish to play, ignore this message");
-
+        MessageUtil.sendModifiedMessage(invitedPlayer, "&7'" + ownerPlayer.getName() + "&7' &ahas invited you to a game of &cThe Floor is Lava&a! ", "&a&l[CLICK HERE TO ACCEPT]", "fil invite accept " + ownerPlayer.getName(), "&a&lAccepts the invite and joins the game!");
         sentList.add(invitedPlayer);
         ownerPlayer.sendMessage(ChatColor.GREEN + "Invited " + ChatColor.RED + invitedPlayer.getName());
     }

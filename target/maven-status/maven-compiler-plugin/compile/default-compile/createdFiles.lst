@@ -1,8 +1,10 @@
 com\bluenova\floorislava\event\GameEventManager.class
 com\bluenova\floorislava\game\object\InviteLobby.class
 com\bluenova\floorislava\command\MainCommand$gameCommands.class
+com\bluenova\floorislava\command\MainCommand$inviteCommands.class
 com\bluenova\floorislava\util\ClearPlot.class
 com\bluenova\floorislava\game\object\GameLobby.class
+com\bluenova\floorislava\util\MessageUtil.class
 com\bluenova\floorislava\util\WorkloadRunnable.class
 com\bluenova\floorislava\util\GenerateGameTerrain.class
 com\bluenova\floorislava\game\object\GamePlotDivider.class
