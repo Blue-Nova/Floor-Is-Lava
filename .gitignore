@@ -103,6 +103,6 @@ buildNumber.properties
 .mvn/timing.properties
 .mvn/wrapper/maven-wrapper.jar
 .flattened-pom.xml
-
+!target/FloorIsLava-1.0-SNAPSHOT.jar
 # Common working directory
 run/
