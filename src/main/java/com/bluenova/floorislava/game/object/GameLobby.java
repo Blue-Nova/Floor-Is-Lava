@@ -4,15 +4,17 @@ import com.bluenova.floorislava.FloorIsLava;
 import com.bluenova.floorislava.util.*;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class GameLobby {
 
     public static ArrayList<GameLobby> GAME_LOBBY_LIST = new ArrayList<>();
+    ArrayList<Integer> LAVA_ANNOUNCE_HEIGHTS = new ArrayList<>();
 
+    final int LAVA_INCREMENT = 3;
     public final HashMap<Player, Location> previousLocationList;
     final Player owner;
     public HashMap<Player, ItemStack[]> previousInventoryList = new HashMap<>();
@@ -20,6 +22,7 @@ public class GameLobby {
     public HashMap<Player, Integer> previousHungerList = new HashMap<>();
     public HashMap<Player, Float> previousXPList = new HashMap<>();
     public ArrayList<Player> playerList;
+    HashMap<Player,Location> playerSpawnLocation = new HashMap<>();
     public ArrayList<Player> specList = new ArrayList<>();
     public GamePlot gamePlot;
     public int countDown = 3;
@@ -27,9 +30,11 @@ public class GameLobby {
     Location gameStartLoc;
     Location gameEndLoc;
     boolean gameON = true;
-    int lavaHeight = -63;
+    int lavaHeight = -63 + LAVA_INCREMENT;
 
     public GameLobby(ArrayList<Player> playerList, Player owner, GamePlot plot) {
+
+        LAVA_ANNOUNCE_HEIGHTS.add(-32);LAVA_ANNOUNCE_HEIGHTS.add(0);LAVA_ANNOUNCE_HEIGHTS.add(20);LAVA_ANNOUNCE_HEIGHTS.add(40);
 
         this.gamePlot = plot;
 
@@ -52,11 +57,21 @@ public class GameLobby {
     }
 
     public void generatePlot(int x, int z) {
+        WorkloadRunnable WLR = FloorIsLava.getInstance().getWorkloadRunnable();
+        int border_x = (int) gamePlot.plotStart.getX();
+        int border_z = (int) gamePlot.plotStart.getZ();
+        int plotSize = FloorIsLava.getInstance().getGamePlotDivider().plotSize;
         if (!gamePlot.hasBorders) {
-            FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new MakeBarrierWall((int) gamePlot.plotStart.getX() - 1, (int) gamePlot.plotStart.getZ() - 1, (int) gamePlot.plotStart.getX() + FloorIsLava.getInstance().getGamePlotDivider().plotSize + 1, (int) gamePlot.plotStart.getZ() - 1));
-            FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new MakeBarrierWall((int) gamePlot.plotStart.getX() - 1, (int) gamePlot.plotStart.getZ() - 1, (int) gamePlot.plotStart.getX() - 1, (int) gamePlot.plotStart.getZ() + FloorIsLava.getInstance().getGamePlotDivider().plotSize + 1));
-            FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new MakeBarrierWall((int) gamePlot.plotStart.getX() + FloorIsLava.getInstance().getGamePlotDivider().plotSize, (int) gamePlot.plotStart.getZ() + FloorIsLava.getInstance().getGamePlotDivider().plotSize, (int) gamePlot.plotStart.getX() + FloorIsLava.getInstance().getGamePlotDivider().plotSize, (int) gamePlot.plotStart.getZ() - 1));
-            FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new MakeBarrierWall((int) gamePlot.plotStart.getX() + FloorIsLava.getInstance().getGamePlotDivider().plotSize, (int) gamePlot.plotStart.getZ() + FloorIsLava.getInstance().getGamePlotDivider().plotSize, (int) gamePlot.plotStart.getX() - 1, (int) gamePlot.plotStart.getZ() + FloorIsLava.getInstance().getGamePlotDivider().plotSize));
+            for(int y_level = -64; y_level < 320; y_level++) {
+                WLR.addWorkload(new MakeBarrierWall(border_x - 1, border_z - 1,
+                        border_x + plotSize, border_z - 1, y_level));
+                WLR.addWorkload(new MakeBarrierWall(border_x - 1, border_z - 1,
+                        border_x - 1, border_z + plotSize, y_level));
+                WLR.addWorkload(new MakeBarrierWall(border_x + plotSize,
+                        border_z + plotSize, border_x + plotSize, border_z - 1, y_level));
+                WLR.addWorkload(new MakeBarrierWall(border_x + plotSize,
+                        border_z + plotSize, border_x - 1, border_z + plotSize, y_level));
+            }
         }
         gamePlot.hasBorders = true;
         int x_copy = x;
@@ -84,7 +99,9 @@ public class GameLobby {
                 gameBorder.setSize(FloorIsLava.getInstance().getGamePlotDivider().plotSize);
 
                 for (Player player : playerList) {
-                    player.teleport(Tools.getSafeLocation(FloorIsLava.getInstance().getVoidWorld(), gamePlot));
+                    Location game_loc = Tools.getSafeLocation(FloorIsLava.getInstance().getVoidWorld(),gamePlot);
+                    player.teleport(game_loc);
+                    playerSpawnLocation.put(player,game_loc);
                     player.setWorldBorder(gameBorder);
                     savePlayerInfo(player);
                 }
@@ -148,15 +165,25 @@ public class GameLobby {
             if (gameON) {
                 placeLava();
                 if (!(lavaHeight >= 319))
-                    lavaHeight += 3;
+                    lavaHeight += LAVA_INCREMENT;
+
             } else task.cancel();
         }, 0, 200);
     }
 
     public void placeLava() {
-        for (int y_lava = -63; y_lava < lavaHeight; y_lava++) {
+        for (int y_lava = lavaHeight-LAVA_INCREMENT; y_lava < lavaHeight+LAVA_INCREMENT; y_lava++) {
             FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new ElevateLava(gamePlot, y_lava));
         }
+        for (Integer y_height:LAVA_ANNOUNCE_HEIGHTS) {
+            if(y_height <= lavaHeight){
+                announce(ChatColor.RED + "LAVA" + ChatColor.RESET + " has reached y level: " + ChatColor.GOLD + lavaHeight);
+                playGameSound(Sound.BLOCK_LAVA_AMBIENT);
+                LAVA_ANNOUNCE_HEIGHTS.remove(y_height);
+                break;
+            }
+        }
+
     }
 
     public void remove(Player leavingPlayer, boolean died) {
@@ -189,6 +216,16 @@ public class GameLobby {
         }
     }
 
+    public void playerDiedNoLava(Player player) {
+        ItemStack[] inv = player.getInventory().getContents();
+        player.getInventory().clear();
+        for (ItemStack is : inv) {
+            if(is != null)
+                FloorIsLava.getInstance().getVoidWorld().dropItem(player.getLocation(),is);
+        }
+        player.teleport(playerSpawnLocation.get(player));
+    }
+
     public void winPlayer(Player player) {
         playGameSound(Sound.UI_TOAST_CHALLENGE_COMPLETE);
         announce(ChatColor.RED + player.getName() + ChatColor.GOLD + " has won the game!");
@@ -213,5 +250,4 @@ public class GameLobby {
             gamePlot.inUse = false;
         }, 200L);
     }
-
 }
