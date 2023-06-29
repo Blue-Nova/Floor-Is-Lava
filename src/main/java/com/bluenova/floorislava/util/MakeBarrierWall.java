@@ -21,19 +21,21 @@ public class MakeBarrierWall implements Workload {
     int z_start;
     int x_end;
     int z_end;
+    int y_level;
 
-    public MakeBarrierWall(int x_start, int z_start, int x_end, int z_end) {
+    public MakeBarrierWall(int x_start, int z_start, int x_end, int z_end , int y_level) {
         this.x_start = x_start;
         this.z_start = z_start;
         this.x_end = x_end;
         this.z_end = z_end;
+        this.y_level = y_level;
     }
 
     @Override
     public void compute() {
         try (EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(FloorIsLava.getInstance().getVoidWorld()))) {
-            Region region = new CuboidRegion(BlockVector3.at(x_start, -64, z_start),
-                    BlockVector3.at(x_end, 319, z_end));
+            Region region = new CuboidRegion(BlockVector3.at(x_start, y_level, z_start),
+                    BlockVector3.at(x_end, y_level, z_end));
             Pattern lavaPattern = BukkitAdapter.adapt(Material.BARRIER.createBlockData());
             RegionFunction lavaFunction = new BlockReplace(editSession, lavaPattern);
             RegionVisitor lavaVisitor = new RegionVisitor(region, lavaFunction);
