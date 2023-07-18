@@ -154,6 +154,18 @@ public class GameLobby {
     }
 
     public void placeLava() {
+        if(owner.getLocation().getY() < lavaHeight){
+            for (int y_lava = (int) (owner.getLocation().getY()-1); y_lava < (int) (owner.getLocation().getY()+3); y_lava++) {
+                FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new ElevateLava(gamePlot, y_lava));
+            }
+        }
+        for (Player player: playerList) {
+            if(player.getLocation().getY() < lavaHeight){
+                for (int y_lava = (int) (player.getLocation().getY()); y_lava < (int) (player.getLocation().getY()+3); y_lava++) {
+                    FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new ElevateLava(gamePlot, y_lava));
+                }
+            }
+        }
         for (int y_lava = -63; y_lava < lavaHeight; y_lava++) {
             FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new ElevateLava(gamePlot, y_lava));
         }
