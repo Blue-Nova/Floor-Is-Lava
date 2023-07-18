@@ -7,6 +7,9 @@ public enum Message {
     PLAYER_ALREADY_INLOBBY("", "%PREFIX% &cYou're already in a lobby!"),
     PLAYER_NOT_LOBBY_OWNER("", "%PREFIX% &cYou're not the owner of this lobby!"),
 
+    /*Player Permission Handle*/
+    PLAYER_NO_PERMISSION(" ", "&cYou do not have the Permissions required to execute this command!"),
+
     INVITE_FAIL_INLOBBY("", "%PREFIX% %RECEIVER_NAME% &cis already in a lobby!"),
     INVITE_SENDER("", "%PREFIX% &aYou have invited %RECEIVER_NAME% &ato a game of %cThe floor is Lava&a!"),
     INVITE_RECEIVER("", "%PREFIX% &aYou have been invited by %SENDER_NAME% &ato a game of %cThe floor is Lava&a!"),
@@ -45,7 +48,6 @@ public enum Message {
     }
 
     public String getFromConfig() {
-        if (fromConfig == null) return getBackUP();
-        else return fromConfig;
+        return fromConfig == null ? getBackUP() : fromConfig;
     }
 }

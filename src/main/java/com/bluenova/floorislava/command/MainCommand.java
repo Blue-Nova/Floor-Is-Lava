@@ -174,9 +174,12 @@ public class MainCommand extends BaseCommand {
     @CommandPermission("fil.command.fil.game")
     public class gameCommands extends BaseCommand {
         @Subcommand("leave")
-        @CommandPermission("fil.command.fil.game.leave")
         @Description("Leaves the game")
         public void leaveCommand(Player player) {
+            if (player.hasPermission("fil.command.fil.game.noleave")) {
+                player.sendMessage(PLAYER_NO_PERMISSION.getFromConfig());
+                return;
+            }
             if (Tools.isPlayerIngame(player)) {
                 Tools.getGameFromPlayer(player).remove(player, false);
                 return;

@@ -30,7 +30,7 @@ This is the official "Floor is Lava" github repo. Made by BlueNova, CO Developed
 </details>
 
 ## Permission Structure
-![permission_source](https://github.com/Bedlesssgod/Floor-Is-Lava/assets/77199633/eb859727-a0d6-4a20-8ea2-cfd082037d83)
+![permission_source](https://github.com/Bedlesssgod/Floor-Is-Lava/assets/77199633/069732a6-139c-4fd1-9cf3-bfb20e0f7778)
 <details>
   <summary>Raw JSON</summary>
   
@@ -39,33 +39,33 @@ This is the official "Floor is Lava" github repo. Made by BlueNova, CO Developed
   "fil": {
     "Permission": "fil.command.fil",
     "lobby": {
-      "permission": "fil.command.fil.lobby",
+      "Permission": "fil.command.fil.lobby",
       "create": {
-        "Permission:": "fil.command.fil.lobby.create"
+        "Permission": "fil.command.fil.lobby.create"
       },
       "list": {
-        "Permission:": "fil.command.fil.lobby.list"
+        "Permission": "fil.command.fil.lobby.list"
       },
       "leave": {
-        "Permission:": "fil.command.fil.lobby.leave"
+        "Permission": "fil.command.fil.lobby.leave"
       },
       "remove": {
-        "Permission:": "fil.command.fil.lobby.remove"
+        "Permission": "fil.command.fil.lobby.remove"
       },
       "start": {
-        "Permission:": "fil.command.fil.lobby.start"
+        "Permission": "fil.command.fil.lobby.start"
       }
     },
     "invite": {
       "Permission": "fil.command.fil.invite",
       "accept": {
-        "Permission:": "fil.command.fil.invite.accept"
+        "Permission": "fil.command.fil.invite.accept"
       }
     },
     "game": {
       "Permission": "fil.command.game",
       "leave": {
-        "Permission:": "fil.command.fil.game.leave"
+        "Permission": "fil.command.fil.game.noleave"
       }
     }
   }
