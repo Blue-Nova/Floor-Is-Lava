@@ -16,6 +16,12 @@ import static com.bluenova.floorislava.config.Message.*;
 @Description("The MainCommand for Floor Is Lava")
 public class MainCommand extends BaseCommand {
 
+    @Subcommand("admin")
+    public void debugCommand(Player player) {
+        player.sendMessage(String.valueOf(values().length));
+        player.sendMessage(PLAYER_NO_PERMISSION.replaceColor().replacePrefix().format());
+    }
+
     @Subcommand("lobby")
     @CommandPermission("fil.command.fil.lobby")
     public class lobbyCommands extends BaseCommand {
@@ -70,7 +76,7 @@ public class MainCommand extends BaseCommand {
             }
             for (String playername : args) {
                 if ((Bukkit.getPlayer(playername) == null) || !(Bukkit.getPlayer(playername).isOnline())) {
-                    player.sendMessage(REMOVE_UNKNOWN_PLAYER.getFromConfig());
+                    player.sendMessage(PLAYER_REMOVE_UNKNOWN.getFromConfig());
                     continue;
                 }
                 Tools.getLobbyFromOwner(player).removePlayer(Bukkit.getPlayer(playername));
