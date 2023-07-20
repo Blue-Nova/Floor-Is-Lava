@@ -2,9 +2,12 @@ package com.bluenova.floorislava;
 
 import co.aikar.commands.PaperCommandManager;
 import com.bluenova.floorislava.command.MainCommand;
+import com.bluenova.floorislava.config.Message;
 import com.bluenova.floorislava.event.GameEventManager;
 import com.bluenova.floorislava.game.object.GamePlotDivider;
 import com.bluenova.floorislava.util.WorkloadRunnable;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.onarandombox.MultiverseCore.MultiverseCore;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -26,6 +29,8 @@ public final class FloorIsLava extends JavaPlugin {
     private MultiverseCore multiverseCore;
     private PaperCommandManager paperCommandManager;
     private String prefix;
+    @Getter
+    public Gson gson;
 
     public static FloorIsLava getInstance() {
         return instance;
@@ -38,6 +43,7 @@ public final class FloorIsLava extends JavaPlugin {
         registerCommands();
         registerEvents();
         setupMVC();
+        setupValues();
         this.workloadRunnable = new WorkloadRunnable();
         workloadRunnable.startWLR();
         this.gamePlotDivider = new GamePlotDivider(voidWorld, 1000, 50, 10);
@@ -64,5 +70,10 @@ public final class FloorIsLava extends JavaPlugin {
             core.getMVWorldManager().addWorld("fil_void_world", World.Environment.NORMAL, "", WorldType.NORMAL, true, "VoidGen");
         normalWorld = Bukkit.getWorld("fil_normal_world");
         voidWorld = Bukkit.getWorld("fil_void_world");
+    }
+
+    private void setupValues() {
+        gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+        Message.writeToArrays();
     }
 }

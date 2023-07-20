@@ -9,6 +9,9 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 
+import static com.bluenova.floorislava.config.Message.INVITE_RECEIVER;
+import static com.bluenova.floorislava.config.Message.INVITE_SENDER;
+
 public class InviteLobby {
 
     public static ArrayList<InviteLobby> inviteLobbyList = new ArrayList<>();
@@ -34,9 +37,10 @@ public class InviteLobby {
             return;
         }
         invitedPlayer.playSound(invitedPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+        invitedPlayer.sendMessage(INVITE_RECEIVER.getFromConfig());
         MessageUtil.sendModifiedMessage(invitedPlayer, "&7'" + ownerPlayer.getName() + "&7' &ahas invited you to a game of &cThe Floor is Lava&a! ", "&a&l[CLICK HERE TO ACCEPT]", "fil invite accept " + ownerPlayer.getName(), "&a&lAccepts the invite and joins the game!");
         sentList.add(invitedPlayer);
-        ownerPlayer.sendMessage(ChatColor.GREEN + "Invited " + ChatColor.RED + invitedPlayer.getName());
+        ownerPlayer.sendMessage(INVITE_SENDER.getFromConfig());
     }
 
     public void inviteAccept(Player player) {
