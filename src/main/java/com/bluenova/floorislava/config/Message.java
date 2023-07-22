@@ -11,6 +11,7 @@ public enum Message {
     PLAYER_ALREADY_INLOBBY(2, Group.PLAYER, null, "%PREFIX% &cYou're already in a lobby!"),
     PLAYER_NOT_LOBBY_OWNER(3, Group.PLAYER, null, "%PREFIX% &cYou're not the owner of this lobby!"),
     PLAYER_REMOVE_UNKNOWN(4, Group.PLAYER, null, "%PREFIX% %REMOVE_NAME% &cEither doesn't exist, or is offline!"),
+    PLAYER_NO_PERMISSION(18, Group.PLAYER, null, "&cYou do not have the Permissions required to execute this command!"),
 
     INVITE_FAIL_INLOBBY(5, Group.INVITE, null, "%PREFIX% %RECEIVER_NAME% &cis already in a lobby!"),
     INVITE_SENDER(6, Group.INVITE, null, "%PREFIX% &aYou have invited %RECEIVER_NAME% &ato a game of %cThe floor is Lava&a!"),
@@ -26,15 +27,14 @@ public enum Message {
     ACCEPT_SENDER(15, Group.ACCEPT, null, "%PREFIX% %RECEIVER_NAME% &aaccepted your invite to a game of &cThe floor is Lave&a!"),
     ACCEPT_RECEIVER(16, Group.ACCEPT, null, "%PREFIX% &aYou accepted %SENDER_NAME%'s &aInvite to a game of &cThe floor is Lava&a!"),
 
-    GAME_LEAVE(17, Group.GAME, null, "%PREFIX% &aYou left the Game!"),
+    GAME_LEAVE(17, Group.GAME, null, "%PREFIX% &aYou left the Game!")
 
-    /*Player Permission Handle*/
-    PLAYER_NO_PERMISSION(18, Group.LOBBY, null, "&cYou do not have the Permissions required to execute this command!"),
+    /*Player Permission Handle*/,
     CREATE_LOBBY_SUCCESS(19, Group.LOBBY, null, "yeet"),
     LOBBY_NOT_ENOUGH(20, Group.LOBBY, null, "%PREFIX% &cYour lobby must have at least %MIN_PLAYER% players to begin a game!"),
-    LOBBY_LEAVE(21, Group.LOBBY, null, "%PREFIX% &aYou left the Lobby!"),
+    LOBBY_LEAVE(21, Group.LOBBY, null, "%PREFIX% &aYou left the Lobby!")
 
-    /*Util*/
+    /*Util*/,
     PREFIX(01, Group.UTIL, null, "&7[&fF&eI&cL&7]");
 
     private static final ArrayList<Message> lobbyMessages = new ArrayList<>();

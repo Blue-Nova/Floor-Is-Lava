@@ -1,5 +1,7 @@
 package com.bluenova.floorislava.config;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.json.simple.JSONObject;
 
 import java.io.File;
@@ -35,11 +37,15 @@ public class InternalMessageConfiguration extends ConfigurationLIB {
     }
 
     public void load() {
-        for (Group group : Group.values()) {
-            for (Message message : Message.getGroup(group)) {
-                JSONObject g = (JSONObject) master.get(group.name());
-                message.setFromConfig((String) g.get(message.name()));
+        try {
+            for (Group group : Group.values()) {
+                for (Message message : Message.getGroup(group)) {
+                    JSONObject g = (JSONObject) master.get(group.name());
+                    message.setFromConfig((String) g.get(message.name()));
+                }
             }
+        } catch (NullPointerException ex) {
+            Bukkit.getConsoleSender().sendMessage(Message.PREFIX.replacePrefix().format() + ChatColor.RED + "[FATAL] Cannot Pull Main Internal Configuration. Pulling Backup, please Restart the Plugin to Use Custom Values!");
         }
     }
 }

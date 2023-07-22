@@ -2,7 +2,6 @@ package com.bluenova.floorislava.config;
 
 import com.bluenova.floorislava.FloorIsLava;
 import lombok.Getter;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -78,7 +77,6 @@ public abstract class ConfigurationLIB {
         }
         TreeMap<String, Object> treeMap = new TreeMap<String, Object>(toSave);
         String prettyJsonString = FloorIsLava.getInstance().getGson().toJson(treeMap);
-        Bukkit.getConsoleSender().sendMessage(ChatColor.RED + prettyJsonString);
         try {
             FileWriter fw = new FileWriter(file);
             fw.write(prettyJsonString);
