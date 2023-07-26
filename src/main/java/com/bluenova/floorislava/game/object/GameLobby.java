@@ -30,7 +30,7 @@ public class GameLobby {
     Location gameStartLoc;
     Location gameEndLoc;
     boolean gameON = true;
-    int lavaHeight = -63 + LAVA_INCREMENT;
+    public int lavaHeight = -63 + LAVA_INCREMENT;
 
     public GameLobby(ArrayList<Player> playerList, Player owner, GamePlot plot) {
 
