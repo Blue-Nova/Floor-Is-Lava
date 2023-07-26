@@ -1,16 +1,18 @@
-package com.bluenova.floorislava.config;
+package com.bluenova.floorislava.config.json.general;
 
+import com.bluenova.floorislava.config.json.message.Message;
+import com.bluenova.floorislava.config.lib.ConfigurationLIB;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.json.simple.JSONObject;
 
 import java.io.File;
 
-public class InternalMessageConfiguration extends ConfigurationLIB {
+public class GeneralConfiguration extends ConfigurationLIB {
 
     private JSONObject master;
 
-    public InternalMessageConfiguration(File file) {
+    public GeneralConfiguration(File file) {
         super(file);
         saveDefaults();
         addToCache(master, "Settings");
@@ -21,12 +23,12 @@ public class InternalMessageConfiguration extends ConfigurationLIB {
     @Override
     public void saveDefaults() {
         master = new JSONObject();
-        for (Group group : Group.values()) {
+        for (SettingGroup settingGroup : SettingGroup.values()) {
             JSONObject g = new JSONObject();
-            for (Message message : Message.getGroup(group)) {
-                g.put(message.name(), message.getBackUP());
+            for (Setting setting : Setting.getGroup(settingGroup)) {
+                g.put(setting.getConfigName(), setting.getBackUP());
             }
-            master.put(group.name(), g);
+            master.put(settingGroup.getConfigName(), g);
         }
     }
 
@@ -38,10 +40,10 @@ public class InternalMessageConfiguration extends ConfigurationLIB {
 
     public void load() {
         try {
-            for (Group group : Group.values()) {
-                for (Message message : Message.getGroup(group)) {
-                    JSONObject g = (JSONObject) master.get(group.name());
-                    message.setFromConfig((String) g.get(message.name()));
+            for (SettingGroup settingGroup : SettingGroup.values()) {
+                for (Setting setting : Setting.getGroup(settingGroup)) {
+                    JSONObject g = (JSONObject) master.get(settingGroup.getConfigName());
+                    setting.setFromConfig((Integer) g.get(setting.getConfigName()));
                 }
             }
         } catch (NullPointerException ex) {

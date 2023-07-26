@@ -1,4 +1,4 @@
-package com.bluenova.floorislava.config;
+package com.bluenova.floorislava.config.lib;
 
 import com.bluenova.floorislava.FloorIsLava;
 import lombok.Getter;
@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
 
+@Getter
 public abstract class ConfigurationLIB {
 
-    @Getter
     private static final ArrayList<String> registeredConfigs = new ArrayList<>();
     private final File file;
     @Getter
@@ -91,10 +91,6 @@ public abstract class ConfigurationLIB {
         if (!json.containsKey(key)) return "";
 
         return String.valueOf(defaults.get(key));
-    }
-
-    public File getFile() {
-        return file;
     }
 
     public String getString(String key) {

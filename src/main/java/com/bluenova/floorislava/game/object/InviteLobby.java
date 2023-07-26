@@ -9,8 +9,8 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 
-import static com.bluenova.floorislava.config.Message.INVITE_RECEIVER;
-import static com.bluenova.floorislava.config.Message.INVITE_SENDER;
+import static com.bluenova.floorislava.config.json.message.Message.INVITE_RECEIVER;
+import static com.bluenova.floorislava.config.json.message.Message.INVITE_SENDER;
 
 public class InviteLobby {
 
