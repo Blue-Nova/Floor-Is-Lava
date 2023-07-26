@@ -26,7 +26,7 @@ public class GameEventManager implements Listener {
         if (!(event.getEntity() instanceof Player)) return;
         Player player = (Player) event.getEntity();
         if (event.getDamage() >= player.getHealth() && Tools.isPlayerIngame(player)) {
-            if(event.getCause() == EntityDamageEvent.DamageCause.LAVA)
+            if((event.getCause() == EntityDamageEvent.DamageCause.LAVA) && (player.getLocation().getY() <= Tools.getGameFromPlayer(player).lavaHeight))
                 Tools.getGameFromPlayer(player).remove(player, true);
             else {
                 Tools.getGameFromPlayer(player).playerDiedNoLava(player);
