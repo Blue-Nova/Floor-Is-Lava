@@ -97,7 +97,6 @@ public abstract class ConfigurationLIB {
         return file;
     }
 
-
     public String getString(String key) {
         return ChatColor.translateAlternateColorCodes('§', getRawData(key));
     }
