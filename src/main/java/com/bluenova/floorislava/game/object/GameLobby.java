@@ -30,7 +30,7 @@ public class GameLobby {
     Location gameStartLoc;
     Location gameEndLoc;
     boolean gameON = true;
-    int lavaHeight = -63 + LAVA_INCREMENT;
+    public int lavaHeight = -63 + LAVA_INCREMENT;
 
     public GameLobby(ArrayList<Player> playerList, Player owner, GamePlot plot) {
 
@@ -172,6 +172,18 @@ public class GameLobby {
     }
 
     public void placeLava() {
+        if(owner.getLocation().getY() < lavaHeight){
+            for (int y_lava = (int) (owner.getLocation().getY()-1); y_lava < (int) (owner.getLocation().getY()+3); y_lava++) {
+                FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new ElevateLava(gamePlot, y_lava));
+            }
+        }
+        for (Player player: playerList) {
+            if(player.getLocation().getY() < lavaHeight){
+                for (int y_lava = (int) (player.getLocation().getY()); y_lava < (int) (player.getLocation().getY()+3); y_lava++) {
+                    FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new ElevateLava(gamePlot, y_lava));
+                }
+            }
+        }
         for (int y_lava = lavaHeight-LAVA_INCREMENT; y_lava < lavaHeight+LAVA_INCREMENT; y_lava++) {
             FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new ElevateLava(gamePlot, y_lava));
         }
