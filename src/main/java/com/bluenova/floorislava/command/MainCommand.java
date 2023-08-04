@@ -9,7 +9,7 @@ import com.sk89q.worldedit.WorldEditException;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import static com.bluenova.floorislava.config.Message.*;
+import static com.bluenova.floorislava.config.json.message.Message.*;
 
 @CommandAlias("fil|floorislava")
 @CommandPermission("fil.command.fil")

@@ -2,8 +2,10 @@ package com.bluenova.floorislava;
 
 import co.aikar.commands.PaperCommandManager;
 import com.bluenova.floorislava.command.MainCommand;
-import com.bluenova.floorislava.config.InternalMessageConfiguration;
-import com.bluenova.floorislava.config.Message;
+import com.bluenova.floorislava.config.json.general.GeneralConfiguration;
+import com.bluenova.floorislava.config.json.general.Setting;
+import com.bluenova.floorislava.config.json.message.InternalMessageConfiguration;
+import com.bluenova.floorislava.config.json.message.Message;
 import com.bluenova.floorislava.event.GameEventManager;
 import com.bluenova.floorislava.game.object.GamePlotDivider;
 import com.bluenova.floorislava.util.WorkloadRunnable;
@@ -23,6 +25,7 @@ import java.io.File;
 @Getter
 public final class FloorIsLava extends JavaPlugin {
 
+    @Getter
     private static FloorIsLava instance;
     private final ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
     private World voidWorld;
@@ -34,10 +37,6 @@ public final class FloorIsLava extends JavaPlugin {
     private String prefix;
     @Getter
     public Gson gson;
-
-    public static FloorIsLava getInstance() {
-        return instance;
-    }
 
     @Override
     public void onEnable() {
@@ -78,11 +77,14 @@ public final class FloorIsLava extends JavaPlugin {
 
     private void setupValues() {
         gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-        Message.writeToArrays();
+        Message.writeArray();
+        Setting.writeArray();
     }
 
     private void handleConfig() {
         InternalMessageConfiguration msgConfig = new InternalMessageConfiguration(new File(this.getDataFolder() + File.separator, "InternalMessageConfig.json"));
         msgConfig.reload();
+        GeneralConfiguration generalConfiguration = new GeneralConfiguration(new File(this.getDataFolder() + File.separator, "Config.json"));
+        generalConfiguration.reload();
     }
 }
