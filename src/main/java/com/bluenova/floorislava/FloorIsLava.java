@@ -1,13 +1,14 @@
 package com.bluenova.floorislava;
 
-import co.aikar.commands.PaperCommandManager;
 import com.bluenova.floorislava.command.MainCommand;
+import com.bluenova.floorislava.command.TabCompletion;
 import com.bluenova.floorislava.config.json.general.GeneralConfiguration;
 import com.bluenova.floorislava.config.json.general.Setting;
 import com.bluenova.floorislava.config.json.message.InternalMessageConfiguration;
 import com.bluenova.floorislava.config.json.message.Message;
 import com.bluenova.floorislava.event.GameEventManager;
 import com.bluenova.floorislava.game.object.GamePlotDivider;
+import com.bluenova.floorislava.config.MainConfig;
 import com.bluenova.floorislava.util.WorkloadRunnable;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -32,8 +33,6 @@ public final class FloorIsLava extends JavaPlugin {
     private World normalWorld;
     private GamePlotDivider gamePlotDivider;
     private WorkloadRunnable workloadRunnable;
-    private MultiverseCore multiverseCore;
-    private PaperCommandManager paperCommandManager;
     private String prefix;
     @Getter
     public Gson gson;
@@ -41,6 +40,8 @@ public final class FloorIsLava extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        MainConfig mainConfig = MainConfig.getInstance();
+        mainConfig.load();
         prefix = ChatColor.GRAY + "[" + ChatColor.WHITE + "F" + ChatColor.YELLOW + "I" + ChatColor.RED + "L" + ChatColor.GRAY + "] ";
         registerCommands();
         registerEvents();
@@ -49,7 +50,8 @@ public final class FloorIsLava extends JavaPlugin {
         handleConfig();
         this.workloadRunnable = new WorkloadRunnable();
         workloadRunnable.startWLR();
-        this.gamePlotDivider = new GamePlotDivider(voidWorld, 1000, 50, 10);
+
+        this.gamePlotDivider = new GamePlotDivider(voidWorld, mainConfig.getPlotMargin(), mainConfig.getPlotSize(), mainConfig.getPlotAmount());
     }
 
     @Override
@@ -57,8 +59,8 @@ public final class FloorIsLava extends JavaPlugin {
     }
 
     private void registerCommands() {
-        paperCommandManager = new PaperCommandManager(this);
-        paperCommandManager.registerCommand(new MainCommand());
+        getCommand("fil").setExecutor(new MainCommand());
+        getCommand("fil").setTabCompleter(new TabCompletion());
     }
 
     private void registerEvents() {
