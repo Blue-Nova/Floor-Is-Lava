@@ -39,15 +39,6 @@ public class GeneralConfiguration extends ConfigurationLIB {
     }
 
     public void load() {
-        try {
-            for (SettingGroup settingGroup : SettingGroup.values()) {
-                for (Setting setting : Setting.getGroup(settingGroup)) {
-                    JSONObject g = (JSONObject) master.get(settingGroup.getConfigName());
-                    setting.setFromConfig((Integer) g.get(setting.getConfigName()));
-                }
-            }
-        } catch (NullPointerException ex) {
-            Bukkit.getConsoleSender().sendMessage(Message.PREFIX.replacePrefix().format() + ChatColor.RED + "[FATAL] Cannot Pull Main Internal Configuration. Pulling Backup, please Restart the Plugin to Use Custom Values!");
-        }
+        return;
     }
 }

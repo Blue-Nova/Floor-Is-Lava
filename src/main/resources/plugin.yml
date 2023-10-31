@@ -7,3 +7,6 @@ description: You and your friends are trapped in a world where lava will rise ti
 depend:
   - WorldEdit
   - Multiverse-Core
+commands:
+  fil:
+    description: "main command for Floor is Lava"

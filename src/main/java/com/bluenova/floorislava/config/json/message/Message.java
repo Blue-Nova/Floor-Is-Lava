@@ -31,7 +31,7 @@ public enum Message {
     GAME_LEAVE(17, MessageGroup.GAME, "%PREFIX% &aYou left the Game!")
 
     /*Player Permission Handle*/,
-    CREATE_LOBBY_SUCCESS(19, MessageGroup.LOBBY, "yeet"),
+    CREATE_LOBBY_SUCCESS(19, MessageGroup.LOBBY, "%PREFIX% &alobby created!"),
     LOBBY_NOT_ENOUGH(20, MessageGroup.LOBBY, "%PREFIX% &cYour lobby must have at least %MIN_PLAYER% players to begin a game!"),
     LOBBY_LEAVE(21, MessageGroup.LOBBY, "%PREFIX% &aYou left the Lobby!")
 

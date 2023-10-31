@@ -37,10 +37,9 @@ public class InviteLobby {
             return;
         }
         invitedPlayer.playSound(invitedPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-        invitedPlayer.sendMessage(INVITE_RECEIVER.getFromConfig());
         MessageUtil.sendModifiedMessage(invitedPlayer, "&7'" + ownerPlayer.getName() + "&7' &ahas invited you to a game of &cThe Floor is Lava&a! ", "&a&l[CLICK HERE TO ACCEPT]", "fil invite accept " + ownerPlayer.getName(), "&a&lAccepts the invite and joins the game!");
         sentList.add(invitedPlayer);
-        ownerPlayer.sendMessage(INVITE_SENDER.getFromConfig());
+        ownerPlayer.sendMessage("Invite Sent to " + invitedPlayer.getName());
     }
 
     public void inviteAccept(Player player) {
