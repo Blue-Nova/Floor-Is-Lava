@@ -1,4 +1,4 @@
-# Floor-Is-Lava
+# **Floor-Is-Lava**
 This is the official "Floor is Lava" github repo. Made by BlueNova, CO Developed by Bedless.
 
 ## Command Structure
@@ -30,48 +30,28 @@ This is the official "Floor is Lava" github repo. Made by BlueNova, CO Developed
 </details>
 
 ## Permission Structure
-![permission_source](https://github.com/Bedlesssgod/Floor-Is-Lava/assets/77199633/069732a6-139c-4fd1-9cf3-bfb20e0f7778)
-<details>
-  <summary>Raw JSON</summary>
-  
-  ```json
-  {
-  "fil": {
-    "Permission": "fil.command.fil",
-    "lobby": {
-      "Permission": "fil.command.fil.lobby",
-      "create": {
-        "Permission": "fil.command.fil.lobby.create"
-      },
-      "list": {
-        "Permission": "fil.command.fil.lobby.list"
-      },
-      "leave": {
-        "Permission": "fil.command.fil.lobby.leave"
-      },
-      "remove": {
-        "Permission": "fil.command.fil.lobby.remove"
-      },
-      "start": {
-        "Permission": "fil.command.fil.lobby.start"
-      }
-    },
-    "invite": {
-      "Permission": "fil.command.fil.invite",
-      "accept": {
-        "Permission": "fil.command.fil.invite.accept"
-      }
-    },
-    "game": {
-      "Permission": "fil.command.game",
-      "leave": {
-        "Permission": "fil.command.fil.game.noleave"
-      }
-    }
-  }
-}
-```
-</details>
+COMING SOON
 
 ## Config Structure
-Coming soon!
+
+### Margin: 1000
+How far apart each game plot should be from its neighbor (in blocks).
+
+### Size: 50
+How big each plot will be. 50 blocks will have a 50x50 plot of land per game.
+lowering this number will lower the amount of time needed before each start of a game.
+
+### Amount: 5
+How many plots (or lobbies) are there at a time.
+THIS IS THE AMOUNT OF PLOTS **ACROSS** (meaning if this is 5, that means 5x5 = 25 total plots)
+Lowering this helps very weak servers stay alive lmao (but only when lobbies are at MAX CAPACITY).
+
+
+### MAX_MILLIS_PER_TICK: 10
+This tells how long this plugin is allowed to process each tick. This is a workload distro.
+Lowering this number will increase the amount of time needed to generate a game.
+
+Lower this number if your server begins to lag **when making a new game** .
+Increase this number if server does not lag but waiting time is too long for a game to start.
+MAX VALUE IS 1000
+
