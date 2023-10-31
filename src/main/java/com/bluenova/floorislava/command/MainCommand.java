@@ -25,6 +25,7 @@ public class MainCommand implements CommandExecutor {
             if (args.length==0 || args[0].equalsIgnoreCase("help")){
                 showHelp(commander);
             }else if (args[0].equalsIgnoreCase("lobby")) {
+                if(args.length == 1)return true;
                 if(args[1].equalsIgnoreCase("create")){
                     createLobbyCommand(commander);
                 }else if (args[1].equalsIgnoreCase("list")) {
@@ -57,13 +58,14 @@ public class MainCommand implements CommandExecutor {
                     inviteCommand(commander,playersToInvite);
                 }
             }else if (args[0].equalsIgnoreCase("game")) {
+                if(args.length == 1)return true;
                 if (args[1].equalsIgnoreCase("leave")){
                     leaveCommand(commander);
                 }
-            }
+            }else{return true;}
         }
 
-        return false;
+        return true;
     }
 
     public void showHelp(Player p){
@@ -208,10 +210,10 @@ public class MainCommand implements CommandExecutor {
         }
     }
     public void leaveCommand(Player player) {
-        if (player.hasPermission("fil.command.fil.game.noleave")) {
+        /*if (player.hasPermission("fil.command.fil.game.noleave")) {
             player.sendMessage(PLAYER_NO_PERMISSION.replaceColor().format());
             return;
-        }
+        }*/
         if (Tools.isPlayerIngame(player)) {
             Tools.getGameFromPlayer(player).remove(player, false);
             return;

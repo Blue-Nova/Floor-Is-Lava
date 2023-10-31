@@ -21,7 +21,6 @@ public class FindAllowedLocation implements Workload {
 
     @Override
     public void compute() {
-        FloorIsLava.getInstance().getConsoleSender().sendMessage("get random location");
         x = ThreadLocalRandom.current().nextInt(-2999999, 2999999);
         z = ThreadLocalRandom.current().nextInt(-2999999, 2999999);
         gameChunk = new Location(FloorIsLava.getInstance().getNormalWorld(), x, 0, z).getChunk();
