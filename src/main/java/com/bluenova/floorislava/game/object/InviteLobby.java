@@ -1,8 +1,13 @@
 package com.bluenova.floorislava.game.object;
 
 import com.bluenova.floorislava.FloorIsLava;
-import com.bluenova.floorislava.util.MessageUtil;
+import com.bluenova.floorislava.config.MessageConfig;
+import com.bluenova.floorislava.util.messages.MessageUtils;
 import com.sk89q.worldedit.WorldEditException;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -29,11 +34,18 @@ public class InviteLobby {
             return;
         }
         if (joinedList.contains(invitedPlayer)) {
-            invitedPlayer.sendMessage(FloorIsLava.getInstance().getPrefix() + ChatColor.GRAY + "'" + invitedPlayer.getName() + ChatColor.GRAY + "'" + ChatColor.RED + " is already in your lobby!");
+            invitedPlayer.sendMessage(MessageConfig.getInstance().getPrefix() + MessageConfig.getInstance().getAlreadyInLobby());
             return;
         }
         invitedPlayer.playSound(invitedPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-        MessageUtil.sendModifiedMessage(invitedPlayer, "&7'" + ownerPlayer.getName() + "&7' &ahas invited you to a game of &cThe Floor is Lava&a! ", "&a&l[CLICK HERE TO ACCEPT]", "fil invite accept " + ownerPlayer.getName(), "&a&lAccepts the invite and joins the game!");
+        MessageUtils.sendFILMessage(invitedPlayer, MessageConfig.getInstance().getReciveingInvite(ownerPlayer));
+        TextComponent acceptmessage = new TextComponent("[Accept Invite]");
+        acceptmessage.setColor(ChatColor.GREEN.asBungee());
+        acceptmessage.setBold(true);
+        acceptmessage.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/fil invite accept " + ownerPlayer.getName()));
+        acceptmessage.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                new ComponentBuilder("Click here to accept invite from " + ownerPlayer.getName()).color(ChatColor.GREEN.asBungee()).italic(true).create()));
+        invitedPlayer.spigot().sendMessage(acceptmessage);
         sentList.add(invitedPlayer);
         ownerPlayer.sendMessage("Invite Sent to " + invitedPlayer.getName());
     }

@@ -2,26 +2,18 @@ package com.bluenova.floorislava;
 
 import com.bluenova.floorislava.command.MainCommand;
 import com.bluenova.floorislava.command.TabCompletion;
-import com.bluenova.floorislava.config.json.general.GeneralConfiguration;
-import com.bluenova.floorislava.config.json.general.Setting;
-import com.bluenova.floorislava.config.json.message.InternalMessageConfiguration;
-import com.bluenova.floorislava.config.json.message.Message;
+import com.bluenova.floorislava.config.MessageConfig;
 import com.bluenova.floorislava.event.GameEventManager;
 import com.bluenova.floorislava.game.object.GamePlotDivider;
 import com.bluenova.floorislava.config.MainConfig;
 import com.bluenova.floorislava.util.WorkloadRunnable;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.onarandombox.MultiverseCore.MultiverseCore;
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.WorldType;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.io.File;
 
 @Getter
 public final class FloorIsLava extends JavaPlugin {
@@ -33,21 +25,17 @@ public final class FloorIsLava extends JavaPlugin {
     private World normalWorld;
     private GamePlotDivider gamePlotDivider;
     private WorkloadRunnable workloadRunnable;
-    private String prefix;
-    @Getter
-    public Gson gson;
 
     @Override
     public void onEnable() {
         instance = this;
         MainConfig mainConfig = MainConfig.getInstance();
+        MessageConfig mssgConfig = MessageConfig.getInstance();
         mainConfig.load();
-        prefix = ChatColor.GRAY + "[" + ChatColor.WHITE + "F" + ChatColor.YELLOW + "I" + ChatColor.RED + "L" + ChatColor.GRAY + "] ";
+        mssgConfig.load();
         registerCommands();
         registerEvents();
         setupMVC();
-        setupValues();
-        handleConfig();
         this.workloadRunnable = new WorkloadRunnable();
         workloadRunnable.startWLR();
 
@@ -75,18 +63,5 @@ public final class FloorIsLava extends JavaPlugin {
             core.getMVWorldManager().addWorld("fil_void_world", World.Environment.NORMAL, "", WorldType.NORMAL, true, "VoidGen");
         normalWorld = Bukkit.getWorld("fil_normal_world");
         voidWorld = Bukkit.getWorld("fil_void_world");
-    }
-
-    private void setupValues() {
-        gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-        Message.writeArray();
-        Setting.writeArray();
-    }
-
-    private void handleConfig() {
-        InternalMessageConfiguration msgConfig = new InternalMessageConfiguration(new File(this.getDataFolder() + File.separator, "InternalMessageConfig.json"));
-        msgConfig.reload();
-        GeneralConfiguration generalConfiguration = new GeneralConfiguration(new File(this.getDataFolder() + File.separator, "Config.json"));
-        generalConfiguration.reload();
     }
 }
