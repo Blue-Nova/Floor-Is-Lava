@@ -6,11 +6,7 @@ import com.sk89q.worldedit.WorldEditException;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
-
 import java.util.ArrayList;
-
-import static com.bluenova.floorislava.config.json.message.Message.INVITE_RECEIVER;
-import static com.bluenova.floorislava.config.json.message.Message.INVITE_SENDER;
 
 public class InviteLobby {
 

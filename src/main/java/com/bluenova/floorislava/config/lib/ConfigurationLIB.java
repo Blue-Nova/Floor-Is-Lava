@@ -97,10 +97,6 @@ public abstract class ConfigurationLIB {
         return ChatColor.translateAlternateColorCodes('§', getRawData(key));
     }
 
-    public boolean getBoolean(String key) {
-        return Boolean.parseBoolean(getRawData(key));
-    }
-
     public double getDouble(String key) {
         try {
             return Double.parseDouble(getRawData(key));
@@ -127,14 +123,5 @@ public abstract class ConfigurationLIB {
     public JSONArray getArray(String key) {
         return json.containsKey(key) ? (JSONArray) json.get(key)
                 : (defaults.containsKey(key) ? (JSONArray) defaults.get(key) : new JSONArray());
-    }
-
-
-    public boolean contains(String key) {
-        return json.containsKey(key);
-    }
-
-    public void remove(String key) {
-        json.remove(key);
     }
 }

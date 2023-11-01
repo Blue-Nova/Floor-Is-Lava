@@ -3,6 +3,7 @@ package com.bluenova.floorislava.event;
 import com.bluenova.floorislava.FloorIsLava;
 import com.bluenova.floorislava.util.Tools;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -35,6 +36,8 @@ public class GameEventManager implements Listener {
             player.setHealth(20);
             player.setFoodLevel(20);
             player.setExp(0);
+            player.sendMessage("You Died!");
+            player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_BREAK,1,1);
         }
     }
 

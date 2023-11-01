@@ -19,9 +19,7 @@ public class WorkloadRunnable implements Runnable {
     }
 
     public void startWLR() {
-        Bukkit.getScheduler().runTaskTimer(FloorIsLava.getInstance(), BukkitTask -> {
-            FloorIsLava.getInstance().getWorkloadRunnable().run();
-        }, 0L, 1L);
+        Bukkit.getScheduler().runTaskTimer(FloorIsLava.getInstance(), this, 0L, 1L);
     }
 
     @Override

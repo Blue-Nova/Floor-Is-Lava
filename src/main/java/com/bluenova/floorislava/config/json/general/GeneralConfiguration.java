@@ -1,9 +1,6 @@
 package com.bluenova.floorislava.config.json.general;
 
-import com.bluenova.floorislava.config.json.message.Message;
 import com.bluenova.floorislava.config.lib.ConfigurationLIB;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.json.simple.JSONObject;
 
 import java.io.File;

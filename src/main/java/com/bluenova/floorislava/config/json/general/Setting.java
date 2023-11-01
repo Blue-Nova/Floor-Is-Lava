@@ -73,15 +73,6 @@ public enum Setting {
         return fromConfig == 0 ? getBackUP() : fromConfig;
     }
 
-    public Setting setFromConfig(int toInsert) {
-        this.fromConfig = toInsert;
-        return this;
-    }
-
-    public int getID() {
-        return this.id;
-    }
-
     public SettingGroup getGroup() {
         return messageGroup;
     }
