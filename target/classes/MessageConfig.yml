@@ -11,7 +11,9 @@ NotInLobby:
 NotLobbyOwner:
   "&cYou need to be the owner of your lobby to do this!"
 SendingInvite:
-  "&fInvites sent to: &r"
+  "&fInvites sent to: "
+FailedInvites:
+  "&cThese players could not be invited: "
 ReciveingInvite:
   "&fYou have recieved an invite from %INVITERNAME%&f to play %FLOORISLAVA%&f"
 AcceptingInvite:

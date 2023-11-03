@@ -33,6 +33,7 @@ public class MessageConfig {
     private String NotLobbyOwner;
     private String PlayerNotFound;
     private String LobbyNotLargeEnough;
+    private String FailedInvites;
 
     private String InviteUsage;
 
@@ -72,6 +73,7 @@ public class MessageConfig {
         NotLobbyOwner = config.getString("NotLobbyOwner");
         PlayerNotFound = config.getString("PlayerNotFound");
         LobbyNotLargeEnough = config.getString("LobbyNotLargeEnough");
+        FailedInvites = config.getString("FailedInvites");
 
         InviteUsage = config.getString("commandUsage.inviteUsage");
     }
@@ -141,6 +143,8 @@ public class MessageConfig {
     public String getPlayerNotFound(String playername) {
         return prepare(PlayerNotFound.replaceAll("%NOTFOUNDPLAYER%", "&b"+playername));
     }
+    public String getFailedInvites() {
+        return prepare(FailedInvites);}
 
     public String getInviteUsage(){
         return prepare(InviteUsage);
@@ -149,6 +153,8 @@ public class MessageConfig {
     private String prepare(String msg) {
         return ChatColor.translateAlternateColorCodes('&', msg);
     }
+
+
 }
 
 

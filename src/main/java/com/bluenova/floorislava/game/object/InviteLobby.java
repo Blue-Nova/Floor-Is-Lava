@@ -11,6 +11,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+
 import java.util.ArrayList;
 
 public class InviteLobby {
@@ -29,14 +30,40 @@ public class InviteLobby {
         joinedList.add(ownerPlayer);
     }
 
-    public void invitePlayer(Player invitedPlayer) {
-        if (sentList.contains(invitedPlayer)) {
-            return;
+    public void invitePlayers(ArrayList<Player> invitedPlayers, ArrayList<String> failedInvites) {
+        ArrayList<Player> sentTemp = new ArrayList<>();
+        for (Player invitedPlayer: invitedPlayers) {
+            if (sentList.contains(invitedPlayer)) {
+                failedInvites.add(invitedPlayer.getName());
+                continue;
+            }
+            if (joinedList.contains(invitedPlayer)){
+                failedInvites.add(invitedPlayer.getName());
+                continue;
+            }
+            invite(invitedPlayer);
+            sentList.add(invitedPlayer);
+            sentTemp.add(invitedPlayer);
         }
-        if (joinedList.contains(invitedPlayer)) {
-            invitedPlayer.sendMessage(MessageConfig.getInstance().getPrefix() + MessageConfig.getInstance().getAlreadyInLobby());
-            return;
+        String invitedListMessage = MessageConfig.getInstance().getSendingInvite();
+        for (Player player:sentTemp){
+            invitedListMessage = ChatColor.translateAlternateColorCodes('&',
+                            invitedListMessage + "&b"+player.getName());
+            if(sentTemp.get(sentTemp.size()-1)!=player) invitedListMessage =
+                    ChatColor.translateAlternateColorCodes('&',invitedListMessage + "&f, ");
         }
+        MessageUtils.sendFILMessage(ownerPlayer,invitedListMessage);
+        String failedListMessage = MessageConfig.getInstance().getFailedInvites();
+        for (String playerName:failedInvites){
+            failedListMessage = ChatColor.translateAlternateColorCodes('&',
+                    failedListMessage + "&b"+playerName);
+            if(failedInvites.get(failedInvites.size()-1)!=playerName) failedListMessage =
+                    ChatColor.translateAlternateColorCodes('&',failedListMessage + "&c, ");
+        }
+        MessageUtils.sendFILMessage(ownerPlayer,failedListMessage);
+    }
+
+    public void invite(Player invitedPlayer){
         invitedPlayer.playSound(invitedPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
         MessageUtils.sendFILMessage(invitedPlayer, MessageConfig.getInstance().getReciveingInvite(ownerPlayer));
         TextComponent acceptmessage = new TextComponent("[Accept Invite]");
@@ -46,8 +73,6 @@ public class InviteLobby {
         acceptmessage.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                 new ComponentBuilder("Click here to accept invite from " + ownerPlayer.getName()).color(ChatColor.GREEN.asBungee()).italic(true).create()));
         invitedPlayer.spigot().sendMessage(acceptmessage);
-        sentList.add(invitedPlayer);
-        ownerPlayer.sendMessage("Invite Sent to " + invitedPlayer.getName());
     }
 
     public void inviteAccept(Player player) {
@@ -79,7 +104,7 @@ public class InviteLobby {
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_PLACE, 0.5f, 1f);
                 player.sendMessage(ChatColor.RED + ownerPlayer.getName() + ChatColor.RESET + " has left your lobby and it was disbanded.");
             }
-            ownerPlayer.sendMessage(ChatColor.DARK_RED + "You lobby was disbanded");
+            ownerPlayer.sendMessage(ChatColor.DARK_RED + "Your lobby was disbanded");
             return;
         }
         if (!(joinedList.contains(removingPlayer) || sentList.contains(removingPlayer))) {

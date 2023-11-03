@@ -7,6 +7,7 @@ import com.bluenova.floorislava.util.Tools;
 import com.bluenova.floorislava.util.messages.MessageUtils;
 import com.sk89q.worldedit.WorldEditException;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -159,29 +160,34 @@ public class MainCommand implements CommandExecutor {
         }
         if (users.size() == 0) {
             MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getInviteUsage());
-            return;
-        }
+            return;}
         InviteLobby lobby = Tools.getLobbyFromOwner(player);
         boolean sentOneInvite = false;
+        ArrayList<String> failedInvites = new ArrayList<>();
+        ArrayList<Player> invitedPlayers = new ArrayList<>();
         for (String playerName : users) {
             try{Bukkit.getPlayer(playerName);}
-            catch(Exception e){player.sendMessage(playerName + " doesnt exist/isnt online, skipping");
+            catch(Exception e){
+                failedInvites.add(playerName);
                 continue;}
             if (Bukkit.getPlayer(playerName) == null || !Bukkit.getPlayer(playerName).isOnline()) {
-                MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getPlayerNotFound(playerName));
+                failedInvites.add(playerName);
                 continue;
             }
             Player invitedPlayer = Bukkit.getPlayer(playerName);
             if (Tools.checkPlayerInvitedBy(invitedPlayer, player)) continue;
             if (Tools.isPlayerInLobby(invitedPlayer) || Tools.isLobbyOwner(invitedPlayer)) {
-                //player.sendMessage(INVITE_FAIL_INLOBBY.replaceColor().replacePrefix().replaceReceiver(invitedPlayer.getDisplayName()).format());
                 continue;
             }
-            lobby.invitePlayer(invitedPlayer);
+            invitedPlayers.add(invitedPlayer);
             sentOneInvite = true;
         }
-        if (!sentOneInvite);
+
+        if (!sentOneInvite){
             //player.sendMessage(INVITE_NONE.replaceColor().replacePrefix().format());
+            return;
+        }
+        lobby.invitePlayers(invitedPlayers,failedInvites);
     }
     public void acceptCommand(Player player, String acceptingPlayer) {
         if (acceptingPlayer==null) {
