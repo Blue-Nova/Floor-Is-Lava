@@ -38,6 +38,22 @@ PlayerNotFound:
   "&c%NOTFOUNDPLAYER%&c has not been found (name either misspelled or player not online)"
 LobbyNotLargeEnough:
   "&cYou must have atleast 2 ready players in a lobby to start a game!"
+NotInInviteList:
+  "&cYou are not in %OWNER%'s invite list."
+AcceptedInvite:
+  "%JOININGPLAYER% has accepted your invite and joined your lobby!"
+YouJoinedLobby:
+  "You have joined %OWNER%'s lobby! Wait till they start a game!"
+ReadyList:
+  "&fReady Players:"
+InvitedList:
+  "&fInvited Players:"
+RemovedFromLobby:
+  "&cYou have been removed from %OWNER%'s lobby"
+NotInYourLobby:
+  "&c%Player% is not in your lobby!"
+NoFreePlots:
+  "There are currently no free plots at the moment. Please try again soon..."
 
 commandUsage:
   inviteUsage:

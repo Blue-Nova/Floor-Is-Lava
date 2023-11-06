@@ -3,11 +3,10 @@ package com.bluenova.floorislava.command;
 
 import com.bluenova.floorislava.config.MessageConfig;
 import com.bluenova.floorislava.game.object.InviteLobby;
-import com.bluenova.floorislava.util.Tools;
+import com.bluenova.floorislava.util.tools.Tools;
 import com.bluenova.floorislava.util.messages.MessageUtils;
 import com.sk89q.worldedit.WorldEditException;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,8 +18,7 @@ public class MainCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if(!(sender instanceof Player)) return true;
-        Player commander = (Player) sender;
+        if(!(sender instanceof Player commander)) return true;
         if(command.getName().equalsIgnoreCase("fil")) {
             if (args.length==0 || args[0].equalsIgnoreCase("help")){
                 showHelp(commander);

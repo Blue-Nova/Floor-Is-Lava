@@ -8,6 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="Floor_is_Lava" />
+        <module name="FloorIsLava" />
       </profile>
     </annotationProcessing>
   </component>

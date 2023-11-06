@@ -1,7 +1,8 @@
-package com.bluenova.floorislava.util;
+package com.bluenova.floorislava.util.tasks;
 
 import com.bluenova.floorislava.FloorIsLava;
 import com.bluenova.floorislava.game.object.GamePlot;
+import com.bluenova.floorislava.util.Workload;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
@@ -28,7 +29,7 @@ public class ElevateLava implements Workload {
 
     @Override
     public void compute() {
-        try (EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(FloorIsLava.getInstance().getVoidWorld()))) {
+        try (EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(FloorIsLava.getVoidWorld()))) {
             Region region = new CuboidRegion(BlockVector3.at(gp.plotStart.getX(), y, gp.plotStart.getZ()),
                     BlockVector3.at(gp.plotEnd.getX() - 1, y, gp.plotEnd.getZ() - 1));
             Pattern lavaPattern = BukkitAdapter.adapt(Material.LAVA.createBlockData());

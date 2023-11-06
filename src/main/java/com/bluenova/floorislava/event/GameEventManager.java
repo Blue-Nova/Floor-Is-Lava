@@ -1,7 +1,7 @@
 package com.bluenova.floorislava.event;
 
 import com.bluenova.floorislava.FloorIsLava;
-import com.bluenova.floorislava.util.Tools;
+import com.bluenova.floorislava.util.tools.Tools;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -15,7 +15,7 @@ public class GameEventManager implements Listener {
 
     @EventHandler
     public void onPlayerJoinEvent(PlayerJoinEvent event) {
-        if (event.getPlayer().getWorld() == FloorIsLava.getInstance().getVoidWorld())
+        if (event.getPlayer().getWorld() == FloorIsLava.getVoidWorld())
             if (event.getPlayer().getBedSpawnLocation() != null)
                 event.getPlayer().teleport(event.getPlayer().getBedSpawnLocation());
             else
@@ -24,8 +24,7 @@ public class GameEventManager implements Listener {
 
     @EventHandler
     public void onPlayerDeathEvent(EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof Player)) return;
-        Player player = (Player) event.getEntity();
+        if (!(event.getEntity() instanceof Player player)) return;
         if (event.getDamage() >= player.getHealth() && Tools.isPlayerIngame(player)) {
             if((event.getCause() == EntityDamageEvent.DamageCause.LAVA) && (player.getLocation().getY() <= Tools.getGameFromPlayer(player).lavaHeight))
                 Tools.getGameFromPlayer(player).remove(player, true);

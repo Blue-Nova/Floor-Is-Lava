@@ -13,6 +13,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.WorldType;
 import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 @Getter
@@ -21,10 +22,26 @@ public final class FloorIsLava extends JavaPlugin {
     @Getter
     private static FloorIsLava instance;
     private final ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
-    private World voidWorld;
-    private World normalWorld;
-    private GamePlotDivider gamePlotDivider;
-    private WorkloadRunnable workloadRunnable;
+    private static World voidWorld;
+    private static World normalWorld;
+    private static GamePlotDivider gamePlotDivider;
+    private static WorkloadRunnable workloadRunnable;
+
+    public static FloorIsLava getInstance() {
+        return instance;
+    }
+    public static WorkloadRunnable getWorkLoadRunnable(){
+        return workloadRunnable;
+    }
+    public static GamePlotDivider getGamePlotDivider() {
+        return gamePlotDivider;
+    }
+    public static World getVoidWorld(){
+        return voidWorld;
+    }
+    public static World getNormalWorld(){
+        return normalWorld;
+    }
 
     @Override
     public void onEnable() {
@@ -38,7 +55,6 @@ public final class FloorIsLava extends JavaPlugin {
         setupMVC();
         this.workloadRunnable = new WorkloadRunnable();
         workloadRunnable.startWLR();
-
         this.gamePlotDivider = new GamePlotDivider(voidWorld, mainConfig.getPlotMargin(), mainConfig.getPlotSize(), mainConfig.getPlotAmount());
     }
 
