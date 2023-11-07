@@ -7,6 +7,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class GameLobby {
 
@@ -107,6 +109,7 @@ public class GameLobby {
                 runBackMusic();
                 InviteLobby.inviteLobbyList.remove(Tools.getLobbyFromOwner(owner));
                 beginLavaTimer();
+                beginEventTimer();
                 task.cancel();
             }
             announce(ChatColor.RED + "Game starts" + ChatColor.RESET + " in " + ChatColor.AQUA + countDown);
@@ -157,6 +160,19 @@ public class GameLobby {
         for (Player player : specList) {
             player.playSound(gameBorder.getCenter(), sound, 40, 1);
         }
+    }
+
+    public void beginEventTimer(){
+        AtomicInteger EventSpawnChance = new AtomicInteger();
+        Random rand = new Random();
+        Bukkit.getScheduler().runTaskTimer(FloorIsLava.getInstance(),(task) -> {
+            if(EventSpawnChance.get() >= rand.nextInt(10,100)){
+                ChaosEventManager.eventate(this);
+                EventSpawnChance.set(0);
+            }else{
+                EventSpawnChance.addAndGet(100);
+            }
+        },0,100);
     }
 
     public void beginLavaTimer() {
