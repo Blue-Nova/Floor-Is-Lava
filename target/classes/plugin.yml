@@ -1,7 +1,6 @@
 name: FloorIsLava
-version: '1.0.1'
+version: '1.0.2'
 main: com.bluenova.floorislava.FloorIsLava
-api-version: '1.20'
 authors: [ BlueNova, BedlessDeus ]
 description: You and your friends are trapped in a world where lava will rise till only one survives! Who will it be?
 depend:

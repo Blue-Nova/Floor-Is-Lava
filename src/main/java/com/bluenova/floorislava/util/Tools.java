@@ -1,4 +1,4 @@
-package com.bluenova.floorislava.util.tools;
+package com.bluenova.floorislava.util;
 
 import com.bluenova.floorislava.FloorIsLava;
 import com.bluenova.floorislava.game.object.GameLobby;
@@ -108,8 +108,8 @@ public class Tools {
 
     /*Gets a safe location*/
     public static Location getSafeLocation(World gameWorld, GamePlot plot) {
-        int x_local = new Random().nextInt(FloorIsLava.getGamePlotDivider().plotSize);
-        int z_local = new Random().nextInt(FloorIsLava.getGamePlotDivider().plotSize);
+        int x_local = new Random().nextInt(FloorIsLava.getInstance().getGamePlotDivider().plotSize);
+        int z_local = new Random().nextInt(FloorIsLava.getInstance().getGamePlotDivider().plotSize);
         Location safeLoc = new Location(gameWorld, x_local, 319, z_local);
         Location chunkGlobal = new Location(gameWorld, plot.plotStart.getX(), 1, plot.plotStart.getZ());
         safeLoc.setX(chunkGlobal.getX() + x_local);

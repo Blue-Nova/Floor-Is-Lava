@@ -34,14 +34,6 @@ public class MessageConfig {
     private String PlayerNotFound;
     private String LobbyNotLargeEnough;
     private String FailedInvites;
-    private String NotInInviteList;
-    private String AcceptedInvite;
-    private String YouJoinedLobby;
-    private String ReadyList;
-    private String InvitedList;
-    private String RemovedFromLobby;
-    private String NoFreePlots;
-    private String NotInYourLobby;
 
     private String InviteUsage;
 
@@ -82,14 +74,7 @@ public class MessageConfig {
         PlayerNotFound = config.getString("PlayerNotFound");
         LobbyNotLargeEnough = config.getString("LobbyNotLargeEnough");
         FailedInvites = config.getString("FailedInvites");
-        NotInInviteList = config.getString("NotInInviteList");
-        AcceptedInvite = config.getString("AcceptedInvite");
-        YouJoinedLobby = config.getString("YouJoinedLobby");
-        ReadyList = config.getString("ReadyList");
-        InvitedList = config.getString("InvitedList");
-        RemovedFromLobby = config.getString("RemovedFromLobby");
-        NoFreePlots = config.getString("NoFreePlots");
-        NotInYourLobby = config.getString("NotInYourLobby");
+
         InviteUsage = config.getString("commandUsage.inviteUsage");
     }
 
@@ -143,8 +128,8 @@ public class MessageConfig {
     public String getLeavingLobby(Player ownerPlayer) {
         return prepare(LeavingLobby.replaceAll("%LOBBYOWNER%", "&b"+ownerPlayer.getName()));
     }
-    public String getPlayerLeftLobby(Player removingPlayer) {
-        return prepare(PlayerLeftLobby.replaceAll("%LEAVINGPLAYER%", "&b"+removingPlayer));
+    public String getPlayerLeftLobby() {
+        return prepare(PlayerLeftLobby);
     }
     public String getLobbyDisband() {
         return prepare(LobbyDisband);
@@ -158,32 +143,9 @@ public class MessageConfig {
     public String getPlayerNotFound(String playername) {
         return prepare(PlayerNotFound.replaceAll("%NOTFOUNDPLAYER%", "&b"+playername));
     }
-    public String getNotInInviteList(Player playername) {
-        return prepare(NotInInviteList.replaceAll("%OWNER%", "&b"+playername));
-    }
-    public String getYouJoinedLobby(Player ownerPlayer) {
-        return prepare(YouJoinedLobby.replaceAll("%OWNER%","&b"+ownerPlayer));
-    }
-    public String getAcceptedInvite(Player player) {
-        return prepare(AcceptedInvite.replaceAll("%JOININGPLAYER%","&b"+player));
-    }
-    public String getReadyList() {
-        return prepare(ReadyList);
-    }
-    public String getInvitedList() {
-        return prepare(InvitedList);
-    }
-    public String getRemovedFromLobby(Player ownerPlayer) {
-        return prepare(RemovedFromLobby.replaceAll("%OWNER%","&b"+ownerPlayer));
-    }
-    public String getNoFreePlots() {
-        return prepare(NoFreePlots);
-    }
     public String getFailedInvites() {
         return prepare(FailedInvites);}
-    public String getNotInYourLobby(Player missingPlayer){
-        return prepare(NotInLobby.replaceAll("%Player%","&b"+missingPlayer));
-    }
+
     public String getInviteUsage(){
         return prepare(InviteUsage);
     }
@@ -191,7 +153,6 @@ public class MessageConfig {
     private String prepare(String msg) {
         return ChatColor.translateAlternateColorCodes('&', msg);
     }
-
 
 
 }

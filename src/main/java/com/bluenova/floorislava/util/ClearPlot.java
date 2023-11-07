@@ -1,6 +1,5 @@
-package com.bluenova.floorislava.util.tasks;
+package com.bluenova.floorislava.util;
 
-import com.bluenova.floorislava.util.Workload;
 import com.sk89q.worldedit.WorldEditException;
 
 public class ClearPlot implements Workload {

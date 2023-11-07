@@ -13,13 +13,13 @@ import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class InviteLobby {
 
     public static ArrayList<InviteLobby> inviteLobbyList = new ArrayList<>();
 
     public final Player ownerPlayer;
+
 
     public ArrayList<Player> sentList = new ArrayList<>();
     public ArrayList<Player> joinedList = new ArrayList<>();
@@ -57,7 +57,7 @@ public class InviteLobby {
         for (String playerName:failedInvites){
             failedListMessage = ChatColor.translateAlternateColorCodes('&',
                     failedListMessage + "&b"+playerName);
-            if(!Objects.equals(failedInvites.get(failedInvites.size() - 1), playerName)) failedListMessage =
+            if(failedInvites.get(failedInvites.size()-1)!=playerName) failedListMessage =
                     ChatColor.translateAlternateColorCodes('&',failedListMessage + "&c, ");
         }
         MessageUtils.sendFILMessage(ownerPlayer,failedListMessage);
@@ -77,21 +77,21 @@ public class InviteLobby {
 
     public void inviteAccept(Player player) {
         if (!sentList.contains(player)) {
-            MessageUtils.sendFILMessage(player,MessageConfig.getInstance().getNotInInviteList(ownerPlayer));
+            player.sendMessage("You are not in this player's invite list.");
             return;
         }
         sentList.remove(player);
         joinedList.add(player);
-        MessageUtils.sendFILMessage(player,MessageConfig.getInstance().getYouJoinedLobby(ownerPlayer));
-        MessageUtils.sendFILMessage(ownerPlayer, MessageConfig.getInstance().getAcceptedInvite(player));
+        ownerPlayer.sendMessage(ChatColor.RED + player.getName() + ChatColor.RESET + " accepted your invite!");
+        player.sendMessage("You have " + ChatColor.GREEN + "joined " + ChatColor.RESET + ownerPlayer.getName() + "'s lobby. Wait till they start the game!");
     }
 
     public void listPlayers() {
-        MessageUtils.sendFILMessage(ownerPlayer,MessageConfig.getInstance().getReadyList());
+        ownerPlayer.sendMessage(ChatColor.RED + "Ready Players:");
         for (Player readyPlayer : joinedList) {
             ownerPlayer.sendMessage(readyPlayer.getName());
         }
-        MessageUtils.sendFILMessage(ownerPlayer,MessageConfig.getInstance().getInvitedList());
+        ownerPlayer.sendMessage(ChatColor.GREEN + "Invite Sent:");
         for (Player sentPlayer : sentList) {
             ownerPlayer.sendMessage(sentPlayer.getName());
         }
@@ -102,29 +102,30 @@ public class InviteLobby {
             InviteLobby.inviteLobbyList.remove(this);
             for (Player player : joinedList) {
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_PLACE, 0.5f, 1f);
-                MessageUtils.sendFILMessage(player,MessageConfig.getInstance().getPlayerLeftLobby(ownerPlayer));
-                MessageUtils.sendFILMessage(player,MessageConfig.getInstance().getLobbyDisband());
+                player.sendMessage(ChatColor.RED + ownerPlayer.getName() + ChatColor.RESET + " has left your lobby and it was disbanded.");
             }
-            MessageUtils.sendFILMessage(ownerPlayer,MessageConfig.getInstance().getLobbyDisband());
+            ownerPlayer.sendMessage(ChatColor.DARK_RED + "Your lobby was disbanded");
             return;
         }
         if (!(joinedList.contains(removingPlayer) || sentList.contains(removingPlayer))) {
-            MessageUtils.sendFILMessage(ownerPlayer,MessageConfig.getInstance().getNotInYourLobby(removingPlayer));
+            ownerPlayer.sendMessage(ChatColor.RED + removingPlayer.getName() + ChatColor.RESET + " is not in your lobby.");
             return;
         }
         joinedList.remove(removingPlayer);
         sentList.remove(removingPlayer);
-        MessageUtils.sendFILMessage(removingPlayer,MessageConfig.getInstance().getRemovedFromLobby(ownerPlayer));
-        MessageUtils.sendFILMessage(ownerPlayer,MessageConfig.getInstance().getPlayerLeftLobby(removingPlayer));
+        removingPlayer.sendMessage("You have been " + ChatColor.RED + "removed" + ChatColor.RESET + " from " + ownerPlayer.getName() + "'s lobby.");
+        ownerPlayer.sendMessage(ChatColor.RESET + removingPlayer.getName() + ChatColor.RED + " left your lobby.");
+
     }
 
     public void startGame() throws WorldEditException {
-        GamePlot gp = FloorIsLava.getGamePlotDivider().getFirstEmptyPlot();
+        GamePlot gp = FloorIsLava.getInstance().getGamePlotDivider().getFirstEmptyPlot();
+        gp.inUse = true;
         if (gp == null){
-            MessageUtils.sendFILMessage(ownerPlayer,MessageConfig.getInstance().getNoFreePlots());
+            ownerPlayer.sendMessage(ChatColor.RED + "No free plots" + ChatColor.RESET + " available. Please wait a moment for a game to end" +
+                    "or message a server admin to increase max amount of plots allowed");
             return;
         }
-        gp.inUse = true;
         new GameLobby(joinedList, ownerPlayer, gp);
     }
 }

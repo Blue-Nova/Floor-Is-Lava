@@ -2,11 +2,6 @@ package com.bluenova.floorislava.game.object;
 
 import com.bluenova.floorislava.FloorIsLava;
 import com.bluenova.floorislava.util.*;
-import com.bluenova.floorislava.util.tasks.ElevateLava;
-import com.bluenova.floorislava.util.tasks.FindAllowedLocation;
-import com.bluenova.floorislava.util.tasks.GenerateGameTerrain;
-import com.bluenova.floorislava.util.tasks.MakeBarrierWall;
-import com.bluenova.floorislava.util.tools.Tools;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -56,15 +51,15 @@ public class GameLobby {
         gameEndLoc = gamePlot.plotEnd;
 
         announce(ChatColor.AQUA + "Generating Terrain For Game...");
-        FloorIsLava.getWorkLoadRunnable().addWorkload(new FindAllowedLocation(this));
+        FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new FindAllowedLocation(this));
 
     }
 
     public void generatePlot(int x, int z) {
-        WorkloadRunnable WLR = FloorIsLava.getWorkLoadRunnable();
+        WorkloadRunnable WLR = FloorIsLava.getInstance().getWorkloadRunnable();
         int border_x = (int) gamePlot.plotStart.getX();
         int border_z = (int) gamePlot.plotStart.getZ();
-        int plotSize = FloorIsLava.getGamePlotDivider().plotSize;
+        int plotSize = FloorIsLava.getInstance().getGamePlotDivider().plotSize;
         if (!gamePlot.hasBorders) {
             for(int y_level = -64; y_level < 320; y_level++) {
                 WLR.addWorkload(new MakeBarrierWall(border_x - 1, border_z - 1,
@@ -78,15 +73,17 @@ public class GameLobby {
             }
         }
         gamePlot.hasBorders = true;
+        int x_copy = x;
+        int z_copy = z;
         int x_paste = (int) gamePlot.plotStart.getX();
         int z_paste = (int) gamePlot.plotStart.getZ();
         GameLobby gp = null;
 
-        for (int x_index = 0; x_index < FloorIsLava.getGamePlotDivider().plotSize; x_index++) {
-            for (int z_index = 0; z_index < FloorIsLava.getGamePlotDivider().plotSize; z_index++) {
-                if (z_index == FloorIsLava.getGamePlotDivider().plotSize - 1 && x_index == FloorIsLava.getGamePlotDivider().plotSize - 1)
+        for (int x_index = 0; x_index < FloorIsLava.getInstance().getGamePlotDivider().plotSize; x_index++) {
+            for (int z_index = 0; z_index < FloorIsLava.getInstance().getGamePlotDivider().plotSize; z_index++) {
+                if (z_index == FloorIsLava.getInstance().getGamePlotDivider().plotSize - 1 && x_index == FloorIsLava.getInstance().getGamePlotDivider().plotSize - 1)
                     gp = this;
-                FloorIsLava.getWorkLoadRunnable().addWorkload(new GenerateGameTerrain(gp, x + x_index, z + z_index, x_paste + x_index, z_paste + z_index));
+                FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new GenerateGameTerrain(gp, x_copy + x_index, z_copy + z_index, x_paste + x_index, z_paste + z_index));
             }
         }
     }
@@ -97,11 +94,11 @@ public class GameLobby {
                 announce(ChatColor.AQUA + "Teleporting...");
 
                 gameBorder = Bukkit.createWorldBorder();
-                gameBorder.setCenter(new Location(FloorIsLava.getVoidWorld(), (gamePlot.plotStart.getX() + ((double) FloorIsLava.getGamePlotDivider().plotSize / 2)), 120, gamePlot.plotStart.getZ() + ((double) FloorIsLava.getGamePlotDivider().plotSize / 2)));
-                gameBorder.setSize(FloorIsLava.getGamePlotDivider().plotSize);
+                gameBorder.setCenter(new Location(FloorIsLava.getInstance().getVoidWorld(), (gamePlot.plotStart.getX() + (FloorIsLava.getInstance().getGamePlotDivider().plotSize / 2)), 120, gamePlot.plotStart.getZ() + (FloorIsLava.getInstance().getGamePlotDivider().plotSize / 2)));
+                gameBorder.setSize(FloorIsLava.getInstance().getGamePlotDivider().plotSize);
 
                 for (Player player : playerList) {
-                    Location game_loc = Tools.getSafeLocation(FloorIsLava.getVoidWorld(),gamePlot);
+                    Location game_loc = Tools.getSafeLocation(FloorIsLava.getInstance().getVoidWorld(),gamePlot);
                     player.teleport(game_loc);
                     playerSpawnLocation.put(player,game_loc);
                     player.setWorldBorder(gameBorder);
@@ -176,18 +173,18 @@ public class GameLobby {
     public void placeLava() {
         if(owner.getLocation().getY() < lavaHeight){
             for (int y_lava = (int) (owner.getLocation().getY()-1); y_lava < (int) (owner.getLocation().getY()+3); y_lava++) {
-                FloorIsLava.getWorkLoadRunnable().addWorkload(new ElevateLava(gamePlot, y_lava));
+                FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new ElevateLava(gamePlot, y_lava));
             }
         }
         for (Player player: playerList) {
             if(player.getLocation().getY() < lavaHeight){
                 for (int y_lava = (int) (player.getLocation().getY()); y_lava < (int) (player.getLocation().getY()+3); y_lava++) {
-                    FloorIsLava.getWorkLoadRunnable().addWorkload(new ElevateLava(gamePlot, y_lava));
+                    FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new ElevateLava(gamePlot, y_lava));
                 }
             }
         }
         for (int y_lava = lavaHeight-LAVA_INCREMENT; y_lava < lavaHeight+LAVA_INCREMENT; y_lava++) {
-            FloorIsLava.getWorkLoadRunnable().addWorkload(new ElevateLava(gamePlot, y_lava));
+            FloorIsLava.getInstance().getWorkloadRunnable().addWorkload(new ElevateLava(gamePlot, y_lava));
         }
         for (Integer y_height:LAVA_ANNOUNCE_HEIGHTS) {
             if(y_height <= lavaHeight){
@@ -235,7 +232,7 @@ public class GameLobby {
         player.getInventory().clear();
         for (ItemStack is : inv) {
             if(is != null)
-                FloorIsLava.getVoidWorld().dropItem(player.getLocation(),is);
+                FloorIsLava.getInstance().getVoidWorld().dropItem(player.getLocation(),is);
         }
         player.teleport(playerSpawnLocation.get(player));
     }
@@ -254,10 +251,10 @@ public class GameLobby {
                 , 140L);
 
         Bukkit.getScheduler().runTaskLater(FloorIsLava.getInstance(), (task) -> {
-            while (!playerList.isEmpty()) {
+            while (playerList.size() > 0) {
                 remove(playerList.get(0), false);
             }
-            while (!specList.isEmpty()) {
+            while (specList.size() > 0) {
                 remove(specList.get(0), false);
             }
 
