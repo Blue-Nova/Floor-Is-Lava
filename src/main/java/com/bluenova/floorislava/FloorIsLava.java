@@ -6,31 +6,67 @@ import com.bluenova.floorislava.config.MessageConfig;
 import com.bluenova.floorislava.event.GameEventManager;
 import com.bluenova.floorislava.game.object.GamePlotDivider;
 import com.bluenova.floorislava.config.MainConfig;
+import com.bluenova.floorislava.game.object.gamelobby.GameLobbyManager;
+import com.bluenova.floorislava.game.object.invitelobby.InviteLobbyManager;
 import com.bluenova.floorislava.util.WorkloadRunnable;
 import com.onarandombox.MultiverseCore.MultiverseCore;
-import lombok.Getter;
+
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.WorldType;
-import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-@Getter
+
 public final class FloorIsLava extends JavaPlugin {
 
-    @Getter
+    private static World voidWorld;
+    private static World normalWorld;
+    private static GamePlotDivider gamePlotDivider;
+    private static WorkloadRunnable workloadRunnable;
     private static FloorIsLava instance;
-    private final ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
-    private World voidWorld;
-    private World normalWorld;
-    private GamePlotDivider gamePlotDivider;
-    private WorkloadRunnable workloadRunnable;
+
+    // Manager Instances for the Game Lobby and Invite Lobby
+    private InviteLobbyManager inviteLobbyManager;
+    private GameLobbyManager gameLobbyManager;
+
+    public static Plugin getInstance() {
+        return instance;
+    }
+
+    public static World getVoidWorld() {
+        return voidWorld;
+    }
+
+    public static World getNormalWorld(){
+        return normalWorld;
+    }
+
+    public static WorkloadRunnable getWorkloadRunnable(){
+        return workloadRunnable;
+    }
+
+    public static GamePlotDivider getGamePlotDivider(){
+        return gamePlotDivider;
+    }
+
+    public static InviteLobbyManager getInviteLobbyManager() {
+        return instance.inviteLobbyManager;
+    }
+
+    public static GameLobbyManager getGameLobbyManager() {
+        return instance.gameLobbyManager;
+    }
 
     @Override
     public void onEnable() {
         instance = this;
         MainConfig mainConfig = MainConfig.getInstance();
         MessageConfig mssgConfig = MessageConfig.getInstance();
+
+        this.inviteLobbyManager = new InviteLobbyManager();
+        this.gameLobbyManager = new GameLobbyManager();
+
         mainConfig.load();
         mssgConfig.load();
         registerCommands();
@@ -47,12 +83,12 @@ public final class FloorIsLava extends JavaPlugin {
     }
 
     private void registerCommands() {
-        getCommand("fil").setExecutor(new MainCommand());
+        getCommand("fil").setExecutor(new MainCommand(inviteLobbyManager, gameLobbyManager));
         getCommand("fil").setTabCompleter(new TabCompletion());
     }
 
     private void registerEvents() {
-        getServer().getPluginManager().registerEvents(new GameEventManager(), this);
+        getServer().getPluginManager().registerEvents(new GameEventManager(inviteLobbyManager, gameLobbyManager), this);
     }
 
     private void setupMVC() {

@@ -33,7 +33,7 @@ public class MakeBarrierWall implements Workload {
 
     @Override
     public void compute() {
-        try (EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(FloorIsLava.getInstance().getVoidWorld()))) {
+        try (EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(FloorIsLava.getVoidWorld()))) {
             Region region = new CuboidRegion(BlockVector3.at(x_start, y_level, z_start),
                     BlockVector3.at(x_end, y_level, z_end));
             Pattern lavaPattern = BukkitAdapter.adapt(Material.BARRIER.createBlockData());

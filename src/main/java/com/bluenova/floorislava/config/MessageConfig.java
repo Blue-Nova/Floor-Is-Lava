@@ -145,7 +145,6 @@ public class MessageConfig {
     }
     public String getFailedInvites() {
         return prepare(FailedInvites);}
-
     public String getInviteUsage(){
         return prepare(InviteUsage);
     }
@@ -153,8 +152,6 @@ public class MessageConfig {
     private String prepare(String msg) {
         return ChatColor.translateAlternateColorCodes('&', msg);
     }
-
-
 }
 
 

@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="floor_is_lava">
+    <output-path>$PROJECT_DIR$/server/plugins</output-path>
+    <root id="archive" name="floor_is_lava.jar">
+      <element id="file-copy" path="$PROJECT_DIR$/target/classes/plugin.yml" />
+      <element id="file-copy" path="$PROJECT_DIR$/target/classes/MessageConfig.yml" />
+      <element id="file-copy" path="$PROJECT_DIR$/target/classes/config.yml" />
+    </root>
+  </artifact>
+</component>

@@ -33,9 +33,10 @@ public class GamePlotDivider {
         plotList.add(plot);
     }
 
-    public GamePlot getFirstEmptyPlot() {
+    public GamePlot prepareFirstEmptyPlot() {
         for (GamePlot gp : plotList) {
             if (!gp.inUse) {
+                gp.setInUse(true);
                 return gp;
             }
         }
