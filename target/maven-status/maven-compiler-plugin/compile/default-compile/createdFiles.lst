@@ -9,7 +9,6 @@ com\bluenova\floorislava\config\MainConfig.class
 com\bluenova\floorislava\game\object\GamePlot.class
 com\bluenova\floorislava\util\MakeBarrierWall.class
 com\bluenova\floorislava\util\FindAllowedLocation.class
-com\bluenova\floorislava\game\object\ChaosEventManager$1.class
 com\bluenova\floorislava\command\TabCompletion.class
 com\bluenova\floorislava\game\object\gamelobby\GameLobby.class
 com\bluenova\floorislava\game\object\ChaosEvents.class

@@ -21,6 +21,7 @@ public class ChaosEventManager {
     private static ArrayList<Player> bountyPlayers = new ArrayList<>();
 
     public static void eventate(GameLobby GL){
+        /*
         ChaosEvents pickedEvent = chaosEvents[new Random().nextInt(0,chaosEvents.length-1)];
         switch (pickedEvent){
             case CURSE:
@@ -54,7 +55,7 @@ public class ChaosEventManager {
                 giveThrowKit(GL);
                 return;
             default:
-        }
+        }*/
     }
 
     private static void giveThrowKit(GameLobby GL) {
