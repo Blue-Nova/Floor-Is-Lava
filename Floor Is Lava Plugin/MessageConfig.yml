@@ -1,0 +1,44 @@
+prefix:
+  "&f[&4F&eI&6L&f] "
+FLOORISLAVA:
+  "&4Floor &eIs &6Lava&f"
+LobbyCreated:
+  "&fLobby created!"
+NoPermission:
+  "&cYou have no permission to do this!"
+NotInLobby:
+  "&cYou need to be in a lobby first!"
+NotLobbyOwner:
+  "&cYou need to be the owner of your lobby to do this!"
+SendingInvite:
+  "&fInvites sent to: "
+FailedInvites:
+  "&cThese players could not be invited: "
+ReciveingInvite:
+  "&fYou have recieved an invite from %INVITERNAME%&f to play %FLOORISLAVA%&f"
+AcceptingInvite:
+  "&f%INVITEDPLAYER%&f has joined your lobby!"
+AlreadyInvited:
+  "&cYou have already invited: &r"
+InvitedPlayerInLobby:
+  "&c%INVITEDPLAYER% is already in a lobby!"
+AlreadyInLobby:
+  "&cYou cannot perform this when in-lobby!"
+AlreadyInGame:
+  "&cYou cannot perform this when in-game!"
+KickingPlayer:
+  "&fKicked %KICKEDPLAYER%"
+LeavingLobby:
+  "&fYou have left %LOBBYOWNER%&f's Lobby!"
+PlayerLeftLobby:
+  "&f%LEAVINGPLAYER%&f has left your lobby!"
+LobbyDisband:
+  "&fYour lobby has been disbanded!"
+PlayerNotFound:
+  "&c%NOTFOUNDPLAYER%&c has not been found (name either misspelled or player not online)"
+LobbyNotLargeEnough:
+  "&cYou must have atleast 2 ready players in a lobby to start a game!"
+
+commandUsage:
+  inviteUsage:
+    "/fil invite <playerName> OR /fil invite accept <playername>"
