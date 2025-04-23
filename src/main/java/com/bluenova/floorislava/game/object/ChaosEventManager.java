@@ -1,6 +1,7 @@
 package com.bluenova.floorislava.game.object;
 
 import com.bluenova.floorislava.FloorIsLava;
+import com.bluenova.floorislava.game.object.gamelobby.GameLobby;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -20,6 +21,7 @@ public class ChaosEventManager {
     private static ArrayList<Player> bountyPlayers = new ArrayList<>();
 
     public static void eventate(GameLobby GL){
+        /*
         ChaosEvents pickedEvent = chaosEvents[new Random().nextInt(0,chaosEvents.length-1)];
         switch (pickedEvent){
             case CURSE:
@@ -53,11 +55,11 @@ public class ChaosEventManager {
                 giveThrowKit(GL);
                 return;
             default:
-        }
+        }*/
     }
 
     private static void giveThrowKit(GameLobby GL) {
-        for (Player p:GL.playerList) {
+        for (Player p:GL.players) {
             ItemStack pearls = new ItemStack(Material.ENDER_PEARL);
             ItemStack bow = new ItemStack(Material.BOW);ItemStack arrows = new ItemStack(Material.ARROW);
             pearls.setAmount(6);arrows.setAmount(16);
@@ -109,15 +111,16 @@ public class ChaosEventManager {
     }
 
     private static void giveFireRes(GameLobby GL) {
-        for (Player p:GL.playerList) {
+        for (Player p:GL.players) {
             p.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE,2000,1));
         }
         GL.announce("Fire res!");
     }
 
     private static void givePvPKit(GameLobby GL) {
-        for (Player p:GL.playerList) {
-            ItemStack chestPlate = new ItemStack(Material.LEATHER_CHESTPLATE);chestPlate.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL,1);
+        for (Player p:GL.players) {
+            ItemStack chestPlate = new ItemStack(Material.LEATHER_CHESTPLATE);
+            chestPlate.addEnchantment(Enchantment.PROTECTION,1);
             ItemStack boots = new ItemStack(Material.IRON_BOOTS);ItemStack sword = new ItemStack(Material.IRON_SWORD);
             ItemStack beef = new ItemStack(Material.BEEF); beef.setAmount(12);
 
@@ -128,7 +131,7 @@ public class ChaosEventManager {
     }
 
     private static void giveBlocksKit(GameLobby GL) {
-        for (Player p:GL.playerList) {
+        for (Player p:GL.players) {
             ItemStack dirtBlocks = new ItemStack(Material.DIRT);ItemStack stoneBlocks = new ItemStack(Material.DIRT);
             ItemStack logsBlocks = new ItemStack(Material.OAK_LOG);
             dirtBlocks.setAmount(64);stoneBlocks.setAmount(64);logsBlocks.setAmount(32);
@@ -169,7 +172,7 @@ public class ChaosEventManager {
     }
 
     private static void bountyPlayer(GameLobby GL) {
-        Player bountyPlayer = GL.playerList.get(new Random().nextInt(0,GL.playerList.size()));
+        Player bountyPlayer = GL.players.get(new Random().nextInt(0,GL.players.size()));
         bountyPlayers.add(bountyPlayer);
         GL.announce(bountyPlayer.getName()+" has a BOUNTY on them for 2 mins!");
         Bukkit.getScheduler().runTaskLater(FloorIsLava.getInstance(),(bukkitTask ->{
@@ -179,7 +182,7 @@ public class ChaosEventManager {
     }
 
     private static void cursePlayer(GameLobby GL) {
-        Player cursedPlayer = GL.playerList.get(new Random().nextInt(0,GL.playerList.size()));
+        Player cursedPlayer = GL.players.get(new Random().nextInt(0,GL.players.size()));
         cursedPlayers.add(cursedPlayer);
         GL.announce(cursedPlayer.getName()+" has a CURSE on them for 2 mins!");
         Bukkit.getScheduler().runTaskLater(FloorIsLava.getInstance(),(bukkitTask ->{
@@ -189,7 +192,7 @@ public class ChaosEventManager {
     }
     private static double getAboveHighestPlayer(GameLobby gl) {
         double y=-64;
-        for (Player p:gl.playerList) {
+        for (Player p:gl.players) {
             if(p.getLocation().getY()>y)y=p.getLocation().getY();
         }
         return y+20;

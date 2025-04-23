@@ -1,13 +1,15 @@
 package com.bluenova.floorislava.command;
 
 
+import com.bluenova.floorislava.FloorIsLava;
 import com.bluenova.floorislava.config.MessageConfig;
-import com.bluenova.floorislava.game.object.InviteLobby;
+import com.bluenova.floorislava.game.object.gamelobby.GameLobbyManager;
+import com.bluenova.floorislava.game.object.invitelobby.InviteLobby;
+import com.bluenova.floorislava.game.object.invitelobby.InviteLobbyManager;
 import com.bluenova.floorislava.util.Tools;
 import com.bluenova.floorislava.util.messages.MessageUtils;
 import com.sk89q.worldedit.WorldEditException;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -16,6 +18,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 
 public class MainCommand implements CommandExecutor {
+
+    private final InviteLobbyManager inviteLobbyManager;
+    private final GameLobbyManager gameLobbyManager;
+
+    public MainCommand(InviteLobbyManager inviteLobbyManager, GameLobbyManager gameLobbyManager) {
+        this.inviteLobbyManager = inviteLobbyManager;
+        this.gameLobbyManager = gameLobbyManager;
+    }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -73,47 +83,47 @@ public class MainCommand implements CommandExecutor {
     }
 
     public void createLobbyCommand(Player player) {
-        if (Tools.isPlayerIngame(player)) {
+        if (gameLobbyManager.isPlayerIngame(player)) {
             MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getAlreadyInGame());
             return;
         }
-        new InviteLobby(player);
+        inviteLobbyManager.createLobby(player);
         MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getLobbyCreated());
     }
 
     public void listLobbyPlayersCommand(Player player) {
-        if (!Tools.isPlayerInLobby(player)) {
+        if (!inviteLobbyManager.isPlayerInLobby(player)) {
             MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getNotInLobby());
             return;
         }
-        Tools.getLobbyFromOwner(player).listPlayers();
+        inviteLobbyManager.getLobbyFromPlayer(player).listPlayers();
     }
 
     public void leaveLobbyCommand(Player player) {
-        if (!Tools.isPlayerInLobby(player)) {
+        if (!inviteLobbyManager.isPlayerInLobby(player)) {
             MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getNotInLobby());
             return;
         }
-        if (Tools.isPlayerIngame(player)) {
-            Tools.getGameFromPlayer(player).remove(player, false);
+        if (gameLobbyManager.isPlayerIngame(player)) {
+            gameLobbyManager.getGameFromPlayer(player).remove(player, false);
             return;
         }
-        if (!(Tools.isLobbyOwner(player) || !Tools.isPlayerInLobby(player))) {
+        if (!(inviteLobbyManager.isLobbyOwner(player) || !inviteLobbyManager.isPlayerInLobby(player))) {
             MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getNotInLobby());
         } else {
             InviteLobby lobby;
-            if (Tools.isLobbyOwner(player)) lobby = Tools.getLobbyFromOwner(player);
-            else lobby = Tools.getLobbyFromPlayer(player);
+            if (inviteLobbyManager.isLobbyOwner(player) ) lobby = inviteLobbyManager.getLobbyFromOwner(player);
+            else lobby = inviteLobbyManager.getLobbyFromPlayer(player);
             lobby.removePlayer(player);
         }
     }
 
     public void removeCommand(Player player, ArrayList<String> args) {
-        if (!Tools.isPlayerInLobby(player)) {
+        if (!inviteLobbyManager.isPlayerInLobby(player)) {
             MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getNotInLobby());
             return;
         }
-        if (!Tools.isLobbyOwner(player)) {
+        if (!inviteLobbyManager.isLobbyOwner(player) ) {
             MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getNotLobbyOwner());
             return;
         }
@@ -122,46 +132,46 @@ public class MainCommand implements CommandExecutor {
                 MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getPlayerNotFound(playername));
                 continue;
             }
-            Tools.getLobbyFromOwner(player).removePlayer(Bukkit.getPlayer(playername));
+            inviteLobbyManager.getLobbyFromOwner(player).removePlayer(Bukkit.getPlayer(playername));
         }
     }
 
     public void startCommand(Player player) {
-        if (!Tools.isPlayerInLobby(player)) {
+        if (!inviteLobbyManager.isPlayerInLobby(player)) {
             MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getNotInLobby());
             return;
         }
-        if (Tools.isPlayerIngame(player)) {
+        if (gameLobbyManager.isPlayerIngame(player)) {
             MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getAlreadyInGame());
             return;
         }
-        if (!Tools.isLobbyOwner(player)) {
+        if (!inviteLobbyManager.isLobbyOwner(player)) {
             MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getNotLobbyOwner());
             return;
         }
-        if (!(Tools.getLobbyFromOwner(player).joinedList.size() >= 2)) {
+        if (!(inviteLobbyManager.getLobbyFromOwner(player).players.size() >= 2)) {
             MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getLobbyNotLargeEnough());
             return;
         }
         try {
-            Tools.getLobbyFromOwner(player).startGame();
+            inviteLobbyManager.getLobbyFromOwner(player).startGame();
         } catch (WorldEditException ex) {
             throw new RuntimeException(ex);
         }
     }
     public void inviteCommand(Player player, ArrayList<String> users) {
-        if (!Tools.isPlayerInLobby(player)) {
+        if (!inviteLobbyManager.isPlayerInLobby(player)) {
             MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getNotInLobby());
             return;
         }
-        if (!Tools.isLobbyOwner(player)) {
+        if (!inviteLobbyManager.isLobbyOwner(player) ) {
             MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getNotLobbyOwner());
             return;
         }
         if (users.size() == 0) {
             MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getInviteUsage());
             return;}
-        InviteLobby lobby = Tools.getLobbyFromOwner(player);
+        InviteLobby lobby = inviteLobbyManager.getLobbyFromOwner(player);
         boolean sentOneInvite = false;
         ArrayList<String> failedInvites = new ArrayList<>();
         ArrayList<Player> invitedPlayers = new ArrayList<>();
@@ -175,8 +185,8 @@ public class MainCommand implements CommandExecutor {
                 continue;
             }
             Player invitedPlayer = Bukkit.getPlayer(playerName);
-            if (Tools.checkPlayerInvitedBy(invitedPlayer, player)) continue;
-            if (Tools.isPlayerInLobby(invitedPlayer) || Tools.isLobbyOwner(invitedPlayer)) {
+            if (inviteLobbyManager.checkPlayerInvitedBy(invitedPlayer, player)) continue;
+            if (inviteLobbyManager.isPlayerInLobby(invitedPlayer) || inviteLobbyManager.isLobbyOwner(invitedPlayer)) {
                 continue;
             }
             invitedPlayers.add(invitedPlayer);
@@ -194,7 +204,7 @@ public class MainCommand implements CommandExecutor {
             //player.sendMessage(ACCEPT_NO_ARGS.replaceColor().replacePrefix().format());
             return;
         }
-        if (Tools.isPlayerInLobby(player) || Tools.isLobbyOwner(player)) {
+        if (inviteLobbyManager.isPlayerInLobby(player) || inviteLobbyManager.isLobbyOwner(player) ) {
             MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getAlreadyInLobby());
             return;
         }
@@ -203,29 +213,29 @@ public class MainCommand implements CommandExecutor {
             return;
         }
         Player inviter = Bukkit.getPlayer(acceptingPlayer);
-        if (!Tools.isLobbyOwner(inviter)) {
+        if (!inviteLobbyManager.isLobbyOwner(inviter)) {
             //player.sendMessage(ACCEPT_SENDER_NOLOBBY.replaceColor().replacePrefix().replaceSender(inviter.getDisplayName()).format());
         }
-        if (!Tools.checkPlayerInvitedBy(inviter, player)) {
+        if (!inviteLobbyManager.checkPlayerInvitedBy(inviter, player)) {
             //player.sendMessage(ACCEPT_NO_INVITE.replaceColor().replacePrefix().replaceSender(inviter.getDisplayName()).format());
         } else {
             //player.sendMessage(ACCEPT_RECEIVER.replaceColor().replacePrefix().replaceSender(inviter.getDisplayName()).format());
             MessageUtils.sendFILMessage(inviter, MessageConfig.getInstance().getAcceptingInvite(player));
-            Tools.getLobbyFromOwner(inviter).inviteAccept(player);
+            inviteLobbyManager.getLobbyFromOwner(inviter).inviteAccept(player);
         }
     }
     public void leaveCommand(Player player) {
-        if (Tools.isPlayerIngame(player)) {
-            Tools.getGameFromPlayer(player).remove(player, false);
+        if (gameLobbyManager.isPlayerIngame(player)) {
+            gameLobbyManager.getGameFromPlayer(player).remove(player, false);
             return;
         }
-        if (!(Tools.isLobbyOwner(player) || !Tools.isPlayerInLobby(player))) {
+        if (!(inviteLobbyManager.isLobbyOwner(player)  || !inviteLobbyManager.isPlayerInLobby(player))) {
             MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getNotInLobby());
         } else {
             InviteLobby lobby;
-            if (Tools.isLobbyOwner(player)) lobby = Tools.getLobbyFromOwner(player);
-            else lobby = Tools.getLobbyFromPlayer(player);
-            MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getLeavingLobby(lobby.ownerPlayer));
+            if (inviteLobbyManager.isLobbyOwner(player)) lobby = inviteLobbyManager.getLobbyFromOwner(player);
+            else lobby = inviteLobbyManager.getLobbyFromPlayer(player);
+            MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getLeavingLobby(lobby.getOwner()));
             lobby.removePlayer(player);
         }
     }

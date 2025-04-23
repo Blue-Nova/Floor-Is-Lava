@@ -1,9 +1,7 @@
 package com.bluenova.floorislava.util;
 
 import com.bluenova.floorislava.FloorIsLava;
-import com.bluenova.floorislava.game.object.GameLobby;
 import com.bluenova.floorislava.game.object.GamePlot;
-import com.bluenova.floorislava.game.object.InviteLobby;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
@@ -21,7 +19,6 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -33,83 +30,10 @@ public class Tools {
         }
     }
 
-    /*Is the player the owner of the Lobby?*/
-    public static boolean isLobbyOwner(Player owner) {
-        for (InviteLobby lobby : InviteLobby.inviteLobbyList) {
-            if (lobby.ownerPlayer == owner) return true;
-        }
-        return false;
-    }
-
-    /*Checks in what lobby the player is the owner*/
-    public static InviteLobby getLobbyFromOwner(Player owner) {
-        for (InviteLobby lobby : InviteLobby.inviteLobbyList) {
-            if (lobby.ownerPlayer == owner) return lobby;
-        }
-        return null;
-    }
-
-    /*Checks who invited the player*/
-    public static boolean checkPlayerInvitedBy(Player owner, Player player) {
-        for (InviteLobby lobby : InviteLobby.inviteLobbyList) {
-            if (lobby.ownerPlayer == owner) {
-                return lobby.sentList.contains(player);
-            }
-        }
-        return false;
-    }
-
-    /*Checks if the player is in a lobby*/
-    public static boolean isPlayerInLobby(Player player) {
-        for (InviteLobby lobby : InviteLobby.inviteLobbyList) {
-            if (lobby.joinedList.contains(player)) return true;
-        }
-        return false;
-    }
-
-    /*Gets the lobby the player is currently in*/
-    public static InviteLobby getLobbyFromPlayer(Player player) {
-        for (InviteLobby lobby : InviteLobby.inviteLobbyList) {
-            if (lobby.joinedList.contains(player)) return lobby;
-        }
-        return null;
-    }
-
-    /*Checks if the Owner of the lobby is in the lobby*/
-    public static boolean isOwnerInLobby(Player player, Player owner) {
-        for (InviteLobby lobby : InviteLobby.inviteLobbyList) {
-            if (lobby.ownerPlayer != owner) return false;
-            if (lobby.joinedList.contains(player)) return true;
-        }
-        return false;
-    }
-
-    /*Checks if the player is in a game*/
-    public static boolean isPlayerIngame(Player player) {
-        for (GameLobby game : GameLobby.GAME_LOBBY_LIST) {
-            if (game.playerList.contains(player)) return true;
-        }
-        for (GameLobby game : GameLobby.GAME_LOBBY_LIST) {
-            if (game.specList.contains(player)) return true;
-        }
-        return false;
-    }
-
-    /*Gets the game the player is currently in*/
-    public static GameLobby getGameFromPlayer(Player player) {
-        for (GameLobby game : GameLobby.GAME_LOBBY_LIST) {
-            if (game.playerList.contains(player)) return game;
-        }
-        for (GameLobby game : GameLobby.GAME_LOBBY_LIST) {
-            if (game.specList.contains(player)) return game;
-        }
-        return null;
-    }
-
     /*Gets a safe location*/
     public static Location getSafeLocation(World gameWorld, GamePlot plot) {
-        int x_local = new Random().nextInt(FloorIsLava.getInstance().getGamePlotDivider().plotSize);
-        int z_local = new Random().nextInt(FloorIsLava.getInstance().getGamePlotDivider().plotSize);
+        int x_local = new Random().nextInt(FloorIsLava.getGamePlotDivider().plotSize);
+        int z_local = new Random().nextInt(FloorIsLava.getGamePlotDivider().plotSize);
         Location safeLoc = new Location(gameWorld, x_local, 319, z_local);
         Location chunkGlobal = new Location(gameWorld, plot.plotStart.getX(), 1, plot.plotStart.getZ());
         safeLoc.setX(chunkGlobal.getX() + x_local);
@@ -164,6 +88,4 @@ public class Tools {
             error.printStackTrace();
         }
     }
-
 }
-

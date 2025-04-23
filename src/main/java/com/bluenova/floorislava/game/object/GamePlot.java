@@ -17,4 +17,20 @@ public class GamePlot {
         plotEnd = end;
     }
 
+    public void setInUse(boolean inUse) {
+        this.inUse = inUse;
+    }
+
+    public boolean isInUse() {
+        return inUse;
+    }
+
+    public void setBorders(boolean hasBorders) {
+        this.hasBorders = hasBorders;
+    }
+
+    public boolean hasBorders() {
+        return hasBorders;
+    }
+
 }

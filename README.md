@@ -1,33 +1,32 @@
-# **Floor-Is-Lava**
-This is the official "Floor is Lava" github repo. Made by BlueNova, CO Developed by Bedless.
+# **Floor Is Lava**
+This is the official "Floor is Lava" github repo. Made by BlueNova.
+
+## What is Floor Is Lava?
+Floor is Lava is a minigame plugin for Minecraft that allows players to compete in a fun and exciting game of survival.
+The objective of the game is to stay alive on a floating platform while avoiding the lava that rises from below.
+Players must use their skills and strategy to quickly collect resources, stay alive and build upwards to avoid falling into the lava.
+
+Of course, PVP is a part of the game, putting players behind will make them lose faster than you.
+
+Last player to die EXCLUSIVELY from the rising lava wins the game!
 
 ## Command Structure
+### /fil lobby create
+Creates a new lobby. This is the command you will use to create a new game.
+### /fil lobby list
+Lists all players in your lobby. Also shows pending invite sent out by you.
+### /fil lobby leave
+Leave the current lobby you are in.
+### /fil lobby start
+Starts the game in your lobby.
+### /fil invite player1 player2 playerN...
+Invites a player to your lobby.
+### /fil game leave
+Leave the game AFTER it has started.
 
-![command_source](https://github.com/Bedlesssgod/Floor-Is-Lava/assets/77199633/968f0c63-08e8-4abd-be1d-0b87defd976d)
-<details>
-<summary>Raw JSON</summary>
-
-```json
-{
-  "fil": {
-    "lobby": {
-      "create": {},
-      "list": {},
-      "leave": {},
-      "remove": {},
-      "start": {}
-    },
-    "invite": {
-      "accept": {}
-    },
-    "game": {
-      "leave": {}
-    }
-  }
-}
-```
-
-</details>
+### quick note:
+command structure is not very intiuitive, I know.
+I am revamping it in a very near update!
 
 ## Permission Structure
 COMING SOON
@@ -53,5 +52,5 @@ Lowering this number will increase the amount of time needed to generate a game.
 
 Lower this number if your server begins to lag **when making a new game** .
 Increase this number if server does not lag but waiting time is too long for a game to start.
-MAX VALUE IS 1000
+MAX VALUE IS 1000 (meaning server freezes until a game terrain is generated)
 

@@ -31,9 +31,10 @@ public class WorkloadRunnable implements Runnable {
         while (System.nanoTime() <= stopTime && (nextload = this.workloadDeque.poll()) != null) {
             try {
                 nextload.compute();
-            } catch (WorldEditException ex) {
-                throw new RuntimeException(ex);
-            }
+            }catch (WorldEditException ex) {
+                    FloorIsLava.getInstance().getLogger().severe("Error computing workload: " + nextload.getClass().getSimpleName());
+                    ex.printStackTrace();
+                }
         }
     }
 }

@@ -1,16 +1,16 @@
 com\bluenova\floorislava\event\GameEventManager.class
 com\bluenova\floorislava\game\object\ChaosEventManager.class
 com\bluenova\floorislava\util\ClearPlot.class
-com\bluenova\floorislava\game\object\GameLobby.class
+com\bluenova\floorislava\game\object\Lobby.class
 com\bluenova\floorislava\config\MessageConfig.class
+com\bluenova\floorislava\game\object\invitelobby\InviteLobbyManager.class
 com\bluenova\floorislava\util\GenerateGameTerrain.class
 com\bluenova\floorislava\config\MainConfig.class
 com\bluenova\floorislava\game\object\GamePlot.class
 com\bluenova\floorislava\util\MakeBarrierWall.class
 com\bluenova\floorislava\util\FindAllowedLocation.class
-com\bluenova\floorislava\game\object\InviteLobby.class
-com\bluenova\floorislava\game\object\ChaosEventManager$1.class
 com\bluenova\floorislava\command\TabCompletion.class
+com\bluenova\floorislava\game\object\gamelobby\GameLobby.class
 com\bluenova\floorislava\game\object\ChaosEvents.class
 com\bluenova\floorislava\util\messages\MessageUtils.class
 com\bluenova\floorislava\util\WorkloadRunnable.class
@@ -20,3 +20,5 @@ com\bluenova\floorislava\FloorIsLava.class
 com\bluenova\floorislava\util\Tools.class
 com\bluenova\floorislava\util\Workload.class
 com\bluenova\floorislava\command\MainCommand.class
+com\bluenova\floorislava\game\object\invitelobby\InviteLobby.class
+com\bluenova\floorislava\game\object\gamelobby\GameLobbyManager.class
