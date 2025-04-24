@@ -5,6 +5,10 @@ import com.bluenova.floorislava.game.object.gamelobby.GameLobby;
 import com.bluenova.floorislava.game.object.gamelobby.GameLobbyManager;
 import com.bluenova.floorislava.game.object.invitelobby.InviteLobby;
 import com.bluenova.floorislava.game.object.invitelobby.InviteLobbyManager;
+// Import MiniMessages
+import com.bluenova.floorislava.util.messages.MiniMessages;
+// Other imports
+import org.bukkit.ChatColor; // Keep for fallback/error
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -24,43 +28,70 @@ public class LobbyLeaveCmd implements SubCommand {
     @Override
     public boolean execute(CommandSender sender, String[] args) {
 
-        // 1. Check if sender is a Player
-        if (!(sender instanceof org.bukkit.entity.Player)) {
-            sender.sendMessage("This command can only be run by a player.");
-            return true; // Indicate command was handled (by showing error)
+        if (!(sender instanceof Player)) {
+            MiniMessages.send(sender, "general.not_a_player"); // Use MiniMessages
+            return true;
         }
-
         Player player = (Player) sender;
 
-        // 2. Check if player is in a lobby
+        // Check Lobby
         if (lobbyManager.isPlayerInLobby(player)) {
             InviteLobby lobby = lobbyManager.getLobbyFromPlayer(player);
-            lobby.removePlayer(player);
-            return true;
+            if (lobby != null) {
+                // Delegate removal. InviteLobby.removePlayer should handle all messaging
+                // (e.g., sending "lobby.leaving_lobby_feedback" to the player,
+                // "lobby.player_left_notification" to others, handling disband messages)
+                // AND notify lobbyManager to update its maps.
+                lobby.removePlayer(player);
+            } else {
+                player.sendMessage(ChatColor.RED + "Error: Found you in lobby map, but couldn't retrieve lobby object.");
+                // MiniMessages.send(player, "lobby.error_generic"); // Use if you added this key
+            }
+            return true; // Handled
         }
 
-        // 3. Check if player is in a game
+        // Check Game
         if (gameManager.isPlayerIngame(player)) {
-            GameLobby lobby = gameManager.getGameFromPlayer(player);
-            lobby.remove(player, false);
-            return true;
+            GameLobby game = gameManager.getGameFromPlayer(player);
+            if (game != null) {
+                // Delegate removal. GameLobby.remove should handle all messaging
+                // (e.g., sending "game.player_left_game" broadcast)
+                // AND notify gameManager/PlotManager when game ends.
+                game.remove(player, false); // false = not a death
+            } else {
+                player.sendMessage(ChatColor.RED + "Error: Found you in game map, but couldn't retrieve game object.");
+                // MiniMessages.send(player, "game.error_generic"); // If you add a generic game error key
+            }
+            return true; // Handled
         }
 
-        return false;
+        // Player is not in a lobby or game
+        // --- Incorrect return ---
+        // return false;
+        // Use MiniMessages - "lobby.not_in_lobby" is the closest existing key
+        MiniMessages.send(player, "lobby.not_in_lobby");
+        return true; // Command was handled
+        // ---
     }
 
     @Override
     public List<String> tabComplete(CommandSender sender, String[] args) {
+        // Correct, no args
         return Collections.emptyList();
     }
 
     @Override
     public String getUsage() {
+        // Correct
         return "/fil lobby leave";
     }
 
     @Override
     public String getPermission() {
-        return "";
+        // Corrected to null or specific node
+        // return ""; // Problematic
+        return null; // Example: Allow anyone to leave
+        // OR
+        // return "floorislava.lobby.leave";
     }
 }

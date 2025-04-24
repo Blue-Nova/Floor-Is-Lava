@@ -1,157 +1,106 @@
 package com.bluenova.floorislava.config;
 
-import com.bluenova.floorislava.FloorIsLava;
-import org.bukkit.ChatColor;
+import com.bluenova.floorislava.FloorIsLava; // Your main plugin class
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
-
 import java.io.File;
+import java.util.logging.Level;
 
 public class MessageConfig {
-
     private final static MessageConfig instance = new MessageConfig();
-
-
     private File file;
-    private YamlConfiguration config;
+    private YamlConfiguration config = null; // Initialize as null
 
-    private String prefix;
-    private String FLOORISLAVA;
-    private String LobbyCreated;
-    private String NoPermission;
-    private String NotInLobby;
-    private String SendingInvite;
-    private String ReciveingInvite;
-    private String AcceptingInvite;
-    private String AlreadyInvited;
-    private String AlreadyInLobby;
-    private String AlreadyInGame;
-    private String KickingPlayer;
-    private String LeavingLobby;
-    private String PlayerLeftLobby;
-    private String LobbyDisband;
-    private String NotLobbyOwner;
-    private String PlayerNotFound;
-    private String LobbyNotLargeEnough;
-    private String FailedInvites;
-
-    private String InviteUsage;
-
-    private MessageConfig() {
-    }
-
-    public void load() {
-        file = new File(FloorIsLava.getInstance().getDataFolder(), "MessageConfig.yml");
-
-        if (!file.exists())
-            FloorIsLava.getInstance().saveResource("MessageConfig.yml", false);
-
-        config = new YamlConfiguration();
-        config.options().parseComments(true);
-
-        try {
-            config.load(file);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        prefix = config.getString("prefix");
-        FLOORISLAVA = config.getString("FLOORISLAVA");
-        LobbyCreated = config.getString("LobbyCreated");
-        NoPermission = config.getString("NoPermission");
-        NotInLobby = config.getString("NotInLobby");
-        SendingInvite = config.getString("SendingInvite");
-        ReciveingInvite = config.getString("ReciveingInvite");
-        AcceptingInvite = config.getString("AcceptingInvite");
-        AlreadyInvited = config.getString("AlreadyInvited");
-        AlreadyInLobby = config.getString("AlreadyInLobby");
-        AlreadyInGame = config.getString("AlreadyInGame");
-        KickingPlayer = config.getString("KickingPlayer");
-        LeavingLobby = config.getString("LeavingLobby");
-        PlayerLeftLobby = config.getString("PlayerLeftLobby");
-        LobbyDisband = config.getString("LobbyDisband");
-        NotLobbyOwner = config.getString("NotLobbyOwner");
-        PlayerNotFound = config.getString("PlayerNotFound");
-        LobbyNotLargeEnough = config.getString("LobbyNotLargeEnough");
-        FailedInvites = config.getString("FailedInvites");
-
-        InviteUsage = config.getString("commandUsage.inviteUsage");
-    }
-
-    public void save() {
-        try {
-            config.save(file);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    private MessageConfig() { } // Private constructor for singleton
 
     public static MessageConfig getInstance() {
         return instance;
     }
 
-    private String getFLOORISLAVA(){return prepare(FLOORISLAVA);}
+    /**
+     * Loads the MessageConfig.yml file, creating it from resources if it doesn't exist.
+     */
+    public void load() {
+        FloorIsLava plugin = (FloorIsLava) FloorIsLava.getInstance();
+        File dataFolder = plugin.getDataFolder();
+        if (!dataFolder.exists()) {
+            if (!dataFolder.mkdirs()) {
+                plugin.getLogger().severe("Could not create plugin data folder!");
+            }
+        }
 
-    public String getPrefix() {
-        return prepare(prefix);
-    }
-    public String getLobbyCreated() {
-        return prepare(LobbyCreated);
-    }
-    public String getNoPermission() {
-        return prepare(NoPermission);
-    }
-    public String getNotInLobby() {
-        return prepare(NotInLobby);
-    }
-    public String getSendingInvite() {
-        return prepare(SendingInvite);
-    }
-    public String getReciveingInvite(Player ownerPlayer) {
-        return prepare(ReciveingInvite.replaceAll("%INVITERNAME%","&b"+ownerPlayer.getName()).replaceAll("%FLOORISLAVA%",getFLOORISLAVA()));
-    }
-    public String getAcceptingInvite(Player player) {
-        return prepare(AcceptingInvite.replaceAll("%INVITEDPLAYER%","&b"+player.getName()));
-    }
-    public String getAlreadyInvited()                           {
-        return prepare(AlreadyInvited);
-    }
-    public String getAlreadyInLobby()       {
-        return prepare(AlreadyInLobby);
-    }
-    public String getAlreadyInGame()                            {
-        return prepare(AlreadyInGame);
-    }
-    public String getKickingPlayer(Player kickedPlayer) {
-        return prepare(KickingPlayer.replaceAll("%KICKEDPLAYER%",kickedPlayer.getName()));
-    }
-    public String getLeavingLobby(Player ownerPlayer) {
-        return prepare(LeavingLobby.replaceAll("%LOBBYOWNER%", "&b"+ownerPlayer.getName()));
-    }
-    public String getPlayerLeftLobby() {
-        return prepare(PlayerLeftLobby);
-    }
-    public String getLobbyDisband() {
-        return prepare(LobbyDisband);
-    }
-    public String getNotLobbyOwner() {
-        return prepare(NotLobbyOwner);
-    }
-    public String getLobbyNotLargeEnough() {
-        return prepare(LobbyNotLargeEnough);
-    }
-    public String getPlayerNotFound(String playername) {
-        return prepare(PlayerNotFound.replaceAll("%NOTFOUNDPLAYER%", "&b"+playername));
-    }
-    public String getFailedInvites() {
-        return prepare(FailedInvites);}
-    public String getInviteUsage(){
-        return prepare(InviteUsage);
+        file = new File(dataFolder, "Floor Is Lava Plugin/MessageConfig.yml");
+
+        if (!file.exists()) {
+            plugin.getLogger().info("MessageConfig.yml not found, creating default...");
+            try {
+                // Ensure MessageConfig.yml is in src/main/resources
+                plugin.saveResource("Floor Is Lava Plugin/MessageConfig.yml", false);
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().log(Level.SEVERE, "Could not save default MessageConfig.yml! Make sure it's in your JAR's src/main/resources folder.", e);
+                this.config = null; // Ensure config is null on failure
+                return;
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.SEVERE, "An unexpected error occurred saving default MessageConfig.yml!", e);
+                this.config = null; // Ensure config is null on failure
+                return;
+            }
+        }
+
+        // Load the configuration from the file
+        config = YamlConfiguration.loadConfiguration(file);
+
+        // Optional: Check if loading actually worked (e.g., check if a known key exists)
+        if (config.getKeys(false).isEmpty() && file.length() > 0) {
+            plugin.getLogger().severe("Failed to load MessageConfig.yml properly! It might be corrupted.");
+            // Keep config non-null but potentially empty, getters will return defaults/errors.
+        } else {
+            plugin.getLogger().info("MessageConfig.yml loaded successfully.");
+        }
     }
 
-    private String prepare(String msg) {
-        return ChatColor.translateAlternateColorCodes('&', msg);
+    /**
+     * Gets the raw message string for the given key from the config.
+     * Returns a default error message if the config failed to load or the key is missing.
+     * @param key The message key (e.g., "lobby.created")
+     * @return The raw message string or an error string.
+     */
+    public String getRawString(String key) {
+        if (config == null) { // Check if config failed to load in load()
+            FloorIsLava.getInstance().getLogger().severe("Attempted to get message key '" + key + "' but MessageConfig failed to load!");
+            return "<bold><red>ERROR: CFG NULL</bold></red>"; // Return noticeable error
+        }
+        // Provide default value to getString to handle missing keys gracefully
+        return config.getString(key, "<bold><red>MissingKey: " + key + "</bold></red>");
     }
+
+    /**
+     * Gets the raw prefix string from the config.
+     * Returns a hardcoded default if config failed to load or key is missing.
+     * @return The raw prefix string.
+     */
+    public String getRawPrefix() {
+        String defaultPrefix = "<white>[<red>F</red><yellow>I</yellow><gold>L</gold><white>] </white>"; // Hardcoded fallback
+        if (config == null) { // Check if config failed to load
+            FloorIsLava.getInstance().getLogger().severe("Attempted to get prefix but MessageConfig failed to load!");
+            return defaultPrefix;
+        }
+        // Provide default value
+        return config.getString("general.prefix", defaultPrefix);
+    }
+
+    /**
+     * Saves the current configuration back to the file.
+     * Use only if you modify config programmatically.
+    public void save() {
+        if (config != null && file != null) {
+            try {
+                config.save(file);
+            } catch (java.io.IOException e) {
+                FloorIsLava.getInstance().getLogger().log(Level.SEVERE, "Could not save MessageConfig.yml to " + file, e);
+            }
+        } else {
+            FloorIsLava.getInstance().getLogger().severe("Cannot save MessageConfig, config or file is null!");
+        }
+    }
+     */
 }
-
-

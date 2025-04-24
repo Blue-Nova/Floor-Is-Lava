@@ -1,6 +1,8 @@
 com\bluenova\floorislava\command\lobbycommands\LobbyInviteCmd.class
 com\bluenova\floorislava\command\FILCommandHandler.class
+com\bluenova\floorislava\command\lobbycommands\LobbyKickCmd.class
 com\bluenova\floorislava\event\GameEventManager.class
+com\bluenova\floorislava\util\messages\MiniMessages.class
 com\bluenova\floorislava\game\object\ChaosEventManager.class
 com\bluenova\floorislava\util\ClearPlot.class
 com\bluenova\floorislava\command\lobbycommands\LobbyLeaveCmd.class

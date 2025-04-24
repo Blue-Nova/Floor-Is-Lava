@@ -6,11 +6,8 @@ description: You and your friends are trapped in a world where lava will rise ti
 depend:
   - WorldEdit
   - Multiverse-Core
+softdepend:
+  - WorldGuard
 commands:
   fil:
     description: "main command for Floor is Lava"
-
-permissions:
-  floorislava.base:
-    description: Base permission for all players
-    default: true

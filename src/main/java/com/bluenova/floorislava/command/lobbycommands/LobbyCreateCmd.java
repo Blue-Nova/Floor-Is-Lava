@@ -5,6 +5,7 @@ import com.bluenova.floorislava.config.MessageConfig;
 import com.bluenova.floorislava.game.object.gamelobby.GameLobbyManager;
 import com.bluenova.floorislava.game.object.invitelobby.InviteLobbyManager;
 import com.bluenova.floorislava.util.messages.MessageUtils;
+import com.bluenova.floorislava.util.messages.MiniMessages;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -25,36 +26,31 @@ public class LobbyCreateCmd implements SubCommand {
 
     @Override
     public boolean execute(CommandSender sender, String[] args) {
-        // 1. Check if sender is a Player
         if (!(sender instanceof Player)) {
-            sender.sendMessage("This command can only be run by a player.");
-            return true; // Indicate command was handled (by showing error)
+            // Correctly uses MiniMessages and correct key
+            MiniMessages.send(sender, "general.not_a_player");
+            return true;
         }
         Player player = (Player) sender;
-        UUID playerUUID = player.getUniqueId(); // Use UUID for lookups
+        // ... UUID lookup ideal later ...
 
-        // 2. Check if player is already in a game
-        // Uses the injected gameManager instance
-        if (gameManager.isPlayerIngame(player)) { // Assuming manager method takes Player for now
-            // Ideally: gameManager.isPlayerInGame(playerUUID)
-            MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getAlreadyInGame());
+        if (gameManager.isPlayerIngame(player)) {
+            // MiniMessages.send(player, "game.already_in_game");
+            MiniMessages.send(player, "general.already_in_game_error"); // CORRECTED KEY
             return true;
         }
 
-        // 3. Check if player is already in a lobby (owner or member)
-        // Uses the injected lobbyManager instance
-        if (lobbyManager.isPlayerInLobby(player)) { // Assuming manager method takes Player for now
-            // Ideally: lobbyManager.isPlayerInLobby(playerUUID)
-            MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getAlreadyInLobby());
+        if (lobbyManager.isPlayerInLobby(player)) {
+            // MiniMessages.send(player, "AlreadyInLobby");
+            MiniMessages.send(player, "lobby.already_in_lobby"); // CORRECTED KEY
             return true;
         }
 
-        // 4. All checks passed, create the lobby
-        // Uses the injected lobbyManager instance
         lobbyManager.createLobby(player);
-        MessageUtils.sendFILMessage(player, MessageConfig.getInstance().getLobbyCreated());
+        // MiniMessages.send(player, "LobbyCreated");
+        MiniMessages.send(player, "lobby.created"); // CORRECTED KEY
 
-        return true; // Command successfully handled
+        return true;
     }
 
     @Override
@@ -65,11 +61,13 @@ public class LobbyCreateCmd implements SubCommand {
 
     @Override
     public String getUsage() {
+        // Correct
         return "/fil lobby create - Creates a new game lobby.";
     }
 
     @Override
     public String getPermission() {
-        return "floorislava.lobby.create"; // Example permission node
+        // Correct (uses a valid node format)
+        return "floorislava.lobby.create";
     }
 }

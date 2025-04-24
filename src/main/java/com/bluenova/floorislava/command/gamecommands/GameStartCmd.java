@@ -4,10 +4,14 @@ import com.bluenova.floorislava.command.subcommand.SubCommand;
 import com.bluenova.floorislava.game.object.gamelobby.GameLobbyManager;
 import com.bluenova.floorislava.game.object.invitelobby.InviteLobby;
 import com.bluenova.floorislava.game.object.invitelobby.InviteLobbyManager;
-import com.sk89q.worldedit.WorldEditException;
+// Import MiniMessages service
+import com.bluenova.floorislava.util.messages.MiniMessages;
+// Import ChatColor for potential fallback/error messages if needed immediately
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList; // Import needed
 import java.util.Collections;
 import java.util.List;
 
@@ -25,44 +29,71 @@ public class GameStartCmd implements SubCommand {
     public boolean execute(CommandSender sender, String[] args) {
         // 1. Check if sender is a Player
         if (!(sender instanceof Player)) {
-            sender.sendMessage("This command can only be run by a player.");
-            return true; // Indicate command was handled (by showing error)
+            // Use new message system
+            MiniMessages.send(sender, "general.not_a_player");
+            return true;
         }
         Player player = (Player) sender;
 
         // 2. Check if player is already in a game
         if (gameManager.isPlayerIngame(player)) {
-            player.sendMessage("You are already in a game.");
+            // Use new message system
+            MiniMessages.send(player, "general.already_in_game_error");
             return true;
         }
+
         // 3. Check if player is owner of a lobby
         if (!lobbyManager.isLobbyOwner(player)) {
-            player.sendMessage("You are not the owner of a lobby.");
+            // Use new message system
+            MiniMessages.send(player, "lobby.not_lobby_owner");
             return true;
         }
+
+        // 4. Get the lobby
         InviteLobby lobby = lobbyManager.getLobbyFromOwner(player);
-        try{
-            lobby.startGame();
-            return true;
-        }catch (WorldEditException ex) {
-            player.sendMessage("An error occurred while starting the game.");
-            ex.printStackTrace();
+        if (lobby == null) {
+            // Should not happen if isLobbyOwner passed, but good practice
+            player.sendMessage(ChatColor.RED + "Error: Could not find your lobby."); // Fallback message
             return true;
         }
+
+        // 5. Check lobby size (Moved check here from old MainCommand)
+        // Assuming lobby.players holds joined list including owner
+        if (lobby.players.size() < 2) {
+            MiniMessages.send(player, "lobby.start_lobby_too_small");
+            return true;
+        }
+
+        // 6. Tell GameManager to create the game
+        // This now handles getting a plot and creating the GameLobby instance.
+        // The "No free plots" message is handled inside gameManager.createLobby
+        // based on the implementation we saw earlier.
+        gameManager.createLobby(new ArrayList<>(lobby.players), player);
+
+        // Optional: Send a "Starting..." message? The GameLobby countdown handles the main alerts.
+        // MiniMessages.send(player, "lobby.starting_game"); // If you add this key to config
+
+        // NOTE: The removal of the InviteLobby from InviteLobbyManager needs to be handled.
+        // This could happen within gameManager.createLobby on success,
+        // or the GameLobby could notify InviteLobbyManager when it fully starts.
+
+        return true; // Command was handled
     }
 
     @Override
     public List<String> tabComplete(CommandSender sender, String[] args) {
+        // Correct, no arguments after "start"
         return Collections.emptyList();
     }
 
     @Override
     public String getUsage() {
-        return "";
+        // Assuming this is for /fil lobby start based on logic
+        return "/fil lobby start - Starts the game from your lobby.";
     }
 
     @Override
     public String getPermission() {
-        return null;
+        return "floorislava.lobby.start";
     }
 }
