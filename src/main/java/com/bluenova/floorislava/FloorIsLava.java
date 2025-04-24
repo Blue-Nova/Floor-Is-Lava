@@ -1,7 +1,6 @@
 package com.bluenova.floorislava;
 
-import com.bluenova.floorislava.command.MainCommand;
-import com.bluenova.floorislava.command.TabCompletion;
+import com.bluenova.floorislava.command.FILCommandHandler;
 import com.bluenova.floorislava.config.MessageConfig;
 import com.bluenova.floorislava.event.GameEventManager;
 import com.bluenova.floorislava.game.object.GamePlotDivider;
@@ -29,6 +28,7 @@ public final class FloorIsLava extends JavaPlugin {
     // Manager Instances for the Game Lobby and Invite Lobby
     private InviteLobbyManager inviteLobbyManager;
     private GameLobbyManager gameLobbyManager;
+    private FILCommandHandler FILCommandHandler;
 
     public static Plugin getInstance() {
         return instance;
@@ -66,6 +66,7 @@ public final class FloorIsLava extends JavaPlugin {
 
         this.inviteLobbyManager = new InviteLobbyManager();
         this.gameLobbyManager = new GameLobbyManager();
+        this.FILCommandHandler = new FILCommandHandler(inviteLobbyManager, gameLobbyManager);
 
         mainConfig.load();
         mssgConfig.load();
@@ -83,8 +84,8 @@ public final class FloorIsLava extends JavaPlugin {
     }
 
     private void registerCommands() {
-        getCommand("fil").setExecutor(new MainCommand(inviteLobbyManager, gameLobbyManager));
-        getCommand("fil").setTabCompleter(new TabCompletion());
+        getCommand("fil").setExecutor(FILCommandHandler);
+        getCommand("fil").setTabCompleter(FILCommandHandler);
     }
 
     private void registerEvents() {

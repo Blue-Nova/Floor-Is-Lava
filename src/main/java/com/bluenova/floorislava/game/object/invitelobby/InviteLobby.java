@@ -3,8 +3,6 @@ package com.bluenova.floorislava.game.object.invitelobby;
 import com.bluenova.floorislava.FloorIsLava;
 import com.bluenova.floorislava.config.MessageConfig;
 import com.bluenova.floorislava.game.object.Lobby;
-import com.bluenova.floorislava.game.object.gamelobby.GameLobby;
-import com.bluenova.floorislava.game.object.GamePlot;
 import com.bluenova.floorislava.game.object.gamelobby.GameLobbyManager;
 import com.bluenova.floorislava.util.messages.MessageUtils;
 import com.sk89q.worldedit.WorldEditException;
@@ -29,9 +27,10 @@ public class InviteLobby extends Lobby {
         players.add(owner);
     }
 
-    public void invitePlayers(ArrayList<Player> invitedPlayers, ArrayList<String> failedInvites) {
+    public void invitePlayers(ArrayList<Player> inviteList) {
         ArrayList<Player> sentTemp = new ArrayList<>();
-        for (Player invitedPlayer: invitedPlayers) {
+        ArrayList<String> failedInvites = new ArrayList<>();
+        for (Player invitedPlayer: inviteList) {
             if (sentList.contains(invitedPlayer)) {
                 failedInvites.add(invitedPlayer.getName());
                 continue;
@@ -62,13 +61,13 @@ public class InviteLobby extends Lobby {
         MessageUtils.sendFILMessage(this.getOwner(),failedListMessage);
     }
 
-    public void invite(Player invitedPlayer){
+    private void invite(Player invitedPlayer){
         invitedPlayer.playSound(invitedPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
         MessageUtils.sendFILMessage(invitedPlayer, MessageConfig.getInstance().getReciveingInvite(this.getOwner()));
         TextComponent acceptmessage = new TextComponent("[Accept Invite]");
         acceptmessage.setColor(ChatColor.GREEN.asBungee());
         acceptmessage.setBold(true);
-        acceptmessage.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/fil invite accept " + this.getOwner().getName()));
+        acceptmessage.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/fil lobby accept " + this.getOwner().getName()));
         acceptmessage.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                 new ComponentBuilder("Click here to accept invite from " + this.getOwner().getName()).color(ChatColor.GREEN.asBungee()).italic(true).create()));
         invitedPlayer.spigot().sendMessage(acceptmessage);
@@ -85,19 +84,8 @@ public class InviteLobby extends Lobby {
         player.sendMessage("You have " + ChatColor.GREEN + "joined " + ChatColor.RESET + this.getOwner().getName() + "'s lobby. Wait till they start the game!");
     }
 
-    public void listPlayers() {
-        this.getOwner().sendMessage(ChatColor.RED + "Ready Players:");
-        for (Player readyPlayer : this.players) {
-            this.getOwner().sendMessage(readyPlayer.getName());
-        }
-        this.getOwner().sendMessage(ChatColor.GREEN + "Invite Sent:");
-        for (Player sentPlayer : sentList) {
-            this.getOwner().sendMessage(sentPlayer.getName());
-        }
-    }
-
     public void removePlayer(Player removingPlayer) {
-        if (inviteLobbyManager.isPlayerOwner(removingPlayer)) {
+        if (inviteLobbyManager.isLobbyOwner(removingPlayer)) {
             inviteLobbyManager.closeLobby(this);
             for (Player player : this.players) {
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_PLACE, 0.5f, 1f);
@@ -118,5 +106,15 @@ public class InviteLobby extends Lobby {
 
     public void startGame() throws WorldEditException {
         gameLobbyManager.createLobby(this.players, this.getOwner());
+    }
+
+    public boolean checkPlayerAlreadyInvited(Player targetPlayer) {
+        if (sentList.contains(targetPlayer)) {
+            return true;
+        }
+        if (this.players.contains(targetPlayer)) {
+            return true;
+        }
+        return false;
     }
 }

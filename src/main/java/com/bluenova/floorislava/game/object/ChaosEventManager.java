@@ -82,8 +82,8 @@ public class ChaosEventManager {
                         new Location(GL.gameStartLoc.getWorld(),spawnX,y,spawnZ), Creeper.class,(creeper)->{
                             creeper.setCustomName("ALIEN CREEPER");
                             creeper.setInvulnerable(true);
-                            creeper.setExplosionRadius(6);
-                            tickTock(creeper,120);
+                            creeper.setExplosionRadius(5);
+                            tickTock(creeper,50);
                         });}}));
         GL.announce("creeper shower!");
     }
