@@ -70,6 +70,6 @@ public class LobbyCreateCmd implements SubCommand {
 
     @Override
     public String getPermission() {
-        return ".create"; // Example permission node
+        return "floorislava.lobby.create"; // Example permission node
     }
 }

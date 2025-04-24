@@ -82,7 +82,7 @@ public class FILCommandHandler implements CommandExecutor, TabCompleter {
 
         // Permission Check (Example)
         String permission = subCommand.getPermission();
-        if (permission != null && !sender.hasPermission("floorislava.base"+permission)) {
+        if (permission != null && !sender.hasPermission(permission)) {
             sender.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
             return true;
         }

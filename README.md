@@ -13,23 +13,18 @@ Last player to die EXCLUSIVELY from the rising lava wins the game!
 ## Command Structure
 ### /fil lobby create
 Creates a new lobby. This is the command you will use to create a new game.
+### /fil lobby invite player1 player2 playerN...
+Invites a player to your lobby.
 ### /fil lobby list
 Lists all players in your lobby. Also shows pending invite sent out by you.
 ### /fil lobby leave
-Leave the current lobby you are in.
-### /fil lobby start
+Leave the current lobby/game you are in.
+### /fil game start
 Starts the game in your lobby.
-### /fil invite player1 player2 playerN...
-Invites a player to your lobby.
-### /fil game leave
-Leave the game AFTER it has started.
-
-### quick note:
-command structure is not very intiuitive, I know.
-I am revamping it in a very near update!
 
 ## Permission Structure
-COMING SOON
+### floorislava.lobby.create
+Allows you to create a lobby.
 
 ## Config Structure
 

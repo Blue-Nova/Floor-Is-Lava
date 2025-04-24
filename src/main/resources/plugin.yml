@@ -9,8 +9,3 @@ depend:
 commands:
   fil:
     description: "main command for Floor is Lava"
-
-permissions:
-  floorislava.base:
-    description: Base permission for all players
-    default: true
