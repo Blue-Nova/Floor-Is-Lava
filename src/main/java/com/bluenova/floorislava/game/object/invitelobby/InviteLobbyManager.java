@@ -1,5 +1,6 @@
 package com.bluenova.floorislava.game.object.invitelobby;
 
+import com.bluenova.floorislava.FloorIsLava;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -37,7 +38,7 @@ public class InviteLobbyManager {
     }
 
     public void createLobby(Player owner) {
-        InviteLobby lobby = new InviteLobby(owner);
+        InviteLobby lobby = new InviteLobby(owner, FloorIsLava.getInviteLobbyManager(), FloorIsLava.getGameLobbyManager());
         inviteLobbyList.add(lobby);
     }
 

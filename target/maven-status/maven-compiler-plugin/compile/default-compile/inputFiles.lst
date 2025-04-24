@@ -3,6 +3,7 @@ C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\command\lobbycommands\LobbyAcceptCmd.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\command\lobbycommands\LobbyCreateCmd.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\command\lobbycommands\LobbyInviteCmd.java
+C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\command\lobbycommands\LobbyKickCmd.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\command\lobbycommands\LobbyLeaveCmd.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\command\lobbycommands\LobbyListCmd.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\command\subcommand\SubCommand.java
@@ -25,6 +26,7 @@ C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\GenerateGameTerrain.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\MakeBarrierWall.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\messages\MessageUtils.java
+C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\messages\MiniMessages.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\Tools.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\Workload.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\WorkloadRunnable.java

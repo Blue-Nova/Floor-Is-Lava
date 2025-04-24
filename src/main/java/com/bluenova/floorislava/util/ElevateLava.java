@@ -15,13 +15,14 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import org.bukkit.Material;
+import org.bukkit.World;
 
 public class ElevateLava implements Workload {
 
     GamePlot gp;
     int y;
 
-    public ElevateLava(GamePlot gp, int y) {
+    public ElevateLava(GamePlot gp, int y, World voidWorld) {
         this.gp = gp;
         this.y = y;
     }

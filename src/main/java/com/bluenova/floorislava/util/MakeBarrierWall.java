@@ -14,6 +14,7 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import org.bukkit.Material;
+import org.bukkit.World;
 
 public class MakeBarrierWall implements Workload {
 
@@ -23,7 +24,7 @@ public class MakeBarrierWall implements Workload {
     int z_end;
     int y_level;
 
-    public MakeBarrierWall(int x_start, int z_start, int x_end, int z_end , int y_level) {
+    public MakeBarrierWall(int x_start, int z_start, int x_end, int z_end , int y_level, World voidWorld) {
         this.x_start = x_start;
         this.z_start = z_start;
         this.x_end = x_end;

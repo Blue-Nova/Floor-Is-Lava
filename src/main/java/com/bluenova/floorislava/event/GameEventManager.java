@@ -47,7 +47,6 @@ public class GameEventManager implements Listener {
             player.setHealth(20);
             player.setFoodLevel(20);
             player.setExp(0);
-            player.sendMessage("You Died!");
             player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_BREAK,1,1);
         }
     }

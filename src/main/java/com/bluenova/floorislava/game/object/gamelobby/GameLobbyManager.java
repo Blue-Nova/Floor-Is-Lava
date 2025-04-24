@@ -2,6 +2,7 @@ package com.bluenova.floorislava.game.object.gamelobby;
 
 import com.bluenova.floorislava.FloorIsLava;
 import com.bluenova.floorislava.game.object.GamePlot;
+import com.bluenova.floorislava.util.WorkloadRunnable;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -19,7 +20,8 @@ public class GameLobbyManager {
                     "or message a server admin to increase max amount of plots allowed");
             return;
         }
-        GameLobby lobby = new GameLobby(players, owner, FloorIsLava.getInviteLobbyManager() ,gp);
+        GameLobby lobby = new GameLobby(FloorIsLava.getInstance(), players, owner,
+                FloorIsLava.getInviteLobbyManager(),FloorIsLava.getWorkloadRunnable(),FloorIsLava.getGamePlotDivider(),FloorIsLava.getVoidWorld(),gp);
         gameLobbyList.add(lobby);
     }
 
