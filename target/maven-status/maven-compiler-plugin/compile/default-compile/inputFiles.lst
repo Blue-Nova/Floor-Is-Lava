@@ -1,5 +1,11 @@
-C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\command\MainCommand.java
-C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\command\TabCompletion.java
+C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\command\FILCommandHandler.java
+C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\command\gamecommands\GameStartCmd.java
+C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\command\lobbycommands\LobbyAcceptCmd.java
+C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\command\lobbycommands\LobbyCreateCmd.java
+C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\command\lobbycommands\LobbyInviteCmd.java
+C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\command\lobbycommands\LobbyLeaveCmd.java
+C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\command\lobbycommands\LobbyListCmd.java
+C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\command\subcommand\SubCommand.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\config\MainConfig.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\config\MessageConfig.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\event\GameEventManager.java

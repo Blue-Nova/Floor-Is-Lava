@@ -1,7 +1,7 @@
 name: FloorIsLava
 version: '${project.version}'
 main: com.bluenova.floorislava.FloorIsLava
-authors: [ BlueNova, BedlessDeus ]
+authors: [ BlueNova ]
 description: You and your friends are trapped in a world where lava will rise till only one survives! Who will it be?
 depend:
   - WorldEdit
@@ -9,3 +9,8 @@ depend:
 commands:
   fil:
     description: "main command for Floor is Lava"
+
+permissions:
+  floorislava.base:
+    description: Base permission for all players
+    default: true
