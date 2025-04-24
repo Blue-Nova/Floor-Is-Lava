@@ -19,6 +19,8 @@ Invites a player to your lobby.
 Lists all players in your lobby. Also shows pending invite sent out by you.
 ### /fil lobby leave
 Leave the current lobby/game you are in.
+### /fil lobby kick player1 player2 playerN...
+Kicks players from your lobby.
 ### /fil game start
 Starts the game in your lobby.
 
