@@ -28,13 +28,13 @@ public class MessageConfig {
             }
         }
 
-        file = new File(dataFolder, "Floor Is Lava Plugin/MessageConfig.yml");
+        file = new File(dataFolder, "MessageConfig.yml");
 
         if (!file.exists()) {
             plugin.getLogger().info("MessageConfig.yml not found, creating default...");
             try {
                 // Ensure MessageConfig.yml is in src/main/resources
-                plugin.saveResource("Floor Is Lava Plugin/MessageConfig.yml", false);
+                plugin.saveResource("MessageConfig.yml", false);
             } catch (IllegalArgumentException e) {
                 plugin.getLogger().log(Level.SEVERE, "Could not save default MessageConfig.yml! Make sure it's in your JAR's src/main/resources folder.", e);
                 this.config = null; // Ensure config is null on failure
