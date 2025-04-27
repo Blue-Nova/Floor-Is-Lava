@@ -1,15 +1,21 @@
 package com.bluenova.floorislava.game.object.gamelobby;
 
 import com.bluenova.floorislava.FloorIsLava; // Needed for casting plugin instance
-import com.bluenova.floorislava.game.object.ChaosEventManager;
+import com.bluenova.floorislava.config.MainConfig;
 import com.bluenova.floorislava.game.object.GamePlot;
 import com.bluenova.floorislava.game.object.GamePlotDivider; // Import actual class
 import com.bluenova.floorislava.game.object.Lobby;
 import com.bluenova.floorislava.game.object.invitelobby.InviteLobby;
 import com.bluenova.floorislava.game.object.invitelobby.InviteLobbyManager;
+import com.bluenova.floorislava.util.messages.PluginLogger;
+import com.bluenova.floorislava.util.worldguard.FILRegionManager;
 import com.bluenova.floorislava.util.*;
-import com.bluenova.floorislava.util.messages.MiniMessages; // Import MiniMessages service
+
+import com.bluenova.floorislava.util.worldedit.FlushGamePlot;
+
 // Adventure Imports
+import com.bluenova.floorislava.util.messages.MiniMessages;
+import com.bluenova.floorislava.util.worldguard.RegionProfiles;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
@@ -35,19 +41,20 @@ public class GameLobby extends Lobby {
 
     // --- Injected Dependencies ---
     private final Plugin plugin; // Main plugin instance (for scheduler, config access)
+    private final PluginLogger pluginLogger; // Logger for this class
     private final InviteLobbyManager inviteLobbyManager;
-    // Removed GameManager as it wasn't used directly in the provided logic after DI applied to commands
     private final WorkloadRunnable workloadRunnable;
     private final GamePlotDivider plotDivider;
     private final World voidWorld;
     private final BukkitScheduler scheduler;
+    private final FILRegionManager FILRegionManager; // WorldGuard region manager
     // --- End Dependencies ---
 
     // Game State & Configuration
     private final List<Integer> LAVA_ANNOUNCE_HEIGHTS = new ArrayList<>();
-    private static final int LAVA_INCREMENT = 3; // TODO: Make configurable
-    private static final int GAME_START_COUNTDOWN = 3; // TODO: Make configurable
-
+    private static final int LAVA_INCREMENT = MainConfig.getInstance().getLavaRiseAmount(); // TODO: Make configurable
+    private static final int GAME_START_COUNTDOWN = MainConfig.getInstance().getGameStartCountdown(); // TODO: Make configurable
+    private static final int LAVA_RISE_COOLDOWN = MainConfig.getInstance().getLavaRiseCooldown(); // TODO: Make configurable
     // Player State Storage
     private final HashMap<Player, Location> previousLocationList = new HashMap<>();
     private final HashMap<Player, ItemStack[]> previousInventoryList = new HashMap<>();
@@ -76,21 +83,25 @@ public class GameLobby extends Lobby {
      * Creates a new Game Lobby instance.
      * Should be called by a GameManager or similar service.
      */
-    public GameLobby(Plugin plugin, ArrayList<Player> playerList, Player owner,
+    public GameLobby(Plugin plugin, PluginLogger pluginLogger, ArrayList<Player> playerList, Player owner,
                      InviteLobbyManager inviteLobbyManager,
                      WorkloadRunnable workloadRunnable, GamePlotDivider plotDivider,
-                     World voidWorld,
+                     World voidWorld, FILRegionManager filRegionManager,
                      GamePlot plot) {
 
         super(playerList, owner); // Initialize inherited 'players' and 'owner'
 
         // Store injected dependencies
         this.plugin = plugin;
+
+        this.pluginLogger = pluginLogger;
+
         this.inviteLobbyManager = inviteLobbyManager;
         // this.gameManager = gameManager; // Removed
         this.workloadRunnable = workloadRunnable;
         this.plotDivider = plotDivider;
         this.voidWorld = voidWorld;
+        this.FILRegionManager = filRegionManager;
         this.scheduler = Bukkit.getScheduler();
 
         // Initialize game state
@@ -130,7 +141,7 @@ public class GameLobby extends Lobby {
 
         // Build barrier walls if not already done for this plot instance
         if (!gamePlot.hasBorders()) {
-            plugin.getLogger().info("Generating borders for plot at " + gamePlot.plotStart.getBlockX() + "," + gamePlot.plotStart.getBlockZ());
+            pluginLogger.info("Generating borders for plot at " + gamePlot.plotStart.getBlockX() + "," + gamePlot.plotStart.getBlockZ());
             for (int y = minY; y < maxY; y++) {
                 // Use plot End X/Z which are likely +size from start
                 workloadRunnable.addWorkload(new MakeBarrierWall(borderStartX, borderStartZ, plotEndX, borderStartZ, y, voidWorld));     // Side 1 (Z constant)
@@ -138,7 +149,7 @@ public class GameLobby extends Lobby {
                 workloadRunnable.addWorkload(new MakeBarrierWall(plotEndX, borderStartZ + 1, plotEndX, plotEndZ - 1, y, voidWorld));       // Side 3 (X constant)
                 workloadRunnable.addWorkload(new MakeBarrierWall(borderStartX + 1, plotEndZ, plotEndX - 1, plotEndZ, y, voidWorld));         // Side 4 (Z constant) - Adjust corners if needed
             }
-            gamePlot.setBorders(true);
+            gamePlot.setHasBorders(true);
         }
 
         // Queue terrain copy tasks
@@ -146,7 +157,7 @@ public class GameLobby extends Lobby {
         int pasteStartZ = (int) gamePlot.plotStart.getZ();
         GameLobby finalTaskSignal = null; // Used to trigger startGameCountdown
 
-        plugin.getLogger().info("Queueing terrain copy for plot at " + pasteStartX + "," + pasteStartZ + " from " + sourceX + "," + sourceZ);
+        pluginLogger.debug("Queueing terrain copy for plot at " + pasteStartX + "," + pasteStartZ + " from " + sourceX + "," + sourceZ);
         for (int x_index = 0; x_index < plotSize; x_index++) {
             for (int z_index = 0; z_index < plotSize; z_index++) {
                 // Assign 'this' only to the very last task in the grid
@@ -162,7 +173,7 @@ public class GameLobby extends Lobby {
                 ));
             }
         }
-        plugin.getLogger().info("Finished queueing terrain copy tasks.");
+        pluginLogger.debug("Finished queueing terrain copy tasks.");
     }
 
     /**
@@ -170,7 +181,7 @@ public class GameLobby extends Lobby {
      */
     public void startGameCountdown() {
         if (countdownTask != null && !countdownTask.isCancelled()) return; // Prevent double calls
-        plugin.getLogger().info("Starting game countdown for plot at " + gamePlot.plotStart.getBlockX() + "," + gamePlot.plotStart.getBlockZ());
+        pluginLogger.debug("Starting game countdown for plot at " + gamePlot.plotStart.getBlockX() + "," + gamePlot.plotStart.getBlockZ());
 
         scheduler.runTaskTimer(plugin, (task) -> {
             if (countdown <= 0) {
@@ -218,7 +229,7 @@ public class GameLobby extends Lobby {
             // Use Tools for safe location finding
             Location gameLoc = Tools.getSafeLocation(voidWorld, gamePlot);
             if (gameLoc == null) {
-                plugin.getLogger().severe("Could not find safe spawn for " + player.getName() + " in plot " + gamePlot.plotStart.toString() + ". Removing from game.");
+                pluginLogger.severe("Could not find safe spawn for " + player.getName() + " in plot " + gamePlot.plotStart.toString() + ". Removing from game.");
                 MiniMessages.send(player, "general.error_generic", Placeholder.unparsed("details", "Could not find a safe spawn point!")); // Notify player
                 // Keep player's original state (don't call savePlayerInfo)
                 playerIterator.remove(); // Remove from game
@@ -226,6 +237,9 @@ public class GameLobby extends Lobby {
                 // Don't teleport if no safe spot found
                 continue;
             }
+
+            // set region to the wished Profile
+            this.FILRegionManager.setRegionProfile(gamePlot.worldGuardRegionId, RegionProfiles.BASE);
 
             player.teleport(gameLoc);
             playerSpawnLocation.put(player, gameLoc);
@@ -236,7 +250,7 @@ public class GameLobby extends Lobby {
 
         // Check if any players remain after teleport attempts
         if (this.players.isEmpty()) {
-            plugin.getLogger().warning("Game ending immediately as no players could be spawned in plot " + gamePlot.plotStart.toString());
+            pluginLogger.warning("Game ending immediately as no players could be spawned in plot " + gamePlot.plotStart.toString());
             announce("general.error_generic", Placeholder.unparsed("details", "No players could be spawned safely!"));
             endGame(false); // End game immediately, no winner
             return;
@@ -249,9 +263,9 @@ public class GameLobby extends Lobby {
         InviteLobby originatingLobby = inviteLobbyManager.getLobbyFromOwner(this.owner);
         if (originatingLobby != null) {
             inviteLobbyManager.closeLobby(originatingLobby);
-            plugin.getLogger().info("Closed invite lobby for owner: " + this.owner.getName());
+            pluginLogger.debug("Closed invite lobby for owner: " + this.owner.getName());
         } else {
-            plugin.getLogger().warning("Could not find original invite lobby for owner: " + this.owner.getName() + " to close.");
+            pluginLogger.warning("Could not find original invite lobby for owner: " + this.owner.getName() + " to close.");
         }
 
 
@@ -321,7 +335,7 @@ public class GameLobby extends Lobby {
             if (gameON)
                 playGameSound(Sound.MUSIC_DISC_PIGSTEP);
             else playBackSongTask.cancel();
-        }, 0L, 5640L); // Pigstep duration ~2:48 = 3360 ticks? Maybe use config value.
+        }, 0L, 2900L); // Pigstep duration ~2:48 = 3360 ticks? Maybe use config value.
     }
 
     /** Announces a message key to all players and spectators using MiniMessages. */
@@ -372,7 +386,7 @@ public class GameLobby extends Lobby {
         long delay = 200L;   // TODO: Configurable (10 seconds)
         long period = 300L;  // TODO: Configurable (15 seconds)
 
-        scheduler.runTaskTimer(plugin, (task) -> {
+        /*scheduler.runTaskTimer(plugin, (task) -> {
             if (!gameON){ task.cancel(); return; }
 
             int currentChance = eventSpawnChance.addAndGet(increment); // Increment first
@@ -382,13 +396,13 @@ public class GameLobby extends Lobby {
                 eventSpawnChance.set(0); // Reset chance
             }
         }, delay, period);
+        */
     }
 
     /** Starts the timer that raises the lava level. */
     public void beginLavaTimer() {
         cancelTask(lavaTask); // Cancel previous if any
-        long delay = 100L;  // TODO: Configurable (5 seconds)
-        long period = 200L; // TODO: Configurable (10 seconds)
+        long delay = 0L;  // TODO: Configurable (0 seconds)
 
         scheduler.runTaskTimer(plugin, (task) -> {
             if (!gameON) { task.cancel(); return; }
@@ -399,18 +413,18 @@ public class GameLobby extends Lobby {
             if (gameON && lavaHeight < voidWorld.getMaxHeight() - 1) // Check against world max Y
                 lavaHeight += LAVA_INCREMENT;
 
-        }, delay, period);
+        }, delay, LAVA_RISE_COOLDOWN * 20L); // Convert seconds to ticks
     }
 
     /** Queues workload tasks to place lava at the current height. */
     public void placeLava() {
         // Determine Y range to fill (ensure previous level is filled, fill up to new level)
-        int startY = Math.max(voidWorld.getMinHeight(), lavaHeight - LAVA_INCREMENT); // Don't go below world min
+        int startY = Math.max(voidWorld.getMinHeight()+1, lavaHeight - LAVA_INCREMENT); // Don't go below world min
         int endY = Math.min(voidWorld.getMaxHeight(), lavaHeight + LAVA_INCREMENT); // Don't exceed world max
 
         // Queue tasks via injected WorkloadRunnable
         for (int y = startY; y < endY; y++) {
-            workloadRunnable.addWorkload(new ElevateLava(gamePlot, y, voidWorld));
+            workloadRunnable.addWorkload(new ElevateLava(gamePlot, y));
         }
 
         // Check for announcement heights (use iterator for safe removal)
@@ -469,7 +483,7 @@ public class GameLobby extends Lobby {
                     // Ensure world is loaded before teleport? Usually fine if coming from game world.
                     leavingPlayer.teleport(previousLoc);
                 } else {
-                    plugin.getLogger().warning("Previous location missing for " + leavingPlayer.getName() + " on game leave.");
+                    pluginLogger.warning("Previous location missing for " + leavingPlayer.getName() + " on game leave.");
                     // Consider teleporting to main world spawn as fallback
                     // player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
                 }
@@ -577,14 +591,14 @@ public class GameLobby extends Lobby {
     }
 
     /** Stops game timers, cleans up players, releases plot. */
-    public void endGame(boolean winnerExists) {
+    public void endGame(boolean fastCleanup) {
         if (!gameON && previousLocationList.isEmpty()) {
             // Avoid running endGame twice if already cleaning up
             return;
         }
         gameON = false; // Ensure game is marked off
 
-        plugin.getLogger().info("Ending game for plot at " + gamePlot.plotStart.toString());
+        pluginLogger.debug("Ending game for plot at " + gamePlot.plotStart.toString());
 
         // Cancel all running tasks associated with this game instance
         cancelTask(countdownTask);
@@ -597,42 +611,49 @@ public class GameLobby extends Lobby {
         scheduler.runTaskLater(plugin, () -> announce("game.teleport_back_notice"), 100L); // 5 seconds delay
 
         // Schedule final cleanup task
-        scheduler.runTaskLater(plugin, () -> {
-            plugin.getLogger().info("Cleaning up players for plot at " + gamePlot.plotStart.toString());
-            // Use copies to allow 'remove' to modify original lists safely if needed
-            ArrayList<Player> playersToClean = new ArrayList<>(this.players);
-            ArrayList<Player> specsToClean = new ArrayList<>(this.specList);
+        if (fastCleanup) {
+            returnPlayers();
+        } else {
+            // Delay cleanup to allow players to see end messages
+            scheduler.runTaskLater(plugin, this::returnPlayers,8*20L);// 8 seconds total delay
+        }
 
-            // Remove remaining players/spectators (teleport, restore state)
-            for (Player p : playersToClean) {
-                remove(p, false);
-            }
-            for (Player p : specsToClean) {
-                remove(p, false);
-            }
+    }
 
-            // Release the plot (Mark as not in use)
-            gamePlot.setInUse(false);
-            plugin.getLogger().info("Plot released: " + gamePlot.plotStart.toString());
-            // --- TODO: Notify PlotManager if using one ---
-            // plotManager.releasePlot(gamePlot);
+    private void returnPlayers(){
+        pluginLogger.debug("Cleaning up players for plot at " + gamePlot.plotStart.toString());
+        // Use copies to allow 'remove' to modify original lists safely if needed
+        ArrayList<Player> playersToClean = new ArrayList<>(this.players);
+        ArrayList<Player> specsToClean = new ArrayList<>(this.specList);
 
-            // --- TODO: Notify GameManager ---
-            // gameManager.unregisterGame(this); // Use 'this' game lobby instance
-            // ---
+        // Remove remaining players/spectators (teleport, restore state)
+        for (Player p : playersToClean) {
+            remove(p, false);
+        }
+        for (Player p : specsToClean) {
+            remove(p, false);
+        }
 
-            // Clear lists stored in this instance
-            this.players.clear();
-            this.specList.clear();
-            this.previousLocationList.clear();
-            this.previousInventoryList.clear();
-            this.previousHealthList.clear();
-            this.previousHungerList.clear();
-            this.previousXPList.clear();
-            this.playerSpawnLocation.clear();
-            LAVA_ANNOUNCE_HEIGHTS.clear(); // Clear announce heights
+        // Release the plot (Mark as not in use)
+        // --- TODO: Notify PlotManager if using one ---
+        // plotManager.releasePlot(gamePlot);
 
-        }, 160L); // 8 seconds total delay
+        // --- TODO: Notify GameManager ---
+        // gameManager.unregisterGame(this); // Use 'this' game lobby instance
+        // ---
+
+        // Clear lists stored in this instance
+        this.players.clear();
+        this.specList.clear();
+        this.previousLocationList.clear();
+        this.previousInventoryList.clear();
+        this.previousHealthList.clear();
+        this.previousHungerList.clear();
+        this.previousXPList.clear();
+        this.playerSpawnLocation.clear();
+        LAVA_ANNOUNCE_HEIGHTS.clear(); // Clear announce heights
+        this.flush(); // Clear the plot of blocks
+        FILRegionManager.setRegionProfile(gamePlot.worldGuardRegionId, RegionProfiles.IDLE); // Reset region profile
     }
 
     // Helper to safely cancel tasks
@@ -640,5 +661,53 @@ public class GameLobby extends Lobby {
         if (task != null && !task.isCancelled()) {
             task.cancel();
         }
+    }
+
+    private void flush(){
+        // get worldhieght
+        int worldHeight = voidWorld.getMaxHeight();
+        boolean lastTask = false; // Flag to indicate if this is the last task
+        // for loop from worldHeight to 0 (0 should be in CONFIG)
+        for (int yLevel = worldHeight; yLevel >= voidWorld.getMinHeight()+1; yLevel--) {
+
+            // if it's last task, set lastTask to true
+            if (yLevel == voidWorld.getMinHeight() + 1) {
+                lastTask = true;
+            }
+
+            // clear the y level
+            workloadRunnable.addWorkload(new FlushGamePlot(this,yLevel, lastTask));
+        }
+    }
+
+    public void flushDone() {
+        gamePlot.setInUse(false);
+        pluginLogger.debug("Plot released: " + gamePlot.plotStart.toString());
+    }
+
+    public void shutdown() {
+        // Cancel all tasks
+        cancelTask(countdownTask);
+        cancelTask(musicTask);
+        cancelTask(eventTask);
+        cancelTask(lavaTask);
+
+        // Clean up players
+        for (Player p : this.players) {
+            if (p != null && p.isOnline()) {
+                remove(p, false); // Remove player from game
+            }
+        }
+        for (Player p : this.specList) {
+            if (p != null && p.isOnline()) {
+                remove(p, false); // Remove spectator from game
+            }
+        }
+
+        endGame(false); // End game without a winner
+
+        // Release the plot
+        this.gamePlot.setInUse(false);
+        pluginLogger.debug("Plot released: " + gamePlot.plotStart.toString());
     }
 } // End of GameLobby class

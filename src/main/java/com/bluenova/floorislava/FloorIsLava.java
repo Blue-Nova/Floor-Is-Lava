@@ -9,8 +9,14 @@ import com.bluenova.floorislava.game.object.gamelobby.GameLobbyManager;
 import com.bluenova.floorislava.game.object.invitelobby.InviteLobbyManager;
 import com.bluenova.floorislava.util.WorkloadRunnable;
 import com.bluenova.floorislava.util.messages.MiniMessages;
+import com.bluenova.floorislava.util.messages.PluginLogger;
+import com.bluenova.floorislava.util.worldguard.FILRegionManager;
 import com.onarandombox.MultiverseCore.MultiverseCore;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.RegionContainer;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -28,6 +34,16 @@ public final class FloorIsLava extends JavaPlugin {
     private static WorkloadRunnable workloadRunnable;
     private static FloorIsLava instance;
 
+    // Logger for the plugin
+    private PluginLogger pluginLogger;
+
+    // --- WorldGuard Integration Fields ---
+    private boolean worldGuardAvailable = false;
+    private WorldGuard worldGuardAPI = null;
+    private RegionContainer regionContainer = null;
+    private static FILRegionManager worldGuardRegionManager = null;
+    // ---
+
     // Manager Instances for the Game Lobby and Invite Lobby
     private InviteLobbyManager inviteLobbyManager;
     private GameLobbyManager gameLobbyManager;
@@ -38,25 +54,42 @@ public final class FloorIsLava extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+
+        // Inside FloorIsLava.onEnable() after loading config
+        boolean devMode = MainConfig.getInstance().isDevModeEnabled();
+        pluginLogger = new PluginLogger(this, devMode);
+        if (devMode) {
+            pluginLogger.info("Developer Mode Enabled - Debug messages will be shown.");
+        }
+        // Now, inject pluginLogger into other classes (Managers, Commands, Listeners)
+        // via their constructors, just like you did for the other managers.
+        // Example:
+        // this.inviteLobbyManager = new InviteLobbyManager(pluginLogger, ...);
+        // FILCommandHandler commandHandler = new FILCommandHandler(pluginLogger, inviteLobbyManager, ...);
+
         MainConfig mainConfig = MainConfig.getInstance();
-        MessageConfig mssgConfig = MessageConfig.getInstance();
+        MessageConfig mssgConfig = new MessageConfig(pluginLogger); // instantiate MessageConfig will load it as well
 
         this.adventure = BukkitAudiences.create(this);
-        MiniMessages.init(this);
+        MiniMessages.init(this, pluginLogger, mssgConfig);
 
-        this.inviteLobbyManager = new InviteLobbyManager();
-        this.gameLobbyManager = new GameLobbyManager();
+        this.inviteLobbyManager = new InviteLobbyManager(pluginLogger);
+        this.gameLobbyManager = new GameLobbyManager(pluginLogger);
         this.FILCommandHandler = new FILCommandHandler(inviteLobbyManager, gameLobbyManager);
 
         mainConfig.load();
-        mssgConfig.load();
         registerCommands();
         registerEvents();
         setupMVC();
-        workloadRunnable = new WorkloadRunnable();
+        // start gamePlotDivider first
+        gamePlotDivider = new GamePlotDivider(voidWorld, mainConfig.getPlotMargin(), mainConfig.getPlotSize(), mainConfig.getPlotAmount(), pluginLogger);
+        setupWorldGuard();
+        if (isWorldGuardAvailable()){
+            worldGuardRegionManager = new FILRegionManager(this, pluginLogger);
+            worldGuardRegionManager.initializeWorldGuardRegions();
+        }
+        workloadRunnable = new WorkloadRunnable(pluginLogger);
         workloadRunnable.startWLR();
-
-        gamePlotDivider = new GamePlotDivider(voidWorld, mainConfig.getPlotMargin(), mainConfig.getPlotSize(), mainConfig.getPlotAmount());
     }
 
     @Override
@@ -65,8 +98,12 @@ public final class FloorIsLava extends JavaPlugin {
             this.adventure.close();
             this.adventure = null;
         }
-
-        getLogger().info("FloorIsLava Disabled!");
+        // Clean up games, lobbies, tasks etc.
+        if (gameLobbyManager != null) {
+            gameLobbyManager.shutdownAllGames(); // Need method in manager to force end games (WIP)
+        }
+        // Stop workload runnable? (May not be necessary if tasks are self-cancelling)
+        pluginLogger.info(getName() + " Disabled.");
     }
 
     private void registerCommands() {
@@ -78,6 +115,7 @@ public final class FloorIsLava extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new GameEventManager(inviteLobbyManager, gameLobbyManager), this);
     }
 
+    // Multiverse setup
     private void setupMVC() {
         MultiverseCore core = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");
         assert core != null;
@@ -89,8 +127,50 @@ public final class FloorIsLava extends JavaPlugin {
         voidWorld = Bukkit.getWorld("fil_void_world");
     }
 
-    // GETTERS
+    // WorldGuard setup
+    private void setupWorldGuard() {
+        // --- WorldGuard Detection ---
+        Plugin wgPlugin = getServer().getPluginManager().getPlugin("WorldGuard");
 
+        if (wgPlugin != null && wgPlugin.isEnabled()) {
+            try {
+                this.worldGuardAPI = WorldGuard.getInstance();
+                this.regionContainer = this.worldGuardAPI.getPlatform().getRegionContainer();
+                this.worldGuardAvailable = true;
+                pluginLogger.info("WorldGuard found and hooked! Enabling region flag support.");
+            } catch (Exception e) {
+                pluginLogger.severe("Error hooking into WorldGuard! Region features disabled.");
+                pluginLogger.warning("Check if the correct version of WorldGuard is installed. (according to your server version)");
+                this.worldGuardAvailable = false;
+                this.worldGuardAPI = null;
+                this.regionContainer = null;
+            }
+        } else {
+            this.worldGuardAvailable = false;
+            getLogger().warning("WorldGuard not found or disabled. Using Bukkit fallbacks for control.");
+        }
+        // --- WorldGuard Check Done ---
+    }
+
+    // Helper method to initialize WG regions on startup
+
+    public RegionManager getVoidWorldRegionManager() {
+        if (this.worldGuardAvailable && this.regionContainer != null) {
+            RegionManager regionManager = this.regionContainer.get(BukkitAdapter.adapt(getVoidWorld()));
+            if (regionManager == null) {
+                getLogger().warning("RegionManager for void world is null. WorldGuard may not be set up correctly.");
+            }
+            return regionManager;
+        }
+        return null;
+    }
+
+    public boolean isWorldGuardAvailable() {
+        return worldGuardAvailable;
+    }
+    // WorldGuard setup end
+
+    // GETTERS
     public @NonNull BukkitAudiences adventure() {
         if(this.adventure == null) {
             throw new IllegalStateException("Tried to access Adventure when the plugin was disabled!");
@@ -126,4 +206,7 @@ public final class FloorIsLava extends JavaPlugin {
         return instance.gameLobbyManager;
     }
 
+    public static FILRegionManager getFILRegionManager() {
+        return worldGuardRegionManager;
+    }
 }

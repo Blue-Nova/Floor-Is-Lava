@@ -5,6 +5,7 @@ import com.bluenova.floorislava.game.object.Lobby;
 import com.bluenova.floorislava.game.object.gamelobby.GameLobbyManager;
 // Import MiniMessages & Adventure components
 import com.bluenova.floorislava.util.messages.MiniMessages;
+import com.bluenova.floorislava.util.worldguard.FILRegionManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -25,14 +26,14 @@ public class InviteLobby extends Lobby {
     public ArrayList<Player> sentList = new ArrayList<>();
     // --- Dependencies Injected via Constructor ---
     private final InviteLobbyManager inviteLobbyManager;
-    private final GameLobbyManager gameLobbyManager;
+    private final FILRegionManager regionManager; // Not used in this class, but might be needed for region management
     // ---
 
     // Constructor now accepts managers
-    public InviteLobby(Player owner, InviteLobbyManager lobbyManager, GameLobbyManager gameManager) {
+    public InviteLobby(Player owner, InviteLobbyManager lobbyManager, FILRegionManager regionManager) {
         super(new ArrayList<>(), owner); // Pass owner to superclass
         this.inviteLobbyManager = lobbyManager;
-        this.gameLobbyManager = gameManager;
+        this.regionManager = regionManager;
         this.players.add(owner); // Add owner to inherited 'players' list
         // Registration with manager should happen in InviteLobbyManager.createLobby
     }
@@ -199,12 +200,6 @@ public class InviteLobby extends Lobby {
         MiniMessages.send(this.getOwner(), "lobby.player_left_notification", playerPlaceholder);
         // Also notify other players?
         // for (Player p : this.players) { MiniMessages.send(p, "lobby.player_left_notification", playerPlaceholder); }
-    }
-
-    // startGame unchanged - correctly delegates
-    public void startGame() throws WorldEditException { // May remove 'throws' if manager doesn't throw it
-        gameLobbyManager.createLobby(this.players, this.getOwner());
-        // NOTE: Removal of this InviteLobby instance from InviteLobbyManager needs handling.
     }
 
     // checkPlayerAlreadyInvited unchanged - logic seems fine

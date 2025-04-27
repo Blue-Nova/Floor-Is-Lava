@@ -15,6 +15,9 @@ public class MainConfig {
     private int plotMargin;
     private int plotSize;
     private int plotAmount;
+    private int gameStartCountdown;
+    private int lavaRiseCooldown;
+    private int lavaRiseAmount;
 
     private MainConfig() {
     }
@@ -37,6 +40,11 @@ public class MainConfig {
         plotMargin = config.getInt("Plot.Margin");
         plotSize = config.getInt("Plot.Size");
         plotAmount = config.getInt("Plot.Amount");
+        gameStartCountdown = config.getInt("Game.StartCountdown");
+        lavaRiseCooldown = config.getInt("Game.LavaRiseCooldown");
+        lavaRiseAmount = config.getInt("Game.LavaRiseAmount");
+
+        // log all values
     }
 
     public void save(){
@@ -64,5 +72,23 @@ public class MainConfig {
     }
     public int getPlotAmount(){
         return plotAmount;
+    }
+
+    // Inside MainConfig.java
+    public boolean isDevModeEnabled() {
+        // Load config if null (or ensure load() called first)
+        if (config == null) { load(); }
+        // Default to false if missing
+        return config != null && config.getBoolean("developer-mode", false);
+    }
+
+    public int getGameStartCountdown() {
+        return gameStartCountdown;
+    }
+    public int getLavaRiseCooldown() {
+        return lavaRiseCooldown;
+    }
+    public int getLavaRiseAmount() {
+        return lavaRiseAmount;
     }
 }

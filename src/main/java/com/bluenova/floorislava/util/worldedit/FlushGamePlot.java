@@ -1,7 +1,9 @@
-package com.bluenova.floorislava.util;
+package com.bluenova.floorislava.util.worldedit;
 
 import com.bluenova.floorislava.FloorIsLava;
 import com.bluenova.floorislava.game.object.GamePlot;
+import com.bluenova.floorislava.game.object.gamelobby.GameLobby;
+import com.bluenova.floorislava.util.Workload;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
@@ -16,14 +18,19 @@ import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import org.bukkit.Material;
 
-public class ElevateLava implements Workload {
+public class FlushGamePlot implements Workload {
 
-    GamePlot gp;
-    int y;
+    private GamePlot gp;
+    private int y;
+    private boolean last;
+    private GameLobby gameLobby;
 
-    public ElevateLava(GamePlot gp, int y) {
-        this.gp = gp;
+    public FlushGamePlot(GameLobby gameLobby, int y, boolean last) {
+        this.gameLobby = gameLobby;
         this.y = y;
+        this.last = last;
+        // add getter
+        this.gp = gameLobby.gamePlot;
     }
 
     @Override
@@ -31,14 +38,16 @@ public class ElevateLava implements Workload {
         try (EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(FloorIsLava.getVoidWorld()))) {
             Region region = new CuboidRegion(BlockVector3.at(gp.plotStart.getX(), y, gp.plotStart.getZ()),
                     BlockVector3.at(gp.plotEnd.getX() - 1, y, gp.plotEnd.getZ() - 1));
-            Pattern lavaPattern = BukkitAdapter.adapt(Material.LAVA.createBlockData());
-            RegionFunction lavaFunction = new BlockReplace(editSession, lavaPattern);
-            RegionVisitor lavaVisitor = new RegionVisitor(region, lavaFunction);
+            Pattern airPattern = BukkitAdapter.adapt(Material.AIR.createBlockData());
+            RegionFunction airFunction = new BlockReplace(editSession, airPattern);
+            RegionVisitor airVisitor = new RegionVisitor(region, airFunction);
 
-            Operations.complete(lavaVisitor);
+            Operations.complete(airVisitor);
+            if (last){
+                gameLobby.flushDone();
+            }
         } catch (WorldEditException e) {
             throw new RuntimeException(e);
         }
     }
 }
-
