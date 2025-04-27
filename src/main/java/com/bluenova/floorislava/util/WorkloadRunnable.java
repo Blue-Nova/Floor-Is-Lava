@@ -1,6 +1,7 @@
 package com.bluenova.floorislava.util;
 
 import com.bluenova.floorislava.FloorIsLava;
+import com.bluenova.floorislava.util.messages.PluginLogger;
 import com.sk89q.worldedit.WorldEditException;
 import org.bukkit.Bukkit;
 
@@ -12,7 +13,14 @@ public class WorkloadRunnable implements Runnable {
     private static final double MAX_MILLIS_PER_TICK = 10;
     private static final int MAX_NANOS_PER_TICK = (int) (MAX_MILLIS_PER_TICK * 1E6);
 
+    private final PluginLogger pluginLogger;
+
     public final Deque<Workload> workloadDeque = new ArrayDeque<>();
+
+    public WorkloadRunnable(PluginLogger pluginLogger) {
+        this.pluginLogger = pluginLogger;
+        this.pluginLogger.debug("WorkloadRunnable initialized.");
+    }
 
     public void addWorkload(Workload workload) {
         this.workloadDeque.add(workload);
@@ -32,7 +40,7 @@ public class WorkloadRunnable implements Runnable {
             try {
                 nextload.compute();
             }catch (WorldEditException ex) {
-                    FloorIsLava.getInstance().getLogger().severe("Error computing workload: " + nextload.getClass().getSimpleName());
+                    pluginLogger.debug("WorldEditException: " + ex.getMessage());
                     ex.printStackTrace();
                 }
         }

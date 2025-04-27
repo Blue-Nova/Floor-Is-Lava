@@ -7,9 +7,10 @@ public class GamePlot {
     public Location plotStart;
     public Location plotEnd;
     public World plotWorld;
+    public String worldGuardRegionId;
 
-    boolean inUse = false;
-    boolean hasBorders = false;
+    private boolean inUse = false;
+    private boolean hasBorders = false;
 
     public GamePlot(World world, Location start, Location end) {
         plotWorld = world;
@@ -21,16 +22,15 @@ public class GamePlot {
         this.inUse = inUse;
     }
 
-    public boolean isInUse() {
+    public boolean getInUse() {
         return inUse;
     }
 
-    public void setBorders(boolean hasBorders) {
+    public void setHasBorders(boolean hasBorders) {
         this.hasBorders = hasBorders;
     }
 
     public boolean hasBorders() {
         return hasBorders;
     }
-
 }

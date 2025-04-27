@@ -2,6 +2,7 @@ package com.bluenova.floorislava.util.messages;
 
 import com.bluenova.floorislava.FloorIsLava; // Import main plugin class
 import com.bluenova.floorislava.config.MessageConfig; // To get messages
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences; // Import BukkitAudiences
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -15,10 +16,18 @@ public class MiniMessages {
 
     public static final MiniMessage miniMessage = MiniMessage.miniMessage();
     private static BukkitAudiences adventure = null;
+    private static PluginLogger pluginLogger = null;
+    private static MessageConfig messageConfig = null;
 
-    public static void init(FloorIsLava plugin) {
+    public static void init(FloorIsLava plugin, PluginLogger logger, MessageConfig config) {
         if (adventure == null) {
             adventure = plugin.adventure();
+        }
+        if (pluginLogger == null) {
+            pluginLogger = logger;
+        }
+        if (messageConfig == null) {
+            messageConfig = config;
         }
     }
 
@@ -40,7 +49,7 @@ public class MiniMessages {
     public static void send(Player player, String messageKey, TagResolver placeholders) {
         if (adventure == null) { return; }
 
-        String rawPrefix = MessageConfig.getInstance().getRawPrefix();
+        String rawPrefix = messageConfig.getRawPrefix();
 
         String rawMessage = getRawMessage(messageKey);
         if (rawMessage == null) { return; }
@@ -72,7 +81,7 @@ public class MiniMessages {
         if (adventure == null) {
             // Fallback for console/non-player senders if Adventure isn't ready
             sender.sendMessage(ChatColor.RED + "[FIL] Message system error.");
-            System.err.println("[FloorIsLava] MiniMessages not initialized! Call MiniMessages.init() in onEnable.");
+            pluginLogger.severe("[FloorIsLava] MiniMessages not initialized! adventure API is null.");
             return;
         }
 
@@ -80,7 +89,7 @@ public class MiniMessages {
         if (rawMessage == null) {
             // Send plain text error to console/non-player
             sender.sendMessage(ChatColor.RED + "[FloorIsLava] Missing message key: " + messageKey);
-            FloorIsLava.getInstance().getLogger().warning("Missing message key in MessageConfig.yml: " + messageKey);
+            pluginLogger.warning("Missing message key in MessageConfig.yml: " + messageKey);
             return;
         }
 
@@ -88,7 +97,7 @@ public class MiniMessages {
         Component parsedComponent = miniMessage.deserialize(rawMessage, placeholders);
 
         // Get the generic Audience for the sender (works for Player AND Console)
-        net.kyori.adventure.audience.Audience audience = adventure.sender(sender);
+        Audience audience = adventure.sender(sender);
 
         // Send the component
         audience.sendMessage(parsedComponent);
@@ -98,8 +107,7 @@ public class MiniMessages {
     // Helper to get raw message strings (ensure this is implemented)
     public static String getRawMessage(String key) {
         // ... your logic using MessageConfig ...
-        MessageConfig msgConfig = MessageConfig.getInstance();
-        String raw = msgConfig.getRawString(key); // Assumes MessageConfig has getRawString(key)
+        String raw = messageConfig.getRawString(key); // Assumes MessageConfig has getRawString(key)
         if (raw == null) {
             // Return null or a default error string, handled above
             return null;

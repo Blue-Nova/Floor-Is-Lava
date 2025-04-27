@@ -1,19 +1,19 @@
 package com.bluenova.floorislava.config;
 
 import com.bluenova.floorislava.FloorIsLava; // Your main plugin class
+import com.bluenova.floorislava.util.messages.PluginLogger;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.util.logging.Level;
 
 public class MessageConfig {
-    private final static MessageConfig instance = new MessageConfig();
     private File file;
     private YamlConfiguration config = null; // Initialize as null
+    private final PluginLogger pluginLogger;
 
-    private MessageConfig() { } // Private constructor for singleton
-
-    public static MessageConfig getInstance() {
-        return instance;
+    public MessageConfig(PluginLogger pluginLogger) {
+        this.pluginLogger = pluginLogger;
+        load(); // Load the config when the class is instantiated
     }
 
     /**
@@ -24,23 +24,23 @@ public class MessageConfig {
         File dataFolder = plugin.getDataFolder();
         if (!dataFolder.exists()) {
             if (!dataFolder.mkdirs()) {
-                plugin.getLogger().severe("Could not create plugin data folder!");
+                pluginLogger.severe("Could not create plugin data folder!");
             }
         }
 
         file = new File(dataFolder, "MessageConfig.yml");
 
         if (!file.exists()) {
-            plugin.getLogger().info("MessageConfig.yml not found, creating default...");
+            pluginLogger.info("MessageConfig.yml not found, creating default...");
             try {
                 // Ensure MessageConfig.yml is in src/main/resources
                 plugin.saveResource("MessageConfig.yml", false);
             } catch (IllegalArgumentException e) {
-                plugin.getLogger().log(Level.SEVERE, "Could not save default MessageConfig.yml! Make sure it's in your JAR's src/main/resources folder.", e);
+                pluginLogger.severe("Could not save default MessageConfig.yml! Make sure it's in your JAR's src/main/resources folder." + e);
                 this.config = null; // Ensure config is null on failure
                 return;
             } catch (Exception e) {
-                plugin.getLogger().log(Level.SEVERE, "An unexpected error occurred saving default MessageConfig.yml!", e);
+                pluginLogger.severe("An unexpected error occurred saving default MessageConfig.yml!" + e);
                 this.config = null; // Ensure config is null on failure
                 return;
             }
@@ -51,10 +51,10 @@ public class MessageConfig {
 
         // Optional: Check if loading actually worked (e.g., check if a known key exists)
         if (config.getKeys(false).isEmpty() && file.length() > 0) {
-            plugin.getLogger().severe("Failed to load MessageConfig.yml properly! It might be corrupted.");
+            pluginLogger.severe("Failed to load MessageConfig.yml properly! It might be corrupted.");
             // Keep config non-null but potentially empty, getters will return defaults/errors.
         } else {
-            plugin.getLogger().info("MessageConfig.yml loaded successfully.");
+            pluginLogger.info("MessageConfig.yml loaded successfully!.");
         }
     }
 

@@ -1,6 +1,7 @@
 package com.bluenova.floorislava.game.object.invitelobby;
 
 import com.bluenova.floorislava.FloorIsLava;
+import com.bluenova.floorislava.util.messages.PluginLogger;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -10,6 +11,11 @@ import java.util.*;
 public class InviteLobbyManager {
 
     private final List<InviteLobby> inviteLobbyList = new ArrayList<>();
+    private final PluginLogger pluginLogger;
+
+    public InviteLobbyManager(PluginLogger pluginLogger) {
+        this.pluginLogger = pluginLogger;
+    }
 
     /*Checks if owner already invited a player*/
     public boolean checkPlayerInvitedBy(Player owner, Player player) {
@@ -38,7 +44,7 @@ public class InviteLobbyManager {
     }
 
     public void createLobby(Player owner) {
-        InviteLobby lobby = new InviteLobby(owner, FloorIsLava.getInviteLobbyManager(), FloorIsLava.getGameLobbyManager());
+        InviteLobby lobby = new InviteLobby(owner, FloorIsLava.getInviteLobbyManager(), FloorIsLava.getFILRegionManager());
         inviteLobbyList.add(lobby);
     }
 
@@ -65,7 +71,6 @@ public class InviteLobbyManager {
         for (InviteLobby lobby : inviteLobbyList) {
             ArrayList<Player> inviteList = lobby.sentList;
             for (Player invited : inviteList) {
-                System.out.println("Invited: " + invited.getName());
                 if (invited == player) {
                     playerList.add(lobby.getOwner());
                 }
