@@ -1,0 +1,47 @@
+# ------------------------ #
+# WELCOME TO FLOOR IS LAVA #
+# ------------------------ #
+# Do not change this number pls :).
+config_version: 1.0
+# ------------------------- #
+# ACTTUAL CONFIGURATION
+Plot:
+  # How far apart each game plot should be from its neighbor (in blocks)
+  # MINIMUM is the PLOT SIZE + 1 !!!
+  # This is to prevent the plots from overlapping. (will fix later)
+  Margin: 1000
+
+  # How big each plot will be. 50 blocks will have a 50x50 plot of land per game.
+  # lowering this number will lower the amount of processing needed before each start of a game.
+  Size: 50
+
+  # How many plots (or lobbies) are there at a time.
+  # THIS IS THE AMOUNT OF PLOTS **ACROSS**
+    # if this is 1, that means 1x1 = 1 total plot
+  # if this is 5, that means 5x5 = 25 total plots
+  # if this is 10, that means 10x10 = 100 total plots
+  # Lowering this helps very weak servers stay alive lmao (but only when lobbies are at MAX CAPACITY).
+  Amount: 5
+
+Game:
+  # How long the countdown will be before the game starts. (in seconds)
+  # Lowering this number will lower the amount of time needed before each start of a game.
+  StartCountdown: 10
+
+  # How long the lava will take to rise to the top. (in seconds)
+  LavaRiseCooldown: 3
+
+    # How much the lava will rise each LavaRiseCooldown. (in blocks)
+  LavaRiseAmount: 1
+
+Server:
+  # This tells how long this plugin is allowed to process each tick. This is a workload distro.
+  # Lowering this number will increase the amount of time needed to generate a game.
+  #
+  # Lower this number if your server begins to lag **when making a new game** .
+  # Increase this number if server does not lag but waiting time is too long for a game to start.
+  # MAX VALUE IS 1000
+  MAX_MILLIS_PER_TICK: 10
+
+# Enable extra debug messages in console? (Requires restart/reload)
+developer-mode: false
