@@ -22,6 +22,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.title.Title;
 // Bukkit Imports
 import org.bukkit.*;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -43,6 +44,7 @@ public class GameLobby extends Lobby {
     private final Plugin plugin; // Main plugin instance (for scheduler, config access)
     private final PluginLogger pluginLogger; // Logger for this class
     private final InviteLobbyManager inviteLobbyManager;
+    private final GameLobbyManager gameLobbyManager;
     private final WorkloadRunnable workloadRunnable;
     private final GamePlotDivider plotDivider;
     private final World voidWorld;
@@ -51,10 +53,14 @@ public class GameLobby extends Lobby {
     // --- End Dependencies ---
 
     // Game State & Configuration
+    private GameLobbyStates gameState = GameLobbyStates.INACTIVE; // Initial state
     private final List<Integer> LAVA_ANNOUNCE_HEIGHTS = new ArrayList<>();
     private static final int LAVA_INCREMENT = MainConfig.getInstance().getLavaRiseAmount(); // TODO: Make configurable
     private static final int GAME_START_COUNTDOWN = MainConfig.getInstance().getGameStartCountdown(); // TODO: Make configurable
     private static final int LAVA_RISE_COOLDOWN = MainConfig.getInstance().getLavaRiseCooldown(); // TODO: Make configurable
+    private static final AtomicInteger PRE_GAME_COUNTDOWN = new AtomicInteger(MainConfig.getInstance().getPreGameCountdown()); // TODO: Make configurable
+    private static final double DEATH_ITEM_DROP_CHANCE = 0.5; // TODO: Make configurable
+
     // Player State Storage
     private final HashMap<Player, Location> previousLocationList = new HashMap<>();
     private final HashMap<Player, ItemStack[]> previousInventoryList = new HashMap<>();
@@ -84,7 +90,7 @@ public class GameLobby extends Lobby {
      * Should be called by a GameManager or similar service.
      */
     public GameLobby(Plugin plugin, PluginLogger pluginLogger, ArrayList<Player> playerList, Player owner,
-                     InviteLobbyManager inviteLobbyManager,
+                     InviteLobbyManager inviteLobbyManager, GameLobbyManager gameLobbyManager,
                      WorkloadRunnable workloadRunnable, GamePlotDivider plotDivider,
                      World voidWorld, FILRegionManager filRegionManager,
                      GamePlot plot) {
@@ -97,7 +103,7 @@ public class GameLobby extends Lobby {
         this.pluginLogger = pluginLogger;
 
         this.inviteLobbyManager = inviteLobbyManager;
-        // this.gameManager = gameManager; // Removed
+        this.gameLobbyManager = gameLobbyManager; // Removed
         this.workloadRunnable = workloadRunnable;
         this.plotDivider = plotDivider;
         this.voidWorld = voidWorld;
@@ -120,6 +126,7 @@ public class GameLobby extends Lobby {
 
         // Announce terrain generation and queue first workload task
         announce("game.generating_terrain");
+        playGameSound(Sound.BLOCK_ENCHANTMENT_TABLE_USE); // Play sound for terrain generation
         // Pass 'this' (GameLobby) to FindAllowedLocation if it needs to call back generatePlot
         workloadRunnable.addWorkload(new FindAllowedLocation(this));
     }
@@ -129,6 +136,7 @@ public class GameLobby extends Lobby {
      * Queues tasks to build barrier walls and copy terrain columns.
      */
     public void generatePlot(int sourceX, int sourceZ) {
+        setGameState(GameLobbyStates.GENERATING); // Set state to generating
         int borderStartX = (int) gamePlot.plotStart.getX() - 1;
         int borderStartZ = (int) gamePlot.plotStart.getZ() - 1;
         int plotEndX = (int) gamePlot.plotEnd.getX(); // End X/Z are exclusive for size calc
@@ -179,19 +187,61 @@ public class GameLobby extends Lobby {
     /**
      * Called by the last GenerateGameTerrain task to start the pre-game countdown.
      */
-    public void startGameCountdown() {
+
+    public void startPreGameCountdown() {
+        AtomicInteger countdown = PRE_GAME_COUNTDOWN; // Reset countdown
+        playGameSound(Sound.ENTITY_PLAYER_LEVELUP);
+        scheduler.runTaskTimer(plugin, (task) -> {
+            pluginLogger.debug("Pre-game countdown: " + countdown.get());
+            if (countdown.get() <= 0) {
+                task.cancel();
+                startGameCountdown();
+                 // Teleport players and start timers
+                return;
+            }
+            // Announce countdown
+            announce("game.pre_countdown", Placeholder.unparsed("seconds", String.valueOf(countdown.get())));
+            countdown.getAndDecrement();
+        }, 0L, 20L); // Every second
+    }
+
+    private void startGameCountdown() {
+
         if (countdownTask != null && !countdownTask.isCancelled()) return; // Prevent double calls
         pluginLogger.debug("Starting game countdown for plot at " + gamePlot.plotStart.getBlockX() + "," + gamePlot.plotStart.getBlockZ());
 
+        // save all player data before teleporting
+        for (Player player : this.players) {
+            if (player != null && player.isOnline()) {
+                gameLobbyManager.savePlayerData(player);
+            }
+        }
+        savePlayersInfo(); // Save inventory/stats and clear for game
+        teleportPlayersToGame(); // Teleport players to lobby before countdown
+        applyWorldBorder(); // Apply world border to the game plot
+
+        this.setGameState(GameLobbyStates.STARTING);
+        // AT THIS POINT THE GAME STATE IS STARTING
+        // the plot is generated
+        // players should be teleported to the plot
+        // players are waiting for game start countdown
+        // lobby region has the profile set to IDLE still
+
+        // countdown task
         scheduler.runTaskTimer(plugin, (task) -> {
             if (countdown <= 0) {
                 task.cancel();
-                actuallyStartGame(); // Teleport players and start timers
+                playGameSound(Sound.ENTITY_ENDER_DRAGON_GROWL);
+                startGame(); // Teleport players and start timers
                 return;
             }
             // Announce countdown
             announce("game.countdown", Placeholder.unparsed("seconds", String.valueOf(countdown)));
-            playGameSound(Sound.BLOCK_NOTE_BLOCK_PLING); // Example sound
+            if (countdown <= 3)
+                playGameSound(Sound.ENTITY_EXPERIENCE_ORB_PICKUP);
+            else
+                // count down is
+                playGameSound(Sound.BLOCK_DISPENSER_DISPENSE);
             countdown--;
         }, 0L, 20L); // Every second
     }
@@ -199,54 +249,8 @@ public class GameLobby extends Lobby {
     /**
      * Called after the countdown finishes. Teleports players, sets up borders, starts game timers.
      */
-    private void actuallyStartGame() {
+    private void startGame() {
         gameON = true; // Mark game as officially started
-        announce("game.teleporting");
-
-        // Setup world border
-        gameBorder = Bukkit.createWorldBorder(); // Consider per-world border if API allows
-        int plotSize = plotDivider.plotSize;
-        double centerX = gamePlot.plotStart.getX() + (plotSize / 2.0);
-        double centerZ = gamePlot.plotStart.getZ() + (plotSize / 2.0);
-        gameBorder.setCenter(centerX, centerZ); // Set center using X, Z
-        gameBorder.setSize(plotSize);
-        gameBorder.setDamageBuffer(1.0); // Buffer distance
-        gameBorder.setDamageAmount(0.5); // Damage per second outside
-        gameBorder.setWarningDistance(5);
-        gameBorder.setWarningTime(10); // Seconds for warning screen
-
-        // Teleport players and setup
-        // Use iterator for safe removal if teleport fails
-        Iterator<Player> playerIterator = this.players.iterator();
-        while(playerIterator.hasNext()){
-            Player player = playerIterator.next();
-            if(player == null || !player.isOnline()){ // Check if player left during setup
-                playerIterator.remove(); // Remove from game list
-                previousLocationList.remove(player); // Remove stored data
-                continue;
-            }
-
-            // Use Tools for safe location finding
-            Location gameLoc = Tools.getSafeLocation(voidWorld, gamePlot);
-            if (gameLoc == null) {
-                pluginLogger.severe("Could not find safe spawn for " + player.getName() + " in plot " + gamePlot.plotStart.toString() + ". Removing from game.");
-                MiniMessages.send(player, "general.error_generic", Placeholder.unparsed("details", "Could not find a safe spawn point!")); // Notify player
-                // Keep player's original state (don't call savePlayerInfo)
-                playerIterator.remove(); // Remove from game
-                previousLocationList.remove(player);
-                // Don't teleport if no safe spot found
-                continue;
-            }
-
-            // set region to the wished Profile
-            this.FILRegionManager.setRegionProfile(gamePlot.worldGuardRegionId, RegionProfiles.BASE);
-
-            player.teleport(gameLoc);
-            playerSpawnLocation.put(player, gameLoc);
-            player.setWorldBorder(gameBorder); // Apply border specific to this game
-            savePlayerInfo(player); // Save inventory/stats and clear for game
-        }
-
 
         // Check if any players remain after teleport attempts
         if (this.players.isEmpty()) {
@@ -260,6 +264,7 @@ public class GameLobby extends Lobby {
         runBackMusic();
 
         // Remove the InviteLobby that started this game
+        // planned update: Do not remove lobby, to allow players to play again right away
         InviteLobby originatingLobby = inviteLobbyManager.getLobbyFromOwner(this.owner);
         if (originatingLobby != null) {
             inviteLobbyManager.closeLobby(originatingLobby);
@@ -268,111 +273,11 @@ public class GameLobby extends Lobby {
             pluginLogger.warning("Could not find original invite lobby for owner: " + this.owner.getName() + " to close.");
         }
 
-
+        this.FILRegionManager.setRegionProfile(gamePlot.worldGuardRegionId, RegionProfiles.BASE);
         // Start game mechanics timers
         beginLavaTimer();
         beginEventTimer(); // If ChaosEventManager is ready
-    }
-
-    /** Saves player state and prepares them for the game. */
-    public void savePlayerInfo(Player player) {
-        // Store previous state
-        // Note: previousLocationList is filled in constructor
-        previousInventoryList.put(player, player.getInventory().getContents().clone()); // Clone arrays
-        previousHealthList.put(player, player.getHealth());
-        previousHungerList.put(player, player.getFoodLevel());
-        previousXPList.put(player, player.getExp());
-
-        // Clear and reset for game
-        player.getInventory().clear();
-        player.setHealth(player.getMaxHealth()); // Set to max health
-        player.setFoodLevel(20);
-        player.setExp(0);
-        player.setLevel(0);
-        // Clear potion effects?
-        for (PotionEffect effect : player.getActivePotionEffects()) {
-            player.removePotionEffect(effect.getType());
-        }
-        // Set gamemode? (Should be survival)
-        player.setGameMode(GameMode.SURVIVAL);
-    }
-
-    /** Restores player state after leaving/game end. */
-    public void returnPlayerInfo(Player player) {
-        // Check if data exists before trying to restore
-        if (previousInventoryList.containsKey(player)) {
-            player.getInventory().setContents(previousInventoryList.get(player));
-        } else {
-            player.getInventory().clear(); // Clear if no saved inventory
-        }
-        player.setHealth(previousHealthList.getOrDefault(player, player.getMaxHealth())); // Default to max health
-        player.setFoodLevel(previousHungerList.getOrDefault(player, 20));
-        player.setExp(previousXPList.getOrDefault(player, 0.0f));
-        player.setLevel(0); // Reset level
-
-        // Clear potentially game-specific effects
-        for (PotionEffect effect : player.getActivePotionEffects()) {
-            player.removePotionEffect(effect.getType());
-        }
-        // Reset gamemode if needed (should be handled by server default on world change usually)
-        player.setGameMode(Bukkit.getDefaultGameMode());
-        // Clear world border applied by game
-        player.setWorldBorder(null);
-
-        // Clean up stored data for the player
-        previousInventoryList.remove(player);
-        previousHealthList.remove(player);
-        previousHungerList.remove(player);
-        previousXPList.remove(player);
-        playerSpawnLocation.remove(player);
-        // previousLocationList is cleared in endGame
-    }
-
-    /** Starts background music task. */
-    public void runBackMusic() {
-        cancelTask(musicTask); // Cancel previous if any
-         scheduler.runTaskTimer(plugin, playBackSongTask -> {
-            if (gameON)
-                playGameSound(Sound.MUSIC_DISC_PIGSTEP);
-            else playBackSongTask.cancel();
-        }, 0L, 2900L); // Pigstep duration ~2:48 = 3360 ticks? Maybe use config value.
-    }
-
-    /** Announces a message key to all players and spectators using MiniMessages. */
-    public void announce(String messageKey) {
-        announce(messageKey, TagResolver.empty());
-    }
-
-    /** Announces a message key with placeholders to all players and spectators using MiniMessages. */
-    public void announce(String messageKey, TagResolver placeholders) {
-        // Send to alive players
-        for (Player player : this.players) {
-            if (player != null && player.isOnline()) { // Check online
-                MiniMessages.send(player, messageKey, placeholders);
-            }
-        }
-        // Send to spectators
-        for (Player spectator : specList) {
-            if (spectator != null && spectator.isOnline()) { // Check online
-                MiniMessages.send(spectator, messageKey, placeholders);
-            }
-        }
-    }
-
-    /** Plays a sound for all players and spectators. */
-    public void playGameSound(Sound sound) {
-        if (gameBorder == null) return; // Safety check
-        Location center = gameBorder.getCenter();
-        for (Player player : this.players) {
-            if (player != null && player.isOnline()) {
-                player.playSound(center, sound, SoundCategory.MASTER, 40, 1); // Use category, adjust volume/pitch
-            }
-        }
-        for (Player player : specList) {
-            if (player != null && player.isOnline()) {
-                player.playSound(center, sound, SoundCategory.MASTER, 40, 1);
-            }
-        }
+        this.setGameState(GameLobbyStates.STARTED);
     }
 
     /** Starts the timer that potentially triggers chaos events. */
@@ -407,166 +312,13 @@ public class GameLobby extends Lobby {
         scheduler.runTaskTimer(plugin, (task) -> {
             if (!gameON) { task.cancel(); return; }
 
-            placeLava(); // Queue lava placement tasks
+            placeLava(true); // Queue lava placement tasks
 
             // Increase height for next time (if game still on and not at max)
             if (gameON && lavaHeight < voidWorld.getMaxHeight() - 1) // Check against world max Y
                 lavaHeight += LAVA_INCREMENT;
 
         }, delay, LAVA_RISE_COOLDOWN * 20L); // Convert seconds to ticks
-    }
-
-    /** Queues workload tasks to place lava at the current height. */
-    public void placeLava() {
-        // Determine Y range to fill (ensure previous level is filled, fill up to new level)
-        int startY = Math.max(voidWorld.getMinHeight()+1, lavaHeight - LAVA_INCREMENT); // Don't go below world min
-        int endY = Math.min(voidWorld.getMaxHeight(), lavaHeight + LAVA_INCREMENT); // Don't exceed world max
-
-        // Queue tasks via injected WorkloadRunnable
-        for (int y = startY; y < endY; y++) {
-            workloadRunnable.addWorkload(new ElevateLava(gamePlot, y));
-        }
-
-        // Check for announcement heights (use iterator for safe removal)
-        Iterator<Integer> iterator = LAVA_ANNOUNCE_HEIGHTS.iterator();
-        while(iterator.hasNext()){
-            Integer y_height = iterator.next();
-            if(y_height <= lavaHeight){
-                TagResolver heightPlaceholder = TagResolver.resolver(
-                        Placeholder.unparsed("y_level", String.valueOf(lavaHeight))
-                );
-                announce("game.lava_warning", heightPlaceholder);
-                playGameSound(Sound.BLOCK_LAVA_AMBIENT);
-                iterator.remove(); // Remove safely
-                // Only announce one level per lava rise cycle
-                break;
-            }
-        }
-    }
-
-    /**
-     * Removes a player from the game, either due to leaving or dying by lava.
-     * Handles state cleanup, messaging, spectating, and win condition checks.
-     * NOTE: This method needs to coordinate with GameManager to update player state maps.
-     * @param leavingPlayer The player to remove.
-     * @param died          True if removed due to lava death, false otherwise (leave/disconnect/kick).
-     */
-    public void remove(Player leavingPlayer, boolean died) {
-        if (leavingPlayer == null) return; // Safety check
-
-        TagResolver playerPlaceholder = TagResolver.resolver(Placeholder.unparsed("player", leavingPlayer.getName()));
-
-        // --- TODO: Notify GameManager ---
-        // gameManager.removePlayerFromGameMap(leavingPlayer.getUniqueId()); // Use UUID
-        // ---
-
-        boolean wasPlayer = this.players.remove(leavingPlayer); // Remove from alive list
-        boolean wasSpectator = this.specList.remove(leavingPlayer); // Remove from spectator list
-
-
-        if (!died) { // Player left voluntarily / disconnected / game ended / kicked
-            // Announce to others only if they were an active player or spectator
-            if(wasPlayer || wasSpectator) {
-                announce("game.player_left_game", playerPlaceholder);
-            }
-
-            // Send specific message only to leaving player if they were playing/spectating
-            if(wasPlayer || wasSpectator) {
-                MiniMessages.send(leavingPlayer, "game.self_left_game"); // Add key: "<gray>You have left the game.</gray>"
-            }
-
-            // Restore info and teleport only if game is still technically running OR called by endGame
-            // (Check previousLocationList as indicator for endGame cleanup phase)
-            if (gameON || previousLocationList.containsKey(leavingPlayer)) {
-                Location previousLoc = previousLocationList.get(leavingPlayer);
-                if (previousLoc != null) {
-                    // Ensure world is loaded before teleport? Usually fine if coming from game world.
-                    leavingPlayer.teleport(previousLoc);
-                } else {
-                    pluginLogger.warning("Previous location missing for " + leavingPlayer.getName() + " on game leave.");
-                    // Consider teleporting to main world spawn as fallback
-                    // player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
-                }
-                // Only restore info if they were an active player, not spectator already
-                if(wasPlayer){
-                    returnPlayerInfo(leavingPlayer);
-                } else {
-                    // Ensure spectator is set back to default gamemode, border removed
-                    leavingPlayer.setGameMode(Bukkit.getDefaultGameMode());
-                    leavingPlayer.setWorldBorder(null);
-                }
-            }
-            // Clean up any remaining data for the player now
-            previousLocationList.remove(leavingPlayer);
-            previousInventoryList.remove(leavingPlayer);
-            previousHealthList.remove(leavingPlayer);
-            previousHungerList.remove(leavingPlayer);
-            previousXPList.remove(leavingPlayer);
-            playerSpawnLocation.remove(leavingPlayer);
-
-        } else { // Player died by lava (or other fatal cause routed here)
-            this.specList.add(leavingPlayer); // Add to spectators
-            announce("game.lava_death", playerPlaceholder);
-            MiniMessages.send(leavingPlayer, "game.became_spectator");
-            leavingPlayer.playSound(leavingPlayer.getLocation(), Sound.ENTITY_PLAYER_BURP, 1, 1);
-            leavingPlayer.setHealth(leavingPlayer.getMaxHealth()); // Restore health for spectator mode
-            leavingPlayer.setFoodLevel(20); // Restore food
-            leavingPlayer.setGameMode(GameMode.SPECTATOR);
-            // Keep border applied for spectator? Or remove? Let's keep it for now.
-            // Optional: Teleport spectator to a viewing spot
-            // Location specSpawn = gameBorder.getCenter().add(0, 20, 0);
-            // leavingPlayer.teleport(specSpawn);
-        }
-
-        // Check win condition ONLY if the game is still running
-        if (gameON) {
-            if (this.players.size() == 1) {
-                // We have a winner!
-                winPlayer(this.players.get(0));
-            } else if (this.players.isEmpty()) {
-                // Last player(s) left/died simultaneously?
-                announce("game.no_winner"); // Add key: "<yellow>Everyone was eliminated! No winner.</yellow>"
-                endGame(false); // End without a winner
-            }
-        }
-    }
-
-    /** Handles player deaths not caused by the main lava mechanic. */
-    public void playerDiedNoLava(Player player) {
-        if (player == null || !this.players.contains(player)) return; // Ensure player is actually alive in this game
-
-        announce("game.other_death", Placeholder.unparsed("player", player.getName()));
-
-        // Drop items at death location
-        ItemStack[] inv = player.getInventory().getContents().clone(); // Clone before clearing
-        player.getInventory().clear();
-        Location deathLoc = player.getLocation();
-        for (ItemStack is : inv) {
-            if(is != null && is.getType() != Material.AIR)
-                voidWorld.dropItemNaturally(deathLoc, is); // Drop naturally
-        }
-        player.setExp(0); // Drop XP? Standard death does.
-        player.setLevel(0);
-
-        // Teleport back to spawn point within the game plot
-        Location spawn = playerSpawnLocation.get(player);
-        if (spawn == null) {
-            plugin.getLogger().warning("Spawn location missing for " + player.getName() + ", finding new safe spot...");
-            spawn = Tools.getSafeLocation(voidWorld, gamePlot);
-        }
-
-        if (spawn != null) {
-            // Teleport async for potentially unloaded chunks? Safer maybe.
-            player.teleport(spawn);
-            // Restore health/food AFTER teleport completes
-            player.setHealth(player.getMaxHealth());
-            player.setFoodLevel(20);
-            // Apply brief invulnerability?
-            player.setNoDamageTicks(60); // 3 seconds
-        } else {
-            plugin.getLogger().severe("Could not find any safe spawn for " + player.getName() + " after non-lava death!");
-            remove(player, false); // Kick if cannot respawn
-        }
     }
 
     /** Declares the winner and ends the game. */
@@ -586,8 +338,6 @@ public class GameLobby extends Lobby {
         Title fullTitle = Title.title(title, subtitle, times);
 
         ((FloorIsLava)plugin).adventure().player(player).showTitle(fullTitle);
-
-        endGame(true); // Trigger final cleanup
     }
 
     /** Stops game timers, cleans up players, releases plot. */
@@ -618,6 +368,8 @@ public class GameLobby extends Lobby {
             scheduler.runTaskLater(plugin, this::returnPlayers,8*20L);// 8 seconds total delay
         }
 
+        // GAME IS NOW MARKED AS ENDING
+        setGameState(GameLobbyStates.ENDING);
     }
 
     private void returnPlayers(){
@@ -628,10 +380,10 @@ public class GameLobby extends Lobby {
 
         // Remove remaining players/spectators (teleport, restore state)
         for (Player p : playersToClean) {
-            remove(p, false);
+            remove(p, false, false);
         }
         for (Player p : specsToClean) {
-            remove(p, false);
+            remove(p, false, false);
         }
 
         // Release the plot (Mark as not in use)
@@ -656,22 +408,16 @@ public class GameLobby extends Lobby {
         FILRegionManager.setRegionProfile(gamePlot.worldGuardRegionId, RegionProfiles.IDLE); // Reset region profile
     }
 
-    // Helper to safely cancel tasks
-    private void cancelTask(BukkitTask task) {
-        if (task != null && !task.isCancelled()) {
-            task.cancel();
-        }
-    }
-
     private void flush(){
         // get worldhieght
         int worldHeight = voidWorld.getMaxHeight();
+        int worldMinHeight = voidWorld.getMinHeight();
         boolean lastTask = false; // Flag to indicate if this is the last task
         // for loop from worldHeight to 0 (0 should be in CONFIG)
-        for (int yLevel = worldHeight; yLevel >= voidWorld.getMinHeight()+1; yLevel--) {
+        for (int yLevel = worldHeight; yLevel >= worldMinHeight; yLevel--) {
 
             // if it's last task, set lastTask to true
-            if (yLevel == voidWorld.getMinHeight() + 1) {
+            if (yLevel == worldMinHeight) {
                 lastTask = true;
             }
 
@@ -682,6 +428,7 @@ public class GameLobby extends Lobby {
 
     public void flushDone() {
         gamePlot.setInUse(false);
+        setGameState(GameLobbyStates.INACTIVE);
         pluginLogger.debug("Plot released: " + gamePlot.plotStart.toString());
     }
 
@@ -695,12 +442,12 @@ public class GameLobby extends Lobby {
         // Clean up players
         for (Player p : this.players) {
             if (p != null && p.isOnline()) {
-                remove(p, false); // Remove player from game
+                remove(p, false, false); // Remove player from game
             }
         }
         for (Player p : this.specList) {
             if (p != null && p.isOnline()) {
-                remove(p, false); // Remove spectator from game
+                remove(p, false, false); // Remove spectator from game
             }
         }
 
@@ -709,5 +456,382 @@ public class GameLobby extends Lobby {
         // Release the plot
         this.gamePlot.setInUse(false);
         pluginLogger.debug("Plot released: " + gamePlot.plotStart.toString());
+    }
+
+    public GameLobbyStates getGameState() {
+        return gameState;
+    }
+
+    private void setGameState(GameLobbyStates gameState) {
+        this.gameState = gameState;
+    }
+
+    private void teleportPlayersToGame() {
+        Iterator<Player> playerIterator = this.players.iterator();
+        while(playerIterator.hasNext()){
+            Player player = playerIterator.next();
+            if(player == null || !player.isOnline()){ // Check if player left during setup
+                playerIterator.remove(); // Remove from game list
+                previousLocationList.remove(player); // Remove stored data
+                continue;
+            }
+
+            // Use Tools for safe location finding
+            Location gameLoc = Tools.getSafeLocation(voidWorld, gamePlot);
+            if (gameLoc == null) {
+                pluginLogger.severe("Could not find safe spawn for " + player.getName() + " in plot " + gamePlot.plotStart.toString() + ". Removing from game.");
+                MiniMessages.send(player, "general.error_generic", Placeholder.unparsed("details", "Could not find a safe spawn point!")); // Notify player
+                // Keep player's original state (don't call savePlayerInfo)
+                playerIterator.remove(); // Remove from game
+                previousLocationList.remove(player);
+                // Don't teleport if no safe spot found
+                continue;
+            }
+            // set region to the wished Profile
+            player.teleport(gameLoc);
+            playerSpawnLocation.put(player, gameLoc);
+        }
+
+        // Check if any players remain after teleport attempts
+        if (this.players.isEmpty()) {
+            pluginLogger.warning("Game ending immediately as no players could be spawned in plot " + gamePlot.plotStart.toString());
+            announce("general.error_generic", Placeholder.unparsed("details", "No players could be spawned safely!"));
+            endGame(false); // End game immediately, no winner
+        }
+    }
+
+    /** Saves player state and prepares them for the game. */
+    public void savePlayersInfo() {
+        // Store previous state
+        // Note: previousLocationList is filled in constructor
+        for (Player player : this.players) {
+            if (player != null && player.isOnline()) {
+                previousInventoryList.put(player, player.getInventory().getContents().clone()); // Clone arrays
+                previousHealthList.put(player, player.getHealth());
+                previousHungerList.put(player, player.getFoodLevel());
+                previousXPList.put(player, player.getExp());
+
+                // Clear and reset for game
+                player.getInventory().clear();
+                player.setHealth(player.getMaxHealth()); // Set to max health
+                player.setFoodLevel(20);
+                player.setExp(0);
+                player.setLevel(0);
+                // Clear potion effects?
+                for (PotionEffect effect : player.getActivePotionEffects()) {
+                    player.removePotionEffect(effect.getType());
+                }
+                // Set gamemode? (Should be survival)
+                player.setGameMode(GameMode.SURVIVAL);
+            }
+        }
+    }
+
+    /** Restores player state after leaving/game end. */
+    public void returnPlayerInfo(Player player) {
+
+        if (gameLobbyManager.restorePlayerData(player)) {
+            pluginLogger.debug("Restored player data from save files for: " + player.getName());
+        } else {
+
+            if (player == null || !player.isOnline()) {
+                pluginLogger.warning("Player is null or offline, cannot restore state for: " + player.getName());
+                return;
+            }
+
+            if (previousInventoryList.containsKey(player)) {
+                player.getInventory().setContents(previousInventoryList.get(player));
+            } else {
+                player.getInventory().clear(); // Clear if no saved inventory
+            }
+            player.setHealth(previousHealthList.getOrDefault(player, player.getMaxHealth())); // Default to max health
+            player.setFoodLevel(previousHungerList.getOrDefault(player, 20));
+            player.setExp(previousXPList.getOrDefault(player, 0.0f));
+            player.setLevel(0); // Reset level
+
+            // Clear potentially game-specific effects
+            for (PotionEffect effect : player.getActivePotionEffects()) {
+                player.removePotionEffect(effect.getType());
+            }
+            // Reset gamemode if needed (should be handled by server default on world change usually)
+            player.setGameMode(Bukkit.getDefaultGameMode());
+            // Clear world border applied by game
+            player.setWorldBorder(null);
+
+            // Clean up stored data for the player
+            previousInventoryList.remove(player);
+            previousHealthList.remove(player);
+            previousHungerList.remove(player);
+            previousXPList.remove(player);
+            playerSpawnLocation.remove(player);
+            // previousLocationList is cleared in endGame
+        }
+    }
+
+    private void applyWorldBorder() {
+        // Setup world border
+        gameBorder = Bukkit.createWorldBorder(); // Consider per-world border if API allows
+        int plotSize = plotDivider.plotSize;
+        double centerX = gamePlot.plotStart.getX() + (plotSize / 2.0);
+        double centerZ = gamePlot.plotStart.getZ() + (plotSize / 2.0);
+        gameBorder.setCenter(centerX, centerZ); // Set center using X, Z
+        gameBorder.setSize(plotSize);
+        gameBorder.setDamageBuffer(1.0); // Buffer distance
+        gameBorder.setDamageAmount(0.5); // Damage per second outside
+        gameBorder.setWarningDistance(5);
+        gameBorder.setWarningTime(10); // Seconds for warning screen
+
+        for (Player player : this.players) {
+            if (player != null && player.isOnline()) {
+                player.setWorldBorder(gameBorder); // Apply border to each player
+            }
+        }
+    }
+    /** Starts background music task. */
+    public void runBackMusic() {
+        cancelTask(musicTask); // Cancel previous if any
+        scheduler.runTaskTimer(plugin, playBackSongTask -> {
+            if (gameON)
+                playGameSound(Sound.MUSIC_DISC_PIGSTEP);
+            else playBackSongTask.cancel();
+        }, 0L, 2900L); // Pigstep duration ~2900 ticks. Maybe use config value.
+    }
+
+    /** Announces a message key to all players and spectators using MiniMessages. */
+    public void announce(String messageKey) {
+        announce(messageKey, TagResolver.empty());
+    }
+
+    /** Announces a message key with placeholders to all players and spectators using MiniMessages. */
+    public void announce(String messageKey, TagResolver placeholders) {
+        // Send to alive players
+        for (Player player : this.players) {
+            if (player != null && player.isOnline()) { // Check online
+                MiniMessages.send(player, messageKey, placeholders);
+            }
+        }
+        // Send to spectators
+        for (Player spectator : specList) {
+            if (spectator != null && spectator.isOnline()) { // Check online
+                MiniMessages.send(spectator, messageKey, placeholders);
+            }
+        }
+    }
+
+    /** Plays a sound for all players and spectators. */
+    public void playGameSound(Sound sound) {
+        for (Player player : this.players) {
+            if (player != null && player.isOnline()) {
+                player.playSound(player.getLocation(), sound, SoundCategory.MASTER, 15, 1); // Use category, adjust volume/pitch
+            }
+        }
+        for (Player player : specList) {
+            if (player != null && player.isOnline()) {
+                player.playSound(player.getLocation(), sound, SoundCategory.MASTER, 15, 1);
+            }
+        }
+    }
+
+    private void playSoundSpecificPlayer(Sound sound, Player player) {
+        if (player != null && player.isOnline()) {
+            player.playSound(player.getLocation(), sound, SoundCategory.MASTER, 15, 1);
+        }
+    }
+
+    /** Queues workload tasks to place lava at the current height. */
+    public void placeLava(boolean checkForPlayersUnderLava) {
+        // Determine Y range to fill (ensure previous level is filled, fill up to new level)
+        int startY = Math.max(voidWorld.getMinHeight()+1, lavaHeight - LAVA_INCREMENT); // Don't go below world min
+        int endY = Math.min(voidWorld.getMaxHeight(), lavaHeight + LAVA_INCREMENT); // Don't exceed world max
+
+        // Queue tasks via injected WorkloadRunnable
+        for (int y = startY; y < endY; y++) {
+            workloadRunnable.addWorkload(new ElevateLava(gamePlot, y));
+        }
+
+        // Check for announcement heights (use iterator for safe removal)
+        Iterator<Integer> iterator = LAVA_ANNOUNCE_HEIGHTS.iterator();
+        while(iterator.hasNext()){
+            Integer y_height = iterator.next();
+            if(y_height <= lavaHeight){
+                TagResolver heightPlaceholder = TagResolver.resolver(
+                        Placeholder.unparsed("y_level", String.valueOf(lavaHeight))
+                );
+                announce("game.lava_warning", heightPlaceholder);
+                playGameSound(Sound.BLOCK_LAVA_AMBIENT);
+                iterator.remove(); // Remove safely
+                // Only announce one level per lava rise cycle
+                break;
+            }
+        }
+
+        if (checkForPlayersUnderLava){
+            // Check for players under lava level
+            for (Player player : this.players) {
+                if (player != null && player.isOnline()) {
+                    Location playerLoc = player.getLocation();
+                    if (playerLoc.getBlockY() <= lavaHeight) {
+                        // Player is under lava, handle removal
+                        pluginLogger.debug("Player " + player.getName() + " is under lava at Y: " + playerLoc.getBlockY());
+                        refillZone(playerLoc); // Refill the zone under the player
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void refillZone(Location playerLoc) {
+        int startY = playerLoc.getBlockY() - 1; // Start just below player
+        int endY = playerLoc.getBlockY() + 2; // End just above player height
+
+        // Queue tasks via injected WorkloadRunnable
+        for (int y = startY; y < endY; y++) {
+            workloadRunnable.addWorkload(new ElevateLava(gamePlot, y));
+        }
+    }
+
+    /**
+     * Removes a player from the game, either due to leaving or dying by lava.
+     * Handles state cleanup, messaging, spectating, and win condition checks.
+     * NOTE: This method needs to coordinate with GameManager to update player state maps.
+     * @param leavingPlayer The player to remove.
+     * @param died          True if removed due to lava death, false otherwise (leave/disconnect/kick).
+     */
+    public void remove(Player leavingPlayer, boolean died, boolean disconnected) {
+        if (leavingPlayer == null) return; // Safety check
+
+        TagResolver playerPlaceholder = TagResolver.resolver(Placeholder.unparsed("player", leavingPlayer.getName()));
+
+        // --- TODO: Notify GameManager ---
+        // gameManager.removePlayerFromGameMap(leavingPlayer.getUniqueId()); // Use UUID
+        // ---
+
+        boolean wasPlayer = this.players.remove(leavingPlayer); // Remove from alive list
+        boolean wasSpectator = this.specList.remove(leavingPlayer); // Remove from spectator list
+
+        if (!died) { // Player left voluntarily / disconnected / game ended / kicked
+            // Announce to others only if they were an active player or spectator
+            if(wasPlayer || wasSpectator) {
+                announce("game.player_left_game", playerPlaceholder);
+            }
+
+            // Send specific message only to leaving player if they were playing/spectating
+            MiniMessages.send(leavingPlayer, "game.self_left_game"); // Add key: "<gray>You have left the game.</gray>"
+
+            // Restore info and teleport only if game is still technically running OR called by endGame
+            // (Check previousLocationList as indicator for endGame cleanup phase)
+            if (gameON || previousLocationList.containsKey(leavingPlayer)) {
+                Location previousLoc = previousLocationList.get(leavingPlayer);
+                if (previousLoc != null) {
+                    // Ensure world is loaded before teleport? Usually fine if coming from game world.
+                    leavingPlayer.teleport(previousLoc);
+                } else {
+                    pluginLogger.warning("Previous location missing for " + leavingPlayer.getName() + " on game leave.");
+                    // Consider teleporting to main world spawn as fallback
+                    // player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
+                }
+                // Only restore info if they were an active player, not spectator already
+
+                if (!disconnected)
+                    returnPlayerInfo(leavingPlayer);
+                if(wasSpectator) {
+                    // Ensure spectator is set back to default gamemode, border removed
+                    leavingPlayer.setGameMode(Bukkit.getDefaultGameMode());
+                    leavingPlayer.setWorldBorder(null);
+                }
+            }
+            // Clean up any remaining data for the player now
+            previousLocationList.remove(leavingPlayer);
+            previousInventoryList.remove(leavingPlayer);
+            previousHealthList.remove(leavingPlayer);
+            previousHungerList.remove(leavingPlayer);
+            previousXPList.remove(leavingPlayer);
+            playerSpawnLocation.remove(leavingPlayer);
+
+        } else { // Player died by lava (or other fatal cause routed here)
+            this.specList.add(leavingPlayer); // Add to spectators
+            announce("game.lava_death", playerPlaceholder);
+            MiniMessages.send(leavingPlayer, "game.became_spectator");
+            leavingPlayer.playSound(leavingPlayer.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1, 1);
+            leavingPlayer.setHealth(leavingPlayer.getMaxHealth()); // Restore health for spectator mode
+            leavingPlayer.setFoodLevel(20); // Restore food
+            leavingPlayer.setGameMode(GameMode.SPECTATOR);
+            // Keep border applied for spectator? Or remove? Let's keep it for now.
+            // Optional: Teleport spectator to a viewing spot
+            // Location specSpawn = gameBorder.getCenter().add(0, 20, 0);
+            // leavingPlayer.teleport(specSpawn);
+        }
+
+        // Check win condition ONLY if the game is still running
+        if (gameON) {
+            if (this.players.size() == 1) {
+                // We have a winner!
+                winPlayer(this.players.get(0));
+                endGame(false); // Trigger final cleanup
+            } else if (this.players.isEmpty()) {
+                // Last player(s) left/died simultaneously?
+                announce("game.no_winner"); // Add key: "<yellow>Everyone was eliminated! No winner.</yellow>"
+                endGame(false); // End without a winner
+            }
+        }
+    }
+
+    /** Handles player deaths not caused by the main lava mechanic. */
+    public void playerDiedNoLava(Player player) {
+        if (player == null || !this.players.contains(player)) return; // Ensure player is actually alive in this game
+        announce("game.other_death", Placeholder.unparsed("player", player.getName()));
+
+        // Drop items at death location
+        // each item has a 50% chance to drop
+        ItemStack[] inv = player.getInventory().getContents().clone(); // Clone before clearing
+        for (ItemStack is : inv) {
+            if (is != null && is.getType() != Material.AIR) {
+                if (Math.random() < DEATH_ITEM_DROP_CHANCE) { // 50% chance to drop
+                    voidWorld.dropItemNaturally(player.getLocation(), is); // Drop naturally
+                    // remove the item from the inventory
+                    player.getInventory().remove(is); // Remove from inventory
+                }
+            }
+        }
+        MiniMessages.send(player, "game.death_items_dropped"); // Add key: "<gray>Your items have been dropped.</gray>"
+
+        /*ItemStack[] inv = player.getInventory().getContents().clone(); // Clone before clearing
+        player.getInventory().clear();
+        Location deathLoc = player.getLocation();
+        for (ItemStack is : inv) {
+            if(is != null && is.getType() != Material.AIR)
+                voidWorld.dropItemNaturally(deathLoc, is); // Drop naturally
+        }*/
+        player.setExp(0); // Drop XP? Standard death does.
+        player.setLevel(0);
+
+        // Teleport back to spawn point within the game plot
+        Location spawn = playerSpawnLocation.get(player);
+        if (spawn == null) {
+            plugin.getLogger().warning("Spawn location missing for " + player.getName() + ", finding new safe spot...");
+            spawn = Tools.getSafeLocation(voidWorld, gamePlot);
+        }
+
+        if (spawn != null) {
+            // Teleport async for potentially unloaded chunks? Safer maybe.
+            player.teleport(spawn);
+            // Restore health/food AFTER teleport completes
+            player.setHealth(player.getMaxHealth());
+            player.setFoodLevel(20);
+            // Apply brief invulnerability?
+            player.setNoDamageTicks(60); // 3 seconds
+            playSoundSpecificPlayer(Sound.BLOCK_ANVIL_LAND, player); // Play sound for death
+        } else {
+            plugin.getLogger().severe("Could not find any safe spawn for " + player.getName() + " after non-lava death!");
+            remove(player, false, false); // Kick if cannot respawn
+        }
+    }
+
+    // Helper to safely cancel tasks
+    private void cancelTask(BukkitTask task) {
+        if (task != null && !task.isCancelled()) {
+            task.cancel();
+        }
     }
 } // End of GameLobby class

@@ -7,6 +7,7 @@ import java.io.File;
 
 public class MainConfig {
 
+    private final static String CONFIG_VERSION = "1.1";
     private final static MainConfig instance = new MainConfig();
 
     private File file;
@@ -32,9 +33,17 @@ public class MainConfig {
 
         try {
             config.load(file);
-
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        // Check for version and if version is not the same, update
+        if (!config.getString("config_version").equals(CONFIG_VERSION)) {
+            FloorIsLava.getInstance().getLogger().warning("Config version mismatch! You have: " +
+                    config.getString("config_version") + " but the plugin is: " + CONFIG_VERSION);
+            FloorIsLava.getInstance().getLogger().warning("To update your config, delete the current FloorIsLava/Config.yml file and restart the server.");
+        }else {
+            FloorIsLava.getInstance().getLogger().info("Config version is up to date.");
         }
 
         plotMargin = config.getInt("Plot.Margin");
@@ -90,5 +99,9 @@ public class MainConfig {
     }
     public int getLavaRiseAmount() {
         return lavaRiseAmount;
+    }
+
+    public int getPreGameCountdown() {
+        return config.getInt("Game.PreGameCountdown");
     }
 }

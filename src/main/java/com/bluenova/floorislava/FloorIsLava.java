@@ -2,6 +2,7 @@ package com.bluenova.floorislava;
 
 import com.bluenova.floorislava.command.FILCommandHandler;
 import com.bluenova.floorislava.config.MessageConfig;
+import com.bluenova.floorislava.config.PlayerDataManager;
 import com.bluenova.floorislava.event.GameEventManager;
 import com.bluenova.floorislava.game.object.GamePlotDivider;
 import com.bluenova.floorislava.config.MainConfig;
@@ -19,6 +20,7 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.Bukkit;
+import org.bukkit.GameRule;
 import org.bukkit.World;
 import org.bukkit.WorldType;
 import org.bukkit.plugin.Plugin;
@@ -36,6 +38,9 @@ public final class FloorIsLava extends JavaPlugin {
 
     // Logger for the plugin
     private PluginLogger pluginLogger;
+
+    // Player Data Manager
+    private PlayerDataManager playerDataManager;
 
     // --- WorldGuard Integration Fields ---
     private boolean worldGuardAvailable = false;
@@ -55,29 +60,26 @@ public final class FloorIsLava extends JavaPlugin {
     public void onEnable() {
         instance = this;
 
-        // Inside FloorIsLava.onEnable() after loading config
+        // Load the MainConfig
+        MainConfig mainConfig = MainConfig.getInstance();
+        mainConfig.load();
         boolean devMode = MainConfig.getInstance().isDevModeEnabled();
         pluginLogger = new PluginLogger(this, devMode);
         if (devMode) {
             pluginLogger.info("Developer Mode Enabled - Debug messages will be shown.");
         }
-        // Now, inject pluginLogger into other classes (Managers, Commands, Listeners)
-        // via their constructors, just like you did for the other managers.
-        // Example:
-        // this.inviteLobbyManager = new InviteLobbyManager(pluginLogger, ...);
-        // FILCommandHandler commandHandler = new FILCommandHandler(pluginLogger, inviteLobbyManager, ...);
 
-        MainConfig mainConfig = MainConfig.getInstance();
+        // Load the MessageConfig
         MessageConfig mssgConfig = new MessageConfig(pluginLogger); // instantiate MessageConfig will load it as well
-
         this.adventure = BukkitAudiences.create(this);
         MiniMessages.init(this, pluginLogger, mssgConfig);
 
+
+        this.playerDataManager = new PlayerDataManager(pluginLogger, this);
         this.inviteLobbyManager = new InviteLobbyManager(pluginLogger);
-        this.gameLobbyManager = new GameLobbyManager(pluginLogger);
+        this.gameLobbyManager = new GameLobbyManager(pluginLogger, playerDataManager);
         this.FILCommandHandler = new FILCommandHandler(inviteLobbyManager, gameLobbyManager);
 
-        mainConfig.load();
         registerCommands();
         registerEvents();
         setupMVC();
@@ -112,7 +114,7 @@ public final class FloorIsLava extends JavaPlugin {
     }
 
     private void registerEvents() {
-        getServer().getPluginManager().registerEvents(new GameEventManager(inviteLobbyManager, gameLobbyManager), this);
+        getServer().getPluginManager().registerEvents(new GameEventManager(inviteLobbyManager, gameLobbyManager, playerDataManager,pluginLogger), this);
     }
 
     // Multiverse setup
@@ -125,6 +127,8 @@ public final class FloorIsLava extends JavaPlugin {
             core.getMVWorldManager().addWorld("fil_void_world", World.Environment.NORMAL, "", WorldType.NORMAL, true, "VoidGen");
         normalWorld = Bukkit.getWorld("fil_normal_world");
         voidWorld = Bukkit.getWorld("fil_void_world");
+        voidWorld.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
+        voidWorld.setTime(1000);
     }
 
     // WorldGuard setup

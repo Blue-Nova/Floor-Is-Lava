@@ -22,12 +22,11 @@ public class IdleProfile extends RegionProfile {
     @Override
     public void applyProfile() {
         // MISC LIST
-        region.setFlag(Flags.TIME_LOCK, "1000");
         region.setFlag(Flags.WEATHER_LOCK, WeatherType.REGISTRY.get("clear"));
 
         // ALLOW LIST
 
-        // specifically NOT spawning any entities
+        // specifically NOT spawning any entities and not allowing players to move
         region.setFlag(Flags.MOB_SPAWNING, StateFlag.State.DENY);
 
         // DENY LIST

@@ -57,7 +57,7 @@ public class LobbyLeaveCmd implements SubCommand {
                 // Delegate removal. GameLobby.remove should handle all messaging
                 // (e.g., sending "game.player_left_game" broadcast)
                 // AND notify gameManager/PlotManager when game ends.
-                game.remove(player, false); // false = not a death
+                game.remove(player, false, false); // false = not a death
             } else {
                 player.sendMessage(ChatColor.RED + "Error: Found you in game map, but couldn't retrieve game object.");
                 // MiniMessages.send(player, "game.error_generic"); // If you add a generic game error key

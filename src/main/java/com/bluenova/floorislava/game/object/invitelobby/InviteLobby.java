@@ -64,7 +64,7 @@ public class InviteLobby extends Lobby {
         // Send feedback to owner
         if (!successfullyInvitedNames.isEmpty()) {
             TagResolver successPlaceholders = TagResolver.resolver(
-                    Placeholder.unparsed("player_list", String.join("<gray>, </gray><br>", successfullyInvitedNames))
+                    Placeholder.unparsed("player_list", String.join("<newline>", successfullyInvitedNames))
             );
             // Assumes key: lobby.invite_sent_feedback: "<white>Invites sent to: <aqua><player_list></aqua>.</white>"
             MiniMessages.send(this.getOwner(), "lobby.invite_sent_header", successPlaceholders);
