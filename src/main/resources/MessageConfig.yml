@@ -12,7 +12,6 @@ general:
   player_not_found: "<red>Player <aqua><player></aqua> not found (offline or misspelled?).</red>"
   already_in_game_error: "<red>You cannot do that while in a game!</red>"
   not_a_player: "<red>You must be a player to do that!</red>"
-  # --- Added General Keys ---
   base_usage: "<red>Usage: /fil <group> <subcommand> [args...]</red>"
   unknown_command_group: "<red>Unknown command group: <aqua><group></aqua></red>"
   group_help_header: "<yellow>Available commands for <aqua>/fil <group></aqua>:</yellow>"
@@ -26,7 +25,6 @@ lobby:
   not_lobby_owner: "<red>You must be the lobby owner to do that!</red>"
   invite_sent_header: "<white>Invites sent to:</white><br><player_list>" # Command appends names
   invite_failed_header: "<red>Could not invite: </red><br><player_list>" # Command appends names/reasons
-  # Inside MessageConfig.yml -> lobby section
   invite_received: "<white>You have received an invite from <aqua><inviter></aqua> to play <plugin_name>! </white><accept_button>" # Placeholder for button
   invite_accept_button_text: "<green><bold>[Accept]</bold></green>" # Text for the button
   invite_accept_button_hover: "<green>Click to accept invite from <aqua><inviter></aqua></green>" # Hover text (optional)
@@ -51,7 +49,6 @@ lobby:
   list_empty_joined: "<gray>(Just you!)</gray>"
   list_empty_invited: "<gray>(None)</gray>"
   list_footer: "<gold>---------------------</gold>"
-  # --- Added Lobby Keys ---
   target_not_owner: "<red>Player <aqua><player></aqua> does not own a lobby!</red>"
   invite_not_pending: "<red>You do not have a pending invite from <aqua><player></aqua>.</red>"
   error_generic: "<red>An internal error occurred retrieving lobby data.</red>"
@@ -60,11 +57,13 @@ lobby:
 
 game:
   generating_terrain: "<aqua>Generating terrain for your game...</aqua>"
+  pre_countdown: "<aqua>Teleporting to game in <yellow><seconds></yellow>...</aqua>"
   countdown: "<yellow>Game starting in <gold><seconds></gold>...</yellow>"
   teleporting: "<aqua>Teleporting to the arena!</aqua>"
-  started: "<green>The game has begun! Last one standing wins!</green>"
+  started: "<red>The game has begun! <gold><bold>Last one standing wins!</bold></gold></red>"
   lava_death: "<aqua><player></aqua> <red>was consumed by the rising lava!</red>"
   other_death: "<aqua><player></aqua> <red>died.</red>"
+  death_items_dropped: "<aqua>You died</aqua> <red>and dropped</red> <gold>half your items!</gold>"
   became_spectator: "<gray>You were eliminated! You are now spectating.</gray>"
   player_left_game: "<aqua><player></aqua> <yellow>has left the game.</yellow>"
   self_left_game: "<red>You left the game.</red>"
@@ -80,4 +79,6 @@ command_usage:
   lobby_invite: "<red>Usage: /fil lobby invite <player1> [player2]...</red>"
   lobby_accept: "<red>Usage: /fil lobby accept <playerWhoInvitedYou></red>"
   lobby_remove: "<red>Usage: /fil lobby remove <playerToKick></red>"
-  # Add others as needed
+
+dev:
+  state_restored: "<green>player data restored successfully!</green>"

@@ -25,14 +25,15 @@ public class BaseProfile extends RegionProfile {
     @Override
     public void applyProfile() {
         Set<EntityType> blackListedEntities = Set.of(
+                /*
                 BukkitAdapter.adapt(org.bukkit.entity.EntityType.CREEPER),
                 BukkitAdapter.adapt(org.bukkit.entity.EntityType.ZOMBIE),
                 BukkitAdapter.adapt(org.bukkit.entity.EntityType.SKELETON),
                 BukkitAdapter.adapt(org.bukkit.entity.EntityType.SPIDER)
+                */
         );
 
         // MISC LIST
-        region.setFlag(Flags.TIME_LOCK, "1000");
         region.setFlag(Flags.WEATHER_LOCK, WeatherType.REGISTRY.get("clear"));
         region.setFlag(Flags.DENY_SPAWN, blackListedEntities);
 
@@ -46,9 +47,9 @@ public class BaseProfile extends RegionProfile {
         region.setFlag(Flags.DAMAGE_ANIMALS, StateFlag.State.ALLOW);
         region.setFlag(Flags.MOB_DAMAGE, StateFlag.State.ALLOW);
         region.setFlag(Flags.ENDERPEARL, StateFlag.State.ALLOW);
+        region.setFlag(Flags.CHEST_ACCESS, StateFlag.State.ALLOW);
 
         // DENY LIST
-        region.setFlag(Flags.CHEST_ACCESS, StateFlag.State.DENY);
         region.setFlag(Flags.SLEEP, StateFlag.State.DENY);
         region.setFlag(Flags.RESPAWN_ANCHORS, StateFlag.State.DENY);
         region.setFlag(Flags.CHORUS_TELEPORT, StateFlag.State.DENY);

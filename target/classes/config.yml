@@ -2,7 +2,7 @@
 # WELCOME TO FLOOR IS LAVA #
 # ------------------------ #
 # Do not change this number pls :).
-config_version: 1.0
+config_version: "1.1"
 # ------------------------- #
 # ACTTUAL CONFIGURATION
 Plot:
@@ -13,17 +13,18 @@ Plot:
 
   # How big each plot will be. 50 blocks will have a 50x50 plot of land per game.
   # lowering this number will lower the amount of processing needed before each start of a game.
-  Size: 50
+  Size: 75
 
   # How many plots (or lobbies) are there at a time.
   # THIS IS THE AMOUNT OF PLOTS **ACROSS**
-    # if this is 1, that means 1x1 = 1 total plot
+  # if this is 1, that means 1x1 = 1 total plot
   # if this is 5, that means 5x5 = 25 total plots
   # if this is 10, that means 10x10 = 100 total plots
   # Lowering this helps very weak servers stay alive lmao (but only when lobbies are at MAX CAPACITY).
   Amount: 5
 
 Game:
+  PreGameCountdown: 3
   # How long the countdown will be before the game starts. (in seconds)
   # Lowering this number will lower the amount of time needed before each start of a game.
   StartCountdown: 10

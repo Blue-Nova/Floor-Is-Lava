@@ -25,10 +25,13 @@ com\bluenova\floorislava\util\worldguard\FILRegionManager$1.class
 com\bluenova\floorislava\util\messages\PluginLogger.class
 com\bluenova\floorislava\game\object\gamelobby\GameLobby.class
 com\bluenova\floorislava\game\object\ChaosEvents.class
+com\bluenova\floorislava\event\events\onPlayerMove.class
 com\bluenova\floorislava\util\WorkloadRunnable.class
+com\bluenova\floorislava\config\PlayerDataManager.class
 com\bluenova\floorislava\util\worldguard\regionprofiles\BaseProfile.class
 com\bluenova\floorislava\game\object\GamePlotDivider.class
 com\bluenova\floorislava\command\gamecommands\GameStartCmd.class
+com\bluenova\floorislava\game\object\gamelobby\GameLobbyStates.class
 com\bluenova\floorislava\util\ElevateLava.class
 com\bluenova\floorislava\FloorIsLava.class
 com\bluenova\floorislava\util\Tools.class

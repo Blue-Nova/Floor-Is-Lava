@@ -40,7 +40,9 @@ public class Tools {
         safeLoc.setZ(chunkGlobal.getZ() + z_local);
         Block safeBlock = getHighestUsableBlockAt(gameWorld, x_local, z_local);
         if (safeBlock == null) getSafeLocation(gameWorld, plot);
-        safeLoc.setY(safeBlock.getLocation().getY() + 1.0);
+        safeLoc.setY(safeBlock.getLocation().getY() + 1.03);
+        safeLoc.setX(safeLoc.getX() + 0.5);
+        safeLoc.setZ(safeLoc.getZ() + 0.5);
         return safeLoc;
     }
 

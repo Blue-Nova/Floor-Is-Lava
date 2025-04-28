@@ -4,7 +4,6 @@ import com.bluenova.floorislava.FloorIsLava; // Your main plugin class
 import com.bluenova.floorislava.util.messages.PluginLogger;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
-import java.util.logging.Level;
 
 public class MessageConfig {
     private File file;
@@ -67,10 +66,10 @@ public class MessageConfig {
     public String getRawString(String key) {
         if (config == null) { // Check if config failed to load in load()
             FloorIsLava.getInstance().getLogger().severe("Attempted to get message key '" + key + "' but MessageConfig failed to load!");
-            return "<bold><red>ERROR: CFG NULL</bold></red>"; // Return noticeable error
+            return "<bold><red>ERROR: CFG NULL</red></bold>"; // Return noticeable error
         }
         // Provide default value to getString to handle missing keys gracefully
-        return config.getString(key, "<bold><red>MissingKey: " + key + "</bold></red>");
+        return config.getString(key, "<bold><red>MissingKey: " + key + "</red></bold>"); // Return missing key error
     }
 
     /**
