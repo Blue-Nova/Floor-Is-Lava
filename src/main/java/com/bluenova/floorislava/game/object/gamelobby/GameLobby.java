@@ -77,7 +77,7 @@ public class GameLobby extends Lobby {
     public final Location gameStartLoc; // Plot corner min
     public final Location gameEndLoc;   // Plot corner max
     private boolean gameON = false; // Game active flag
-    public int lavaHeight;      // Current lava Y level (public for GameEventManager?)
+    public int lavaHeight; // Current lava Y level (public for GameEventManager?)
 
     // Task IDs (for later use to have deployable tasks)
     private BukkitTask countdownTask = null;
@@ -272,8 +272,10 @@ public class GameLobby extends Lobby {
         } else {
             pluginLogger.warning("Could not find original invite lobby for owner: " + this.owner.getName() + " to close.");
         }
+        if (FloorIsLava.getInstance().isWorldGuardAvailable())
+            // Set region profile to GAME
+            this.FILRegionManager.setRegionProfile(gamePlot.worldGuardRegionId, RegionProfiles.BASE);
 
-        this.FILRegionManager.setRegionProfile(gamePlot.worldGuardRegionId, RegionProfiles.BASE);
         // Start game mechanics timers
         beginLavaTimer();
         beginEventTimer(); // If ChaosEventManager is ready
@@ -405,7 +407,8 @@ public class GameLobby extends Lobby {
         this.playerSpawnLocation.clear();
         LAVA_ANNOUNCE_HEIGHTS.clear(); // Clear announce heights
         this.flush(); // Clear the plot of blocks
-        FILRegionManager.setRegionProfile(gamePlot.worldGuardRegionId, RegionProfiles.IDLE); // Reset region profile
+        if (FloorIsLava.getInstance().isWorldGuardAvailable())
+            FILRegionManager.setRegionProfile(gamePlot.worldGuardRegionId, RegionProfiles.IDLE); // Reset region profile
     }
 
     private void flush(){

@@ -182,7 +182,7 @@ public final class FloorIsLava extends JavaPlugin {
         return this.adventure;
     }
 
-    public static Plugin getInstance() {
+    public static FloorIsLava getInstance() {
         return instance;
     }
 
