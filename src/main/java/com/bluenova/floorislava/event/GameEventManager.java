@@ -55,9 +55,13 @@ public class GameEventManager implements Listener {
             if (gameManager.getGameFromPlayer(player).getGameState() == GameLobbyStates.GENERATING) {
                 return;
             }
+            if (!(event.getDamage() >= player.getHealth())){
+                return;
+            }
             if((event.getCause() == EntityDamageEvent.DamageCause.LAVA) && (player.getLocation().getY()
-                    <= gameManager.getGameFromPlayer(player).lavaHeight))
+                    <= gameManager.getGameFromPlayer(player).lavaHeight)){
                 gameManager.getGameFromPlayer(player).remove(player, true, false);
+            }
             else {
                 gameManager.getGameFromPlayer(player).playerDiedNoLava(player);
             }
