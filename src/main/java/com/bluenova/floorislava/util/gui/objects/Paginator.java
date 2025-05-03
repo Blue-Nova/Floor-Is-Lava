@@ -3,11 +3,13 @@ package com.bluenova.floorislava.util.gui.objects;
 import com.bluenova.floorislava.FloorIsLava;
 import com.bluenova.floorislava.util.gui.GuiManager;
 import com.bluenova.floorislava.util.gui.InventoryButton;
+import com.bluenova.floorislava.util.gui.util.PageIds;
+import com.bluenova.floorislava.util.messages.MiniMessages;
 import org.bukkit.Material;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,19 +19,23 @@ public abstract class Paginator<T> extends InventoryGui {
     protected final int itemsPerPage;
     protected List<T> itemList;
     protected int currentPage = 0;
+    protected Player viewer = null; // This is set in the constructor of the Paginator
+
+    protected PageIds cameFrom = null; // This is set in the constructor of the Paginator
 
     // This inventory is created by the InventoryGui constructor (super())
 
-    public Paginator(ArrayList<T> itemList) {
+    public Paginator(ArrayList<T> itemList, PageIds cameFrom, Player viewer) {
         super(); // Creates the inventory via InventoryGui constructor -> createInventory()
         // Ensure createInventory() in your Paginator implementation creates the right size (e.g., 54 slots)
         this.itemsPerPage = getInventory().getSize() - 9; // Calculate based on actual inv size minus one row for controls
         this.itemList = itemList;
+        this.cameFrom = cameFrom; // Set the pageId to the one we came from
+        this.viewer = viewer; // Set the viewer to the player who opened the inventory
         updateInventoryContent(); // Initial population of buttonMap. Decoration happens in onOpen.
     }
 
     protected void updateInventoryContent() {
-        FloorIsLava.getInstance().getPluginLogger().info("Updating inventory content map for page " + currentPage);
 
         if (this.inventory != null) {
             this.inventory.clear();
@@ -42,19 +48,10 @@ public abstract class Paginator<T> extends InventoryGui {
         int startIndex = currentPage * itemsPerPage;
         int endIndex = Math.min(startIndex + itemsPerPage, itemList.size());
 
-        FloorIsLava.getInstance().getPluginLogger().debug(
-                "Calculating loop bounds: currentPage=" + currentPage +
-                        ", itemsPerPage=" + itemsPerPage +
-                        ", calculatedStartIndex=" + startIndex +
-                        ", itemList.size=" + (itemList == null ? "null" : itemList.size()) + // Check for null list
-                        ", calculatedEndIndex=" + endIndex
-        );
         for (int i = startIndex; i < endIndex; i++) {
             int itemSlot = i - startIndex; // Slot index within the item display area (0 to itemsPerPage-1)
-            InventoryButton button = getUnitButton(itemList.get(i));
-            FloorIsLava.getInstance().getPluginLogger().info("Mapping button for item index " + i + " to slot " + itemSlot);
+            InventoryButton button = getUnitButton(itemList.get(i), viewer);
             if (button != null) {
-                // Add button logic to map. Visual item placement is done by decorate().
                 this.addButton(itemSlot, button);
             }
         }
@@ -66,28 +63,56 @@ public abstract class Paginator<T> extends InventoryGui {
 
         if (currentPage > 0) {
             this.addButton(previousButtonSlot, new InventoryButton()
-                    .creator(player -> new ItemStack(Material.ARROW)) // Creator used by decorate
+                    .creator(player -> {
+                        ItemStack item = new ItemStack(Material.ARROW);
+                        ItemMeta itemMeta = item.getItemMeta();
+                        if (itemMeta != null) {
+                            itemMeta.displayName(MiniMessages.miniMessage.deserialize("<green>Previous Page"));
+                            item.setItemMeta(itemMeta);
+                        }
+                        return item;
+                    }) // Creator used by decorate
                     .consumer(event -> this.previousPage((Player) event.getWhoClicked())));
-        } else {
-            // Optional: Add a placeholder if you want the slot filled when disabled
-            //addButton(previousButtonSlot, createStaleButton()); // Example using InventoryGui's method
         }
 
         if (itemList != null && (currentPage + 1) * itemsPerPage < itemList.size()) {
             this.addButton(nextButtonSlot, new InventoryButton()
-                    .creator(p -> new ItemStack(Material.ARROW))
+                    .creator(p -> {
+                        ItemStack item = new ItemStack(Material.ARROW);
+                        ItemMeta itemMeta = item.getItemMeta();
+                        if (itemMeta != null) {
+                            itemMeta.displayName(MiniMessages.miniMessage.deserialize("<green>Next Page"));
+                            item.setItemMeta(itemMeta);
+                        }
+                        return item;
+                    })
                     .consumer(event -> {
-                        // *** ADD TRY-CATCH HERE ***
-                        FloorIsLava.getInstance().getPluginLogger().info("Next Page Button CLICKED - Attempting to call nextPage()..."); // Log right before call
                         this.nextPage((Player) event.getWhoClicked());
-                        FloorIsLava.getInstance().getPluginLogger().info("Next Page Button CLICKED - Call to nextPage() completed."); // Log right after call
                     }));
-        } else {
-            // Optional: Add a placeholder
-            // addButton(nextButtonSlot, createStaleButton()); // Example
         }
 
-        // *** 4. DO NOT call decorate() here. It runs in onOpen or after page change + reopen ***
+        // return button
+        this.addButton(inventorySize - 5, new InventoryButton()
+                .creator(player -> {
+                    ItemStack item =  new ItemStack(Material.BARRIER);
+                    ItemMeta itemMeta = item.getItemMeta();
+                    if (itemMeta != null) {
+                        itemMeta.displayName(MiniMessages.miniMessage.deserialize("<red>Close"));
+                        item.setItemMeta(itemMeta);
+                    }
+                    return item;
+                })
+                .consumer(event -> {
+                    GuiManager guiManager = FloorIsLava.getInstance().getGuiManager();
+                    InventoryGui gui = guiManager.createInventoryFromPageId(cameFrom);
+                    if (gui == null) {
+                        FloorIsLava.getInstance().getPluginLogger().severe("Paginator Failed to create inventory from pageId: " + cameFrom);
+                        return;
+                    }
+                    guiManager.openGUI(gui, (Player) event.getWhoClicked());
+                    FloorIsLava.getInstance().getPluginLogger().debug("Closed inventory and unregistered it from GuiManager.");
+                }));
+
     }
 
 
@@ -96,10 +121,7 @@ public abstract class Paginator<T> extends InventoryGui {
         if (condition) {
             currentPage++;
             updateInventoryContent();
-            GuiManager manager = FloorIsLava.getInstance().getGuiManager();
-            FloorIsLava.getInstance().getPluginLogger().info("Next page clicked, THIS:" + this);
-            FloorIsLava.getInstance().getPluginLogger().info("Next page clicked, THIS Inventory:" + this.getInventory());
-            manager.openGUI(this, player);
+            this.decorate(player);
         }
     }
 
@@ -107,19 +129,10 @@ public abstract class Paginator<T> extends InventoryGui {
         if (currentPage > 0) {
             currentPage--;
             updateInventoryContent();
-            FloorIsLava.getInstance().getGuiManager().openGUI(this, player);
+            this.decorate(player);
         }
     }
 
-    protected abstract InventoryButton getUnitButton(T item);
+    protected abstract InventoryButton getUnitButton(T item, Player viewer);
 
-
-    @Override
-    public void onOpen(InventoryOpenEvent event) {
-        FloorIsLava.getInstance().getPluginLogger().info("onOpen inventory for page " + currentPage);
-
-        this.decorate((Player) event.getPlayer());
-
-        ((Player) event.getPlayer()).updateInventory();
-    }
 }

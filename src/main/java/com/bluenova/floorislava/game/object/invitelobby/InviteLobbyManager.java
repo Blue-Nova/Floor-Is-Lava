@@ -80,9 +80,20 @@ public class InviteLobbyManager {
         return playerList;
     }
 
-    public boolean isPlayerInvited(Player player) {
+    public boolean isPlayerInvitedBy(Player player, Player owner) {
         for (InviteLobby lobby : inviteLobbyList) {
-            if (lobby.sentList.contains(player)) return true;
+            if (lobby.getOwner() == owner) {
+                if (lobby.sentList.contains(player)) return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isPlayerInOwnersLobby(Player player, Player owner) {
+        for (InviteLobby lobby : inviteLobbyList) {
+            if (lobby.getOwner() == owner) {
+                if (lobby.players.contains(player)) return true;
+            }
         }
         return false;
     }

@@ -33,6 +33,7 @@ com\bluenova\floorislava\util\gui\objects\Paginator.class
 com\bluenova\floorislava\config\MessageConfig.class
 com\bluenova\floorislava\game\object\invitelobby\InviteLobbyManager.class
 com\bluenova\floorislava\util\worldedit\FlushGamePlot.class
+com\bluenova\floorislava\util\gui\GuiManager$1.class
 com\bluenova\floorislava\util\worldguard\FILRegionManager.class
 com\bluenova\floorislava\util\gui\inventories\main\MainMenu.class
 com\bluenova\floorislava\config\MainConfig.class

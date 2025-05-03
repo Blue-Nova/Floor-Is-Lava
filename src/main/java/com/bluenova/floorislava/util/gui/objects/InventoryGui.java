@@ -68,7 +68,6 @@ public abstract class InventoryGui implements InventoryHandler {
         int slot = event.getSlot();
         InventoryButton button = this.buttonMap.get(slot);
         if (button != null) {
-            FloorIsLava.getInstance().getPluginLogger().info("Button: " + button.getEventConsumer());
             button.getEventConsumer().accept(event);
         }
     }

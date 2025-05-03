@@ -1,15 +1,15 @@
 package com.bluenova.floorislava.util.gui;
 
-import com.bluenova.floorislava.FloorIsLava;
+
+import com.bluenova.floorislava.util.gui.inventories.lobby.LobbyInv;
+import com.bluenova.floorislava.util.gui.inventories.main.MainMenu;
 import com.bluenova.floorislava.util.gui.objects.InventoryGui;
-import com.bluenova.floorislava.util.gui.objects.Paginator;
+import com.bluenova.floorislava.util.gui.util.PageIds;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
-
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,17 +19,12 @@ public class GuiManager {
 
     public void openGUI(InventoryGui gui, Player player) {
         this.registerHandledInventory(gui.getInventory(), gui);
-        player.openInventory(gui.getInventory());
+        Inventory inventory = gui.getInventory();
+        player.openInventory(inventory);
     }
 
     public void registerHandledInventory(Inventory inventory, InventoryHandler handler) {
-        // if inventory key already exists, remove it and replace entry
-        if (this.activeInventories.containsKey(inventory)) {
-            FloorIsLava.getInstance().getPluginLogger().info("Inventory already registered, unregistering: " + inventory);
-            this.unregisterInventory(inventory);
-        }
         this.activeInventories.put(inventory, handler);
-        FloorIsLava.getInstance().getPluginLogger().info("Active inventories: " + Arrays.toString(this.activeInventories.entrySet().toArray()));
     }
 
     public void unregisterInventory(Inventory inventory) {
@@ -46,10 +41,6 @@ public class GuiManager {
     public void handleOpen(InventoryOpenEvent event) {
         Inventory inventory = event.getInventory();
         InventoryHandler handler = this.activeInventories.get(inventory);
-        if (handler == null) {
-            FloorIsLava.getInstance().getPluginLogger().info("No handler found for inventory: " + inventory);
-            return;
-        }
         handler.onOpen(event);
     }
 
@@ -62,4 +53,11 @@ public class GuiManager {
         }
     }
 
+    public InventoryGui createInventoryFromPageId(PageIds pageId) {
+        return switch (pageId) {
+            case MAIN_MENU -> new MainMenu();
+            case LOBBY -> new LobbyInv();
+            default -> null;
+        };
+    }
 }

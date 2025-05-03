@@ -109,14 +109,10 @@ public class LobbyInv extends InventoryGui {
                 })
                 .consumer(event -> {
                     if (event.getWhoClicked() instanceof Player) {
-                        Player player1 = (Player) event.getWhoClicked();
+                        Player viewer = (Player) event.getWhoClicked();
                         ArrayList<Player> allOnlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
-                        allOnlinePlayers.remove(player1); // Remove the player themselves
-
-                        for (int i = 0; i < (9*6)-1; i++) {
-                            allOnlinePlayers.add(allOnlinePlayers.get(0));
-                        }
-                        FloorIsLava.getInstance().getGuiManager().openGUI(new PlayersToInviteInv(allOnlinePlayers), player1);
+                        allOnlinePlayers.remove(viewer); // Remove the player themselves
+                        FloorIsLava.getInstance().getGuiManager().openGUI(new PlayersToInviteInv(allOnlinePlayers, this.pageId, viewer), viewer);
                     }
                 }));
         // start game button
