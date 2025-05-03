@@ -4,11 +4,13 @@ import com.bluenova.floorislava.command.FILCommandHandler;
 import com.bluenova.floorislava.config.MessageConfig;
 import com.bluenova.floorislava.config.PlayerDataManager;
 import com.bluenova.floorislava.event.GameEventManager;
+import com.bluenova.floorislava.event.events.GuiListener;
 import com.bluenova.floorislava.game.object.GamePlotDivider;
 import com.bluenova.floorislava.config.MainConfig;
 import com.bluenova.floorislava.game.object.gamelobby.GameLobbyManager;
 import com.bluenova.floorislava.game.object.invitelobby.InviteLobbyManager;
 import com.bluenova.floorislava.util.WorkloadRunnable;
+import com.bluenova.floorislava.util.gui.GuiManager;
 import com.bluenova.floorislava.util.messages.MiniMessages;
 import com.bluenova.floorislava.util.messages.PluginLogger;
 import com.bluenova.floorislava.util.worldguard.FILRegionManager;
@@ -18,7 +20,6 @@ import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.World;
@@ -50,11 +51,10 @@ public final class FloorIsLava extends JavaPlugin {
     // ---
 
     // Manager Instances for the Game Lobby and Invite Lobby
+    private GuiManager guiManager;
     private InviteLobbyManager inviteLobbyManager;
     private GameLobbyManager gameLobbyManager;
     private FILCommandHandler FILCommandHandler;
-
-    private BukkitAudiences adventure;
 
     @Override
     public void onEnable() {
@@ -71,10 +71,9 @@ public final class FloorIsLava extends JavaPlugin {
 
         // Load the MessageConfig
         MessageConfig mssgConfig = new MessageConfig(pluginLogger); // instantiate MessageConfig will load it as well
-        this.adventure = BukkitAudiences.create(this);
         MiniMessages.init(this, pluginLogger, mssgConfig);
 
-
+        this.guiManager = new GuiManager();
         this.playerDataManager = new PlayerDataManager(pluginLogger, this);
         this.inviteLobbyManager = new InviteLobbyManager(pluginLogger);
         this.gameLobbyManager = new GameLobbyManager(pluginLogger, playerDataManager);
@@ -96,10 +95,6 @@ public final class FloorIsLava extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        if(this.adventure != null) {
-            this.adventure.close();
-            this.adventure = null;
-        }
         // Clean up games, lobbies, tasks etc.
         if (gameLobbyManager != null) {
             gameLobbyManager.shutdownAllGames(); // Need method in manager to force end games (WIP)
@@ -115,6 +110,7 @@ public final class FloorIsLava extends JavaPlugin {
 
     private void registerEvents() {
         getServer().getPluginManager().registerEvents(new GameEventManager(inviteLobbyManager, gameLobbyManager, playerDataManager,pluginLogger), this);
+        getServer().getPluginManager().registerEvents(new GuiListener(guiManager), this);
     }
 
     // Multiverse setup
@@ -174,15 +170,7 @@ public final class FloorIsLava extends JavaPlugin {
     }
     // WorldGuard setup end
 
-    // GETTERS
-    public @NonNull BukkitAudiences adventure() {
-        if(this.adventure == null) {
-            throw new IllegalStateException("Tried to access Adventure when the plugin was disabled!");
-        }
-        return this.adventure;
-    }
-
-    public static Plugin getInstance() {
+    public static FloorIsLava getInstance() {
         return instance;
     }
 
@@ -212,5 +200,13 @@ public final class FloorIsLava extends JavaPlugin {
 
     public static FILRegionManager getFILRegionManager() {
         return worldGuardRegionManager;
+    }
+
+    public GuiManager getGuiManager() {
+        return guiManager;
+    }
+
+    public PluginLogger getPluginLogger() {
+        return pluginLogger;
     }
 }

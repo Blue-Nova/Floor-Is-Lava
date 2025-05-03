@@ -3,7 +3,6 @@ package com.bluenova.floorislava.util.messages;
 import com.bluenova.floorislava.FloorIsLava; // Import main plugin class
 import com.bluenova.floorislava.config.MessageConfig; // To get messages
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences; // Import BukkitAudiences
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -15,14 +14,10 @@ import org.bukkit.entity.Player;
 public class MiniMessages {
 
     public static final MiniMessage miniMessage = MiniMessage.miniMessage();
-    private static BukkitAudiences adventure = null;
     private static PluginLogger pluginLogger = null;
     private static MessageConfig messageConfig = null;
 
     public static void init(FloorIsLava plugin, PluginLogger logger, MessageConfig config) {
-        if (adventure == null) {
-            adventure = plugin.adventure();
-        }
         if (pluginLogger == null) {
             pluginLogger = logger;
         }
@@ -47,7 +42,6 @@ public class MiniMessages {
     }
 
     public static void send(Player player, String messageKey, TagResolver placeholders) {
-        if (adventure == null) { return; }
 
         String rawPrefix = messageConfig.getRawPrefix();
 
@@ -69,7 +63,7 @@ public class MiniMessages {
         Component finalComponent = prefixComponent.append(messageComponent);
 
         // Send using player audience
-        adventure.player(player).sendMessage(finalComponent);
+        player.sendMessage(finalComponent);
     }
 
     // --- NEW methods for CommandSender ---
@@ -78,12 +72,6 @@ public class MiniMessages {
     }
 
     public static void send(CommandSender sender, String messageKey, TagResolver placeholders) {
-        if (adventure == null) {
-            // Fallback for console/non-player senders if Adventure isn't ready
-            sender.sendMessage(ChatColor.RED + "[FIL] Message system error.");
-            pluginLogger.severe("[FloorIsLava] MiniMessages not initialized! adventure API is null.");
-            return;
-        }
 
         String rawMessage = getRawMessage(messageKey);
         if (rawMessage == null) {
@@ -96,11 +84,8 @@ public class MiniMessages {
         // Parse (same as before)
         Component parsedComponent = miniMessage.deserialize(rawMessage, placeholders);
 
-        // Get the generic Audience for the sender (works for Player AND Console)
-        Audience audience = adventure.sender(sender);
-
         // Send the component
-        audience.sendMessage(parsedComponent);
+        sender.sendMessage(parsedComponent);
     }
 
 

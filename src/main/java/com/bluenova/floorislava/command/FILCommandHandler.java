@@ -1,12 +1,14 @@
 package com.bluenova.floorislava.command;
 
 // ... other imports ...
+import com.bluenova.floorislava.FloorIsLava;
 import com.bluenova.floorislava.command.gamecommands.GameStartCmd;
 import com.bluenova.floorislava.command.lobbycommands.*;
 import com.bluenova.floorislava.command.subcommand.SubCommand;
 import com.bluenova.floorislava.game.object.gamelobby.GameLobbyManager;
 import com.bluenova.floorislava.game.object.invitelobby.InviteLobbyManager;
 // Import MiniMessages and placeholders
+import com.bluenova.floorislava.util.gui.inventories.main.MainMenu;
 import com.bluenova.floorislava.util.messages.MiniMessages;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
@@ -16,6 +18,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
 import java.util.*;
@@ -56,7 +59,9 @@ public class FILCommandHandler implements CommandExecutor, TabCompleter {
         if (args.length == 0) {
             // Use MiniMessages - Add general.base_usage key to config
             // Example YAML: general.base_usage: "<red>Usage: /fil <group> <subcommand> [args...]</red>"
-            MiniMessages.send(sender, "general.base_usage");
+
+            FloorIsLava.getInstance().getGuiManager().openGUI(new MainMenu(), (Player) sender);
+
             return true;
         }
 

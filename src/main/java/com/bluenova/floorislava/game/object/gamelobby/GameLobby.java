@@ -337,7 +337,7 @@ public class GameLobby extends Lobby {
         Title.Times times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(5), Duration.ofSeconds(2));
         Title fullTitle = Title.title(title, subtitle, times);
 
-        ((FloorIsLava)plugin).adventure().player(player).showTitle(fullTitle);
+        player.showTitle(fullTitle);
     }
 
     /** Stops game timers, cleans up players, releases plot. */

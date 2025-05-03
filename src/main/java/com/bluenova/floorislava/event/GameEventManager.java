@@ -51,6 +51,10 @@ public class GameEventManager implements Listener {
         if (!(event.getEntity() instanceof Player)) return;
         Player player = (Player) event.getEntity();
 
+        if (!(event.getDamage() >= player.getHealth())){
+            return;
+        }
+
         if (gameManager.isPlayerIngame(player)) {
             if (gameManager.getGameFromPlayer(player).getGameState() == GameLobbyStates.GENERATING) {
                 return;

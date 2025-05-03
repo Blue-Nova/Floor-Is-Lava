@@ -57,7 +57,6 @@ public class InviteLobby extends Lobby {
 
             // If checks pass, send invite and track success
             invite(invitedPlayer); // Sends the actual invite message
-            sentList.add(invitedPlayer);
             successfullyInvitedNames.add(invitedPlayer.getName());
         }
 
@@ -79,9 +78,17 @@ public class InviteLobby extends Lobby {
     }
 
     // Refactored to use MiniMessages and integrated click event
-    private void invite(Player invitedPlayer){
-        invitedPlayer.playSound(invitedPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+    public void invite(Player invitedPlayer){
 
+        if (sentList.contains(invitedPlayer)) {
+            MiniMessages.send(this.getOwner(), "lobby.already_invited_error", Placeholder.unparsed("player", invitedPlayer.getName()));
+            return;
+        }
+        if (players.contains(invitedPlayer)) {
+            MiniMessages.send(this.getOwner(), "lobby.already_invited_error", Placeholder.unparsed("player", invitedPlayer.getName()));
+            return;
+        }
+        invitedPlayer.playSound(invitedPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
         String ownerName = this.getOwner().getName();
 
 // --- Create the clickable [Accept] component ---
@@ -119,6 +126,7 @@ public class InviteLobby extends Lobby {
 
 // Send the main invite_received message
         MiniMessages.send(invitedPlayer, "lobby.invite_received", mainPlaceholders);
+        sentList.add(invitedPlayer);
     }
 
     // Refactored to use MiniMessages and coordinate with manager
