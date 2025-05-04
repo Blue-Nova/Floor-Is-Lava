@@ -7,7 +7,6 @@ import com.bluenova.floorislava.util.gui.inventories.lobby.LobbyInv;
 import com.bluenova.floorislava.util.gui.inventories.main.MainMenu;
 import com.bluenova.floorislava.util.gui.util.PageIds;
 import com.bluenova.floorislava.util.messages.MiniMessages;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -24,7 +23,7 @@ import java.util.Map;
 
 public abstract class InventoryGui implements InventoryHandler {
 
-    Inventory inventory;
+    private final Inventory inventory;
     protected final Map<Integer, InventoryButton> buttonMap = new HashMap<>();
 
     protected PageIds pageId;
@@ -57,11 +56,9 @@ public abstract class InventoryGui implements InventoryHandler {
 
                 icon = button.getIconCreator().apply(player); // Generate the ItemStack
 
-                if (icon == null) {
-                } else {
+                if (icon != null) {
                     this.inventory.setItem(slot, icon);
                 }
-
         });
     }
 
@@ -123,10 +120,10 @@ public abstract class InventoryGui implements InventoryHandler {
                     ItemStack item = new ItemStack(Material.BARRIER);
                     ItemMeta meta = item.getItemMeta();
                     if (meta != null) {
-                        meta.displayName(MiniMessages.miniMessage.deserialize("<red>Exit Menu"));
-                        ArrayList<Component> lore = new ArrayList<>();
-                        lore.add(MiniMessages.miniMessage.deserialize("<gray>Click to close the Menu"));
-                        meta.lore(lore);
+                        meta.setDisplayName(MiniMessages.legacy("<red>Exit Menu"));
+                        ArrayList<String> lore = new ArrayList<>();
+                        lore.add(MiniMessages.legacy("<gray>Click to exit menu"));
+                        meta.setLore(lore);
                     }
                     item.setItemMeta(meta);
                     return item;
@@ -148,7 +145,7 @@ public abstract class InventoryGui implements InventoryHandler {
                             ItemMeta itemMeta = item.getItemMeta();
                             if (itemMeta != null) {
                                 // set display name with formatting
-                                itemMeta.displayName(MiniMessages.miniMessage.deserialize("<bold><gold>Main <red>Menu"));
+                                itemMeta.setDisplayName(MiniMessages.legacy("<bold><gold>Main <red>Menu"));
                                 item.setItemMeta(itemMeta);
                             }
                             return item;
@@ -164,7 +161,7 @@ public abstract class InventoryGui implements InventoryHandler {
                             ItemMeta meta = item.getItemMeta();
                             if (meta != null) {
                                 // set display name with formatting
-                                meta.displayName(MiniMessages.miniMessage.deserialize("<bold><gold>Lobby <red>Menu"));
+                                meta.setDisplayName(MiniMessages.legacy("<bold><gold>Lobby <red>Menu"));
                                 item.setItemMeta(meta);
                             }
                             return item;

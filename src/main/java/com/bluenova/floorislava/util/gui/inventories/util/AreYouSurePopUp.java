@@ -37,13 +37,15 @@ public class AreYouSurePopUp extends PopUp {
                 .creator(player -> {
                     ItemStack item = new ItemStack(Material.RED_GLAZED_TERRACOTTA);
                     ItemMeta meta = item.getItemMeta();
-                    meta.displayName(MiniMessages.miniMessage.deserialize("<red><bold>Are you sure?"));
-                    ArrayList<Component> lore = new ArrayList<>();
-                    lore.add(MiniMessages.miniMessage.deserialize("<gray>Click to confirm"));
-                    meta.lore(lore);
-                    meta.addEnchant(Enchantment.LURE, 1, true);
-                    meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
-                    item.setItemMeta(meta);
+                    if (meta != null) {
+                        meta.setDisplayName(MiniMessages.legacy("<bold><gold>Main <red>Menu"));
+                        ArrayList<String> lore = new ArrayList<>();
+                        lore.add(MiniMessages.legacy("<gray>Click to Confirm"));
+                        meta.setLore(lore);
+                        meta.addEnchant(Enchantment.LURE, 1, true);
+                        meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+                        item.setItemMeta(meta);
+                    }
                     return item;
                 })
                 .consumer(eventConsumer)
@@ -53,7 +55,7 @@ public class AreYouSurePopUp extends PopUp {
                 .creator(player -> {
                     ItemStack item = new ItemStack(Material.RED_WOOL);
                     ItemMeta meta = item.getItemMeta();
-                    meta.displayName(MiniMessages.miniMessage.deserialize("<red>Cancel"));
+                    meta.setDisplayName(MiniMessages.legacy("<red>Cancel"));
                     item.setItemMeta(meta);
                     return item;
                 })
@@ -76,7 +78,6 @@ public class AreYouSurePopUp extends PopUp {
 
     @Override
     protected Inventory createInventory() {
-        titleComponent = MiniMessages.miniMessage.deserialize("<red><bold>Are you sure?");
-        return Bukkit.createInventory(null, 9, titleComponent);
+        return Bukkit.createInventory(null, 9, MiniMessages.legacy("<red><bold>Are you sure?"));
     }
 }

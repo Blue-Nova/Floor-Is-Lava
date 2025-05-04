@@ -31,7 +31,7 @@ public class PlayersToInviteInv extends Paginator<Player> {
 
     @Override
     protected Inventory createInventory() {
-        return Bukkit.createInventory(null, (9 * 6), MiniMessages.miniMessage.deserialize("<bold><gold>Players <white>to <red>Invite"));
+        return Bukkit.createInventory(null, (9 * 6), MiniMessages.legacy("<bold><gold>Players <white>to <red>Invite"));
     }
 
     @Override
@@ -47,20 +47,22 @@ public class PlayersToInviteInv extends Paginator<Player> {
                     SkullMeta skullMeta = (SkullMeta) item.getItemMeta();
                     if (skullMeta != null) {
                         skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(player.getUniqueId()));
-                        ArrayList<Component> lore = new ArrayList<>();
+                        ArrayList<String> lore = new ArrayList<>();
                         if (inviteLobbyManager.isPlayerInOwnersLobby(player, viewer) || inviteLobbyManager.isPlayerInvitedBy(player, viewer)) {
                             item = new ItemStack(Material.PAPER);
                             ItemMeta meta = item.getItemMeta();
-                            meta.displayName(MiniMessages.miniMessage.deserialize("<red>" + player.getName()));
-                            lore.add(MiniMessages.miniMessage.deserialize("<gray>Already Invited or in your lobby"));
-                            meta.lore(lore);
-                            meta.addEnchant(Enchantment.LURE, 1, true);
-                            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                            if (meta != null){
+                                meta.setDisplayName(MiniMessages.legacy("<red>" + player.getName()));
+                                lore.add(MiniMessages.legacy("<gray>Already Invited or in your lobby"));
+                                meta.setLore(lore);
+                                meta.addEnchant(Enchantment.LURE, 1, true);
+                                meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                            }
                             item.setItemMeta(meta);
                         } else {
-                            skullMeta.displayName(MiniMessages.miniMessage.deserialize("<white>" + player.getName()));
-                            lore.add(MiniMessages.miniMessage.deserialize("<gray>Click to invite"));
-                            skullMeta.lore(lore);
+                            skullMeta.setDisplayName(MiniMessages.legacy("<white>" + player.getName()));
+                            lore.add(MiniMessages.legacy("<gray>Click to invite"));
+                            skullMeta.setLore(lore);
                             skullMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
                             item.setItemMeta(skullMeta);
                         }

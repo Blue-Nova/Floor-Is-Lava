@@ -35,8 +35,8 @@ public abstract class Paginator<T> extends InventoryGui {
     }
 
     protected void updateInventoryContent() {
-        if (this.inventory != null) {
-            this.inventory.clear();
+        if (this.getInventory() != null) {
+            this.getInventory().clear();
         }
 
         // *** 3. Clear the button map to prepare for the new page's buttons ***
@@ -65,7 +65,7 @@ public abstract class Paginator<T> extends InventoryGui {
                         ItemStack item = new ItemStack(Material.ARROW);
                         ItemMeta itemMeta = item.getItemMeta();
                         if (itemMeta != null) {
-                            itemMeta.displayName(MiniMessages.miniMessage.deserialize("<green>Previous Page"));
+                            itemMeta.setDisplayName(MiniMessages.legacy("<white>Previous Page"));
                             item.setItemMeta(itemMeta);
                         }
                         return item;
@@ -79,7 +79,7 @@ public abstract class Paginator<T> extends InventoryGui {
                         ItemStack item = new ItemStack(Material.ARROW);
                         ItemMeta itemMeta = item.getItemMeta();
                         if (itemMeta != null) {
-                            itemMeta.displayName(MiniMessages.miniMessage.deserialize("<green>Next Page"));
+                            itemMeta.setDisplayName(MiniMessages.legacy("<white>Next Page"));
                             item.setItemMeta(itemMeta);
                         }
                         return item;
@@ -95,7 +95,7 @@ public abstract class Paginator<T> extends InventoryGui {
                     ItemStack item =  new ItemStack(Material.BARRIER);
                     ItemMeta itemMeta = item.getItemMeta();
                     if (itemMeta != null) {
-                        itemMeta.displayName(MiniMessages.miniMessage.deserialize("<red>Close"));
+                        itemMeta.setDisplayName(MiniMessages.legacy("<red>Close"));
                         item.setItemMeta(itemMeta);
                     }
                     return item;

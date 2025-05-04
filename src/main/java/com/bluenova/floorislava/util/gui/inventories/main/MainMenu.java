@@ -21,7 +21,7 @@ public class MainMenu extends InventoryGui {
     protected Inventory createInventory() {
         width = 9;
         height = 6;
-        return Bukkit.createInventory(null, width*height, MiniMessages.miniMessage.deserialize("<bold><gold>Main <red>Menu"));
+        return Bukkit.createInventory(null, width*height, MiniMessages.legacy("<bold><gold>Main <red>Menu"));
     }
 
     @Override

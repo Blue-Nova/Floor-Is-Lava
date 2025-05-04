@@ -127,12 +127,12 @@ public class InviteLobbyManager {
         }
     }
 
-    public @Nullable List<? extends Component> generateRequirementsLore(InviteLobby lobby) {
-        List<Component> lore = new ArrayList<>();
+    public @Nullable List<String> generateRequirementsLore(InviteLobby lobby) {
+        List<String> lore = new ArrayList<>();
         if (lobby.players.size() < 2) {
-            lore.add(MiniMessages.miniMessage.deserialize("<red>- At least 2 players in Lobby"));
+            lore.add(MiniMessages.legacy("<red>- At least 2 players in Lobby"));
         }else{
-            lore.add(MiniMessages.miniMessage.deserialize("<green>- At least 2 players in Lobby"));
+            lore.add(MiniMessages.legacy("<green>- At least 2 players in Lobby"));
         }
         return lore;
     }

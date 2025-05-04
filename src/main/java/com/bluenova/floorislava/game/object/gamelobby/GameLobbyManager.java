@@ -78,7 +78,7 @@ public class GameLobbyManager {
         if (game != null) {
             game.remove(player1, true, false);
         } else {
-            player1.sendMessage(MiniMessages.miniMessage.deserialize("<red>Could not find game to spectate</red>"));
+            player1.sendMessage(MiniMessages.legacy("<red>Could not find game to spectate</red>"));
         }
     }
 
@@ -94,5 +94,10 @@ public class GameLobbyManager {
             if (game.specList.contains(player)) return true;
         }
         return false;
+    }
+
+    public GameLobbyStates getGameState(GameLobby gameFromPlayer) {
+        if (gameFromPlayer == null) return null;
+        return gameFromPlayer.getGameState();
     }
 }

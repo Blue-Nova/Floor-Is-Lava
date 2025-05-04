@@ -6,7 +6,6 @@ import com.bluenova.floorislava.util.gui.InventoryButton;
 import com.bluenova.floorislava.util.gui.objects.Paginator;
 import com.bluenova.floorislava.util.gui.util.PageIds;
 import com.bluenova.floorislava.util.messages.MiniMessages;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -28,7 +27,7 @@ public class PlayersToKickInv extends Paginator<Player> {
     @Override
     protected Inventory createInventory() {
         this.inviteLobbyManager = FloorIsLava.getInviteLobbyManager();
-        return Bukkit.createInventory(null, (9 * 6), MiniMessages.miniMessage.deserialize("<bold><gold>Players <white>to <red>Kick"));
+        return Bukkit.createInventory(null, (9 * 6), MiniMessages.legacy("<bold><gold>Players <white>to <red>Kick"));
     }
 
     @Override
@@ -47,11 +46,11 @@ public class PlayersToKickInv extends Paginator<Player> {
                         ItemStack item = new ItemStack(Material.WITHER_SKELETON_SKULL);
                         SkullMeta skullMeta = (SkullMeta) item.getItemMeta();
                         if (skullMeta != null) {
-                            skullMeta.displayName(MiniMessages.miniMessage.deserialize("<red>" + playerToKick.getName()));
-                            ArrayList<Component> lore = new ArrayList<>();
-                            lore.add(MiniMessages.miniMessage.deserialize("<gray>has been kicked"));
-                            lore.add(MiniMessages.miniMessage.deserialize("<font:uniform><gray>ouch..."));
-                            skullMeta.lore(lore);
+                            skullMeta.setDisplayName(MiniMessages.legacy("<red>" + playerToKick.getName()));
+                            ArrayList<String> lore = new ArrayList<>();
+                            lore.add(MiniMessages.legacy("<gray>has been kicked"));
+                            lore.add(MiniMessages.legacy("<font:uniform><gray>ouch..."));
+                            skullMeta.setLore(lore);
                             item.setItemMeta(skullMeta);
                         }
                         return item;
@@ -59,10 +58,11 @@ public class PlayersToKickInv extends Paginator<Player> {
                         ItemStack item = new ItemStack(Material.PLAYER_HEAD);
                         SkullMeta skullMeta = (SkullMeta) item.getItemMeta();
                         if (skullMeta != null) {
-                            skullMeta.displayName(MiniMessages.miniMessage.deserialize("<red>" + playerToKick.getName()));
+                            skullMeta.setDisplayName(MiniMessages.legacy("<red>" + playerToKick.getName()));
                             skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(playerToKick.getUniqueId()));
-                            ArrayList<Component> lore = new ArrayList<>();
-                            lore.add(MiniMessages.miniMessage.deserialize("<gray>Click to kick " + playerToKick.getName()));
+                            ArrayList<String> lore = new ArrayList<>();
+                            lore.add(MiniMessages.legacy("<gray>Click to kick " + playerToKick.getName()));
+                            skullMeta.setLore(lore);
                             item.setItemMeta(skullMeta);
                         }
                     return item;

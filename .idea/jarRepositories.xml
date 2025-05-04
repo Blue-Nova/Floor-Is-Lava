@@ -17,6 +17,11 @@
       <option name="url" value="https://oss.sonatype.org/content/groups/public/" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="spigot-repo" />
+      <option name="name" value="spigot-repo" />
+      <option name="url" value="https://hub.spigotmc.org/nexus/content/repositories/snapshots/" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="OnARandomBox" />
       <option name="name" value="OnARandomBox" />
       <option name="url" value="https://repo.onarandombox.com/content/groups/public/" />
@@ -42,14 +47,14 @@
       <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
     </remote-repository>
     <remote-repository>
-      <option name="id" value="papermc" />
-      <option name="name" value="papermc" />
-      <option name="url" value="https://repo.papermc.io/repository/maven-public/" />
-    </remote-repository>
-    <remote-repository>
       <option name="id" value="sk89q-repo" />
       <option name="name" value="sk89q-repo" />
       <option name="url" value="https://maven.enginehub.org/repo/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="papermc" />
+      <option name="name" value="papermc" />
+      <option name="url" value="https://repo.papermc.io/repository/maven-public/" />
     </remote-repository>
   </component>
 </project>

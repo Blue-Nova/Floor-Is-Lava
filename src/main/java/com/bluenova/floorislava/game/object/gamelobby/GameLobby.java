@@ -128,7 +128,15 @@ public class GameLobby extends Lobby {
         announce("game.generating_terrain");
         playGameSound(Sound.BLOCK_ENCHANTMENT_TABLE_USE); // Play sound for terrain generation
         // Pass 'this' (GameLobby) to FindAllowedLocation if it needs to call back generatePlot
+        InviteLobby originatingLobby = inviteLobbyManager.getLobbyFromOwner(this.owner);
+        if (originatingLobby != null) {
+            inviteLobbyManager.closeLobby(originatingLobby);
+            pluginLogger.debug("Closed invite lobby for owner: " + this.owner.getName());
+        } else {
+            pluginLogger.warning("Could not find original invite lobby for owner: " + this.owner.getName() + " to close.");
+        }
         workloadRunnable.addWorkload(new FindAllowedLocation(this));
+        setGameState(GameLobbyStates.GENERATING); // Set state to generating
     }
 
     /**
@@ -136,7 +144,6 @@ public class GameLobby extends Lobby {
      * Queues tasks to build barrier walls and copy terrain columns.
      */
     public void generatePlot(int sourceX, int sourceZ) {
-        setGameState(GameLobbyStates.GENERATING); // Set state to generating
         int borderStartX = (int) gamePlot.plotStart.getX() - 1;
         int borderStartZ = (int) gamePlot.plotStart.getZ() - 1;
         int plotEndX = (int) gamePlot.plotEnd.getX(); // End X/Z are exclusive for size calc
@@ -219,13 +226,6 @@ public class GameLobby extends Lobby {
         savePlayersInfo(); // Save inventory/stats and clear for game
         teleportPlayersToGame(); // Teleport players to lobby before countdown
         applyWorldBorder(); // Apply world border to the game plot
-        InviteLobby originatingLobby = inviteLobbyManager.getLobbyFromOwner(this.owner);
-        if (originatingLobby != null) {
-            inviteLobbyManager.closeLobby(originatingLobby);
-            pluginLogger.debug("Closed invite lobby for owner: " + this.owner.getName());
-        } else {
-            pluginLogger.warning("Could not find original invite lobby for owner: " + this.owner.getName() + " to close.");
-        }
         checkWinCondition();
 
         this.setGameState(GameLobbyStates.STARTING);
@@ -340,7 +340,7 @@ public class GameLobby extends Lobby {
         Title.Times times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(5), Duration.ofSeconds(2));
         Title fullTitle = Title.title(title, subtitle, times);
 
-        player.showTitle(fullTitle);
+        FloorIsLava.getAdventure().player(player).showTitle(fullTitle);
     }
 
     /** Stops game timers, cleans up players, releases plot. */

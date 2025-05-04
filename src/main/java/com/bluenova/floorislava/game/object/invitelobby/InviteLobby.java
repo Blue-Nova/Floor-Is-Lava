@@ -108,7 +108,7 @@ public class InviteLobby extends Lobby {
             // Create placeholder needed *specifically for the hover text*
             TagResolver hoverPlaceholder = TagResolver.resolver(Placeholder.unparsed("inviter", ownerName));
             // Use the public parser instance directly with the placeholder
-            hoverText = MiniMessages.miniMessage.deserialize(rawHoverText, hoverPlaceholder);
+            hoverText = MiniMessages.miniM.deserialize(rawHoverText, hoverPlaceholder);
         }
         HoverEvent<Component> hoverEvent = HoverEvent.showText(hoverText); // Create hover event
 
