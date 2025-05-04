@@ -3,6 +3,8 @@ package com.bluenova.floorislava.game.object.gamelobby;
 import com.bluenova.floorislava.FloorIsLava;
 import com.bluenova.floorislava.config.PlayerDataManager;
 import com.bluenova.floorislava.game.object.GamePlot;
+import com.bluenova.floorislava.game.object.invitelobby.InviteLobbyManager;
+import com.bluenova.floorislava.util.messages.MiniMessages;
 import com.bluenova.floorislava.util.messages.PluginLogger;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -14,6 +16,7 @@ public class GameLobbyManager {
     private final List<GameLobby> gameLobbyList = new ArrayList<>();
     private final PluginLogger pluginLogger;
     private final PlayerDataManager playerDataManager;
+    private final InviteLobbyManager inviteLobbyManager = FloorIsLava.getInviteLobbyManager();
 
     public GameLobbyManager(PluginLogger pluginLogger, PlayerDataManager playerDataManager) {
         this.pluginLogger = pluginLogger;
@@ -68,5 +71,28 @@ public class GameLobbyManager {
             game.shutdown();
         }
         // WIP
+    }
+
+    public void MakePlayerSpectator(Player player1) {
+        GameLobby game = getGameFromPlayer(player1);
+        if (game != null) {
+            game.remove(player1, true, false);
+        } else {
+            player1.sendMessage(MiniMessages.miniMessage.deserialize("<red>Could not find game to spectate</red>"));
+        }
+    }
+
+    public boolean isAPlayer(Player player) {
+        for (GameLobby game : gameLobbyList) {
+            if (game.players.contains(player)) return true;
+        }
+        return false;
+    }
+
+    public boolean isASpectator(Player player) {
+        for (GameLobby game : gameLobbyList) {
+            if (game.specList.contains(player)) return true;
+        }
+        return false;
     }
 }

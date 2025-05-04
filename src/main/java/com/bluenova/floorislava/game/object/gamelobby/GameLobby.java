@@ -219,6 +219,14 @@ public class GameLobby extends Lobby {
         savePlayersInfo(); // Save inventory/stats and clear for game
         teleportPlayersToGame(); // Teleport players to lobby before countdown
         applyWorldBorder(); // Apply world border to the game plot
+        InviteLobby originatingLobby = inviteLobbyManager.getLobbyFromOwner(this.owner);
+        if (originatingLobby != null) {
+            inviteLobbyManager.closeLobby(originatingLobby);
+            pluginLogger.debug("Closed invite lobby for owner: " + this.owner.getName());
+        } else {
+            pluginLogger.warning("Could not find original invite lobby for owner: " + this.owner.getName() + " to close.");
+        }
+        checkWinCondition();
 
         this.setGameState(GameLobbyStates.STARTING);
         // AT THIS POINT THE GAME STATE IS STARTING
@@ -251,6 +259,7 @@ public class GameLobby extends Lobby {
      */
     private void startGame() {
         gameON = true; // Mark game as officially started
+        // check if players are still in the game
 
         // Check if any players remain after teleport attempts
         if (this.players.isEmpty()) {
@@ -265,19 +274,13 @@ public class GameLobby extends Lobby {
 
         // Remove the InviteLobby that started this game
         // planned update: Do not remove lobby, to allow players to play again right away
-        InviteLobby originatingLobby = inviteLobbyManager.getLobbyFromOwner(this.owner);
-        if (originatingLobby != null) {
-            inviteLobbyManager.closeLobby(originatingLobby);
-            pluginLogger.debug("Closed invite lobby for owner: " + this.owner.getName());
-        } else {
-            pluginLogger.warning("Could not find original invite lobby for owner: " + this.owner.getName() + " to close.");
-        }
 
         this.FILRegionManager.setRegionProfile(gamePlot.worldGuardRegionId, RegionProfiles.BASE);
         // Start game mechanics timers
         beginLavaTimer();
         beginEventTimer(); // If ChaosEventManager is ready
         this.setGameState(GameLobbyStates.STARTED);
+        checkWinCondition(); // Check if any player left the game
     }
 
     /** Starts the timer that potentially triggers chaos events. */
@@ -529,7 +532,6 @@ public class GameLobby extends Lobby {
 
     /** Restores player state after leaving/game end. */
     public void returnPlayerInfo(Player player) {
-
         if (gameLobbyManager.restorePlayerData(player)) {
             pluginLogger.debug("Restored player data from save files for: " + player.getName());
         } else {
@@ -764,6 +766,10 @@ public class GameLobby extends Lobby {
         }
 
         // Check win condition ONLY if the game is still running
+        checkWinCondition(); // Check if any players left in game
+    }
+
+    private void checkWinCondition() {
         if (gameON) {
             if (this.players.size() == 1) {
                 // We have a winner!

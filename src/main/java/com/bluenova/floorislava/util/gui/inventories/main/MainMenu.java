@@ -26,6 +26,7 @@ public class MainMenu extends InventoryGui {
 
     @Override
     public void decorate(Player player) {
+        bordersWithExit(width, height, 1);
         renderHeader(pageId ,player, width);
         super.decorate(player);
     }

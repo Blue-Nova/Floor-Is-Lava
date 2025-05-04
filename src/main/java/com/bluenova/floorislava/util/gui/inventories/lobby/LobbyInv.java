@@ -5,14 +5,15 @@ import com.bluenova.floorislava.game.object.gamelobby.GameLobbyManager;
 import com.bluenova.floorislava.game.object.invitelobby.InviteLobby;
 import com.bluenova.floorislava.game.object.invitelobby.InviteLobbyManager;
 import com.bluenova.floorislava.util.gui.InventoryButton;
+import com.bluenova.floorislava.util.gui.inventories.util.AreYouSurePopUp;
 import com.bluenova.floorislava.util.gui.objects.InventoryGui;
-import com.bluenova.floorislava.util.gui.inventories.util.PlayersToInviteInv;
 import com.bluenova.floorislava.util.gui.util.PageIds;
 import com.bluenova.floorislava.util.messages.MiniMessages;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -45,50 +46,109 @@ public class LobbyInv extends InventoryGui {
     @Override
     public void decorate(org.bukkit.entity.Player player) {
         if (!gameLobbyManager.isPlayerIngame(player) && !inviteLobbyManager.isPlayerInLobby(player)) {
-            surroundWithStale(width, height, 4);
             addButton((getInventory().getSize()/2)-5,createLobbyButton());
         }else{
-            surroundWithStale(width, height,1);
-            // make invite button
             if (inviteLobbyManager.isLobbyOwner(player)){
                 renderLobbyAsOwner(player);
             }else{
                 renderLobbyAsMember(player);
             }
-            // Player is in a lobby or game, show the leave button
-            addButton(getInventory().getSize()-5, new InventoryButton()
-                    .creator(p -> {
-                        ItemStack item = new ItemStack(Material.BARRIER);
-                        ItemMeta meta = item.getItemMeta();
-                        if (meta != null) {
-                            ArrayList<Component> lore = new ArrayList<>();
-                            if (inviteLobbyManager.isLobbyOwner(player)) {
-                                meta.displayName(MiniMessages.miniMessage.deserialize("<red>Disband Lobby"));
-                                lore.add(MiniMessages.miniMessage.deserialize("<gray>Caution! This will Kick all players!"));
-                            }else{
-                                meta.displayName(MiniMessages.miniMessage.deserialize("<red>Leave Lobby"));
-                                lore.add(MiniMessages.miniMessage.deserialize("<gray>Click to leave the lobby"));
-                            }
-                            meta.lore(lore);
-                            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-                        }
-                        item.setItemMeta(meta);
-                        return item;
-                    })
-                    .consumer(event -> {
-                        if (event.getWhoClicked() instanceof Player) {
-                            Player player1 = (Player) event.getWhoClicked();
-                            inviteLobbyManager.getLobbyFromPlayer(player1).removePlayer(player1);
-                            FloorIsLava.getInstance().getGuiManager().openGUI(new LobbyInv(), player1);
-                        }
-                    }));
         }
+        bordersWithExit(width, height, 1);
         renderHeader(pageId,player, width);
+
         super.decorate(player);
     }
 
     private void renderLobbyAsMember(Player player) {
+        int slot = width*2+(6);
+        InviteLobby inviteLobby = inviteLobbyManager.getLobbyFromPlayer(player);
+        Player owner = inviteLobbyManager.getOwnnerFromLobby(inviteLobby);
+        renderLobbyList(slot, owner);
+        slot = width*4+(7);
+        renderLobbyLeaveButton(slot, player);
+    }
+
+    private void renderLobbyLeaveButton(int slot, Player player) {
+        boolean playerIsOwner = inviteLobbyManager.isLobbyOwner(player);
+        addButton(slot, new InventoryButton()
+                .creator(p -> {
+                    ItemStack item = new ItemStack(Material.ANVIL);
+                    ItemMeta meta = item.getItemMeta();
+                    if (meta != null) {
+                        ArrayList<Component> lore = new ArrayList<>();
+                        if (playerIsOwner){
+                            meta.displayName(MiniMessages.miniMessage.deserialize("<bold><red>Disband Lobby"));
+                            lore.add(MiniMessages.miniMessage.deserialize("<gray>Caution! This will Kick all players!"));
+                            meta.lore(lore);
+                            meta.addEnchant(Enchantment.LURE, 1, true);
+                            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                        } else {
+                            meta.displayName(MiniMessages.miniMessage.deserialize("<bold><red>Leave Lobby"));
+                            lore.add(MiniMessages.miniMessage.deserialize("<gray>Click to leave the lobby"));
+                            meta.lore(lore);
+                        }
+                        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+                    }
+                    item.setItemMeta(meta);
+                    return item;
+                })
+                .consumer(event -> {
+                    if (playerIsOwner){
+                        Player owner = (Player) event.getWhoClicked();
+                        AreYouSurePopUp popUp = new AreYouSurePopUp(event1 -> {
+                            if (event1.getWhoClicked() instanceof Player) {
+                                inviteLobbyManager.getLobbyFromOwner(owner).removePlayer(owner);
+                                FloorIsLava.getInstance().getGuiManager().openGUI(new LobbyInv(), owner);
+                                owner.playSound(owner.getLocation(), Sound.BLOCK_ANVIL_LAND, 0.3f, 1.5f);
+                            }
+                        }, this.pageId);
+                        owner.playSound(owner.getLocation(), Sound.ENTITY_GHAST_AMBIENT, 0.5f, 1.5f);
+                        FloorIsLava.getInstance().getGuiManager().openGUI(popUp, (Player) event.getWhoClicked());
+                    } else {
+                        Player member = (Player) event.getWhoClicked();
+                        InviteLobby lobby = inviteLobbyManager.getLobbyFromPlayer(member);
+                        if (lobby != null) {
+                            lobby.removePlayer(member);
+                            FloorIsLava.getInstance().getGuiManager().openGUI(new LobbyInv(), member);
+                            member.playSound(member.getLocation(), Sound.BLOCK_ANVIL_LAND, 0.3f, 1.5f);
+                        }
+                    }
+                }));
+    }
+
+    private void renderLobbyList(int slot, Player owner) {
+        addButton(slot, new InventoryButton()
+                .creator(p -> {
+                    ItemStack item = new ItemStack(Material.GOLDEN_HELMET);
+                    ItemMeta meta = item.getItemMeta();
+
+                    if (meta != null) {
+                        meta.displayName(MiniMessages.miniMessage.deserialize("<aqua>Lobby Members"));
+                        ArrayList<Component> lore = new ArrayList<>();
+                        lore.add(MiniMessages.miniMessage.deserialize("<gray>Click to refresh list"));
+                        ArrayList<Player> lobbyMembers = inviteLobbyManager.getPlayersFromOwner(owner);
+                        lore.add(MiniMessages.miniMessage.deserialize("<bold><green>Joined:"));
+                        for (Player member : lobbyMembers) {
+                            lore.add(MiniMessages.miniMessage.deserialize("<white>- " + member.getName()));
+                        }
+
+                        ArrayList<Player> invitedMembers = inviteLobbyManager.getInvitedPlayersFromOwner(owner);
+                        lore.add(MiniMessages.miniMessage.deserialize("<bold><yellow>Invted:"));
+                        for (Player member : invitedMembers) {
+                            lore.add(MiniMessages.miniMessage.deserialize("<gray>- " + member.getName()));
+                        }
+                        meta.lore(lore);
+                        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+                        item.setItemMeta(meta);
+                    }
+                    return item;
+                })
+                .consumer(event -> {
+                    FloorIsLava.getInstance().getGuiManager().openGUI(new LobbyInv(), (Player) event.getWhoClicked());
+                    Player p = (Player) event.getWhoClicked();
+                    p.playSound(p.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_STEP, 1, 1);
+                }));
     }
 
     private void renderLobbyAsOwner(Player player) {
@@ -112,16 +172,17 @@ public class LobbyInv extends InventoryGui {
                         Player viewer = (Player) event.getWhoClicked();
                         ArrayList<Player> allOnlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
                         allOnlinePlayers.remove(viewer); // Remove the player themselves
+                        viewer.playSound(viewer.getLocation(), Sound.BLOCK_CHISELED_BOOKSHELF_INSERT_ENCHANTED, 1, 1);
                         FloorIsLava.getInstance().getGuiManager().openGUI(new PlayersToInviteInv(allOnlinePlayers, this.pageId, viewer), viewer);
                     }
                 }));
         // start game button
         addButton(width*2+(4), new InventoryButton()
                 .creator(p -> {
-                    ItemStack item = new ItemStack(Material.DIAMOND_SWORD);
+                    ItemStack item = new ItemStack(Material.CLOCK);
+                    ItemMeta meta = item.getItemMeta();
+                    // if game already is generating, show clock
                     if (gameLobbyManager.isPlayerIngame(player)) {
-                        item = new ItemStack(Material.CLOCK);
-                        ItemMeta meta = item.getItemMeta();
                         if (meta != null) {
                             meta.displayName(MiniMessages.miniMessage.deserialize("<aqua>Generating Game..."));
                             ArrayList<Component> lore = new ArrayList<>();
@@ -131,8 +192,12 @@ public class LobbyInv extends InventoryGui {
                             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
                         }
                         item.setItemMeta(meta);
-                    }else {
-                        ItemMeta meta = item.getItemMeta();
+                        return item;
+                    }
+                    // else, check if can start game
+                    InviteLobby lobby = inviteLobbyManager.getLobbyFromOwner(player);
+                    if (inviteLobbyManager.isLobbyReadyForStart(lobby)){
+                        item = new ItemStack(Material.DIAMOND_SWORD);
                         if (meta != null) {
                             meta.displayName(MiniMessages.miniMessage.deserialize("<white>Start Game"));
                             ArrayList<Component> lore = new ArrayList<>();
@@ -141,45 +206,63 @@ public class LobbyInv extends InventoryGui {
                             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
                         }
-                        item.setItemMeta(meta);
+                    }else {
+                        item = new ItemStack(Material.WOODEN_SWORD);
+                        meta = item.getItemMeta();
+                        if (meta != null) {
+                            meta.displayName(MiniMessages.miniMessage.deserialize("<red>Missing Requirements"));
+                            meta.lore(inviteLobbyManager.generateRequirementsLore(lobby));
+                            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+                        }
                     }
+                    item.setItemMeta(meta);
                     return item;
                 })
                 .consumer(event -> {
-                    Player player1 = (Player) event.getWhoClicked();
-                    if (gameLobbyManager.isPlayerIngame(player1)) {
-                        return;
-                    }
-                    // 4. Get the lobby
                     InviteLobby lobby = inviteLobbyManager.getLobbyFromOwner(player);
-                    if (lobby == null) {
-                        // Should not happen if isLobbyOwner passed, but good practice
-                        player.sendMessage(ChatColor.RED + "Error: Could not find your lobby."); // Fallback message
+                    if (!inviteLobbyManager.isLobbyReadyForStart(lobby)){
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                         return;
                     }
-                    // 5. Check lobby size (Moved check here from old MainCommand)
-                    // Assuming lobby.players holds joined list including owner
-                    if (lobby.players.size() < 2) {
-                        MiniMessages.send(player, "lobby.start_lobby_too_small");
-                        return;
-                    }
-                    // 6. Tell GameManager to create the game
-                    // This now handles getting a plot and creating the GameLobby instance.
-                    // The "No free plots" message is handled inside gameManager.createLobby
-                    // based on the implementation we saw earlier.
                     gameLobbyManager.createLobby(new ArrayList<>(lobby.players), player);
                     FloorIsLava.getInstance().getGuiManager().openGUI(new LobbyInv(), player);
-                    // Optional: Send a "Starting..." message? The GameLobby countdown handles the main alerts.// MiniMessages.send(player, "lobby.starting_game"); // If you add this key to config
-                    // NOTE: The removal of the InviteLobby from InviteLobbyManager needs to be handled
-                    // This could happen within gameManager.createLobby on success
-                    // or the GameLobby could notify InviteLobbyManager when it flly starts.
                 }));
+        // lobby members list
+        renderLobbyList(width*2+(6), player);
+        // Kick player button
+        addButton(width*4+(1), new InventoryButton()
+                .creator(p -> {
+                    ItemStack item = new ItemStack(Material.IRON_SWORD);
+                    ItemMeta meta = item.getItemMeta();
+                    if (meta != null) {
+                        meta.displayName(MiniMessages.miniMessage.deserialize("<red>Kick Player"));
+                        ArrayList<Component> lore = new ArrayList<>();
+                        lore.add(MiniMessages.miniMessage.deserialize("<gray>Click to kick a player"));
+                        meta.lore(lore);
+                        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+                    }
+                    item.setItemMeta(meta);
+                    return item;
+                })
+                .consumer(event -> {
+                    if (event.getWhoClicked() instanceof Player) {
+                        ArrayList<Player> lobbyMembers = new ArrayList<>(inviteLobbyManager.getPlayersFromOwner(player));
+                        lobbyMembers.remove(player); // Remove the player themselves
+                        FloorIsLava.getInstance().getGuiManager().openGUI(new PlayersToKickInv(lobbyMembers, this.pageId, player), player);
+                        player.playSound(player.getLocation(), Sound.BLOCK_ANCIENT_DEBRIS_BREAK, 1, 1);
+                    }
+                }));
+
+        // Leave lobby button
+        renderLobbyLeaveButton(width*4+(7), player);
     }
 
     private InventoryButton createLobbyButton() {
         return new InventoryButton()
                 .creator(p -> {
-                    ItemStack item = new ItemStack(Material.DIAMOND_SWORD);
+                    ItemStack item = new ItemStack(Material.WRITABLE_BOOK);
                     ItemMeta meta = item.getItemMeta();
                     if (meta != null) {
                         meta.displayName(MiniMessages.miniMessage.deserialize("<white>Create Lobby<gold>+"));
@@ -196,8 +279,9 @@ public class LobbyInv extends InventoryGui {
                     if (event.getWhoClicked() instanceof Player) {
                         Player player = (Player) event.getWhoClicked();
                         inviteLobbyManager.createLobby(player);
+                        player.playSound(player.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 1, 1);
+                        player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.2f, 0.5f);
                         FloorIsLava.getInstance().getGuiManager().openGUI(new LobbyInv(), player);
-                        MiniMessages.send(player, "lobby.created"); // CORRECTED KEY
                     }
                 });
     }

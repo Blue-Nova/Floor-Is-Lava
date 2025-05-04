@@ -7,7 +7,9 @@ import com.bluenova.floorislava.util.gui.inventories.lobby.LobbyInv;
 import com.bluenova.floorislava.util.gui.inventories.main.MainMenu;
 import com.bluenova.floorislava.util.gui.util.PageIds;
 import com.bluenova.floorislava.util.messages.MiniMessages;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -16,6 +18,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,7 +46,7 @@ public abstract class InventoryGui implements InventoryHandler {
             return;
         }
         this.buttonMap.forEach((slot, button) -> {
-            ItemStack icon = null;
+            ItemStack icon;
                 if (button == null) {
                     return;
                 }
@@ -66,6 +69,10 @@ public abstract class InventoryGui implements InventoryHandler {
     public void onClick(InventoryClickEvent event) {
         event.setCancelled(true);
         int slot = event.getSlot();
+        int rawSlot = event.getRawSlot();
+        if (rawSlot != slot) {
+            return; // Ignore clicks on the inventory itself
+        }
         InventoryButton button = this.buttonMap.get(slot);
         if (button != null) {
             button.getEventConsumer().accept(event);
@@ -109,8 +116,30 @@ public abstract class InventoryGui implements InventoryHandler {
                 });
     }
 
-    protected InventoryButton createNavigation(PageIds fromPage, PageIds toPage, Player eventPlayer) {
+    protected void bordersWithExit(int width, int height, int thickness) {
+        surroundWithStale(width, height, thickness);
+        addButton((width*(height-1))+4, new InventoryButton()
+                .creator(p -> {
+                    ItemStack item = new ItemStack(Material.BARRIER);
+                    ItemMeta meta = item.getItemMeta();
+                    if (meta != null) {
+                        meta.displayName(MiniMessages.miniMessage.deserialize("<red>Exit Menu"));
+                        ArrayList<Component> lore = new ArrayList<>();
+                        lore.add(MiniMessages.miniMessage.deserialize("<gray>Click to close the Menu"));
+                        meta.lore(lore);
+                    }
+                    item.setItemMeta(meta);
+                    return item;
+                })
+                .consumer(event -> {
+                    Player player = (Player) event.getWhoClicked();
+                    player.closeInventory();
+                    // sound when player closes the inventory
+                    player.playSound(player.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 2f);
+                }));
+    }
 
+    protected InventoryButton createNavigation(PageIds fromPage, PageIds toPage, Player eventPlayer) {
         switch (toPage) {
             case MAIN_MENU -> {
                 return new InventoryButton()
@@ -125,6 +154,7 @@ public abstract class InventoryGui implements InventoryHandler {
                             return item;
                         }).consumer(event -> {
                             FloorIsLava.getInstance().getGuiManager().openGUI(new MainMenu(), eventPlayer);
+                            eventPlayer.playSound(eventPlayer.getLocation(), Sound.BLOCK_STONE_BUTTON_CLICK_ON, 0.5f, 0.6f);
                         });
             }
             case LOBBY -> {
@@ -140,6 +170,7 @@ public abstract class InventoryGui implements InventoryHandler {
                             return item;
                         }).consumer(event -> {
                             FloorIsLava.getInstance().getGuiManager().openGUI(new LobbyInv(), eventPlayer);
+                            eventPlayer.playSound(eventPlayer.getLocation(), Sound.BLOCK_STONE_BUTTON_CLICK_ON, 0.5f, 0.6f);
                         });
             }
         }

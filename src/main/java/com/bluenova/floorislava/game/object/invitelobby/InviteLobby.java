@@ -152,6 +152,7 @@ public class InviteLobby extends Lobby {
         MiniMessages.send(player, "lobby.invite_accepted_to_player",
                 Placeholder.unparsed("lobby_owner", this.getOwner().getName())
         );
+        this.getOwner().playSound(this.getOwner().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.7f, 2f);
     }
 
     // Refactored to use MiniMessages and coordinate with manager
@@ -220,10 +221,18 @@ public class InviteLobby extends Lobby {
     public void kickPlayers(ArrayList<Player> playersToKick) {
         for (Player player : playersToKick) {
             if (this.players.contains(player)) {
-                this.players.remove(player);
+                kickPlayer(player);
                 MiniMessages.send(player, "lobby.kicked_player_notification", Placeholder.unparsed("lobby_owner", this.getOwner().getName()));
                 MiniMessages.send(this.getOwner(), "lobby.kicked_player_feedback", Placeholder.unparsed("player", player.getName()));
             }
+        }
+    }
+
+    public void kickPlayer(Player player) {
+        if (this.players.contains(player)) {
+            this.players.remove(player);
+            sentList.remove(player);
+            // inviteLobbyManager.removePlayerFromLobbyMap(player); // Uncomment if needed
         }
     }
 }

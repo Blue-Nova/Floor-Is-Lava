@@ -6,7 +6,6 @@ import com.bluenova.floorislava.util.gui.InventoryButton;
 import com.bluenova.floorislava.util.gui.util.PageIds;
 import com.bluenova.floorislava.util.messages.MiniMessages;
 import org.bukkit.Material;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -36,7 +35,6 @@ public abstract class Paginator<T> extends InventoryGui {
     }
 
     protected void updateInventoryContent() {
-
         if (this.inventory != null) {
             this.inventory.clear();
         }
@@ -109,8 +107,9 @@ public abstract class Paginator<T> extends InventoryGui {
                         FloorIsLava.getInstance().getPluginLogger().severe("Paginator Failed to create inventory from pageId: " + cameFrom);
                         return;
                     }
-                    guiManager.openGUI(gui, (Player) event.getWhoClicked());
-                    FloorIsLava.getInstance().getPluginLogger().debug("Closed inventory and unregistered it from GuiManager.");
+                    Player whoClicked = (Player) event.getWhoClicked();
+                    guiManager.openGUI(gui, whoClicked);
+                    whoClicked.playSound(whoClicked.getLocation(), org.bukkit.Sound.BLOCK_NOTE_BLOCK_BASS, 0.6f, 1.2f);
                 }));
 
     }

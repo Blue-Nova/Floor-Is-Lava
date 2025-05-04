@@ -1,13 +1,11 @@
 package com.bluenova.floorislava.event.events;
 
 import com.bluenova.floorislava.util.gui.GuiManager;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.inventory.Inventory;
 
 
 public class GuiListener implements Listener {
@@ -25,18 +23,6 @@ public class GuiListener implements Listener {
 
     @EventHandler
     public void onOpen(InventoryOpenEvent event) {
-        // --- START OF ADDED LOGGING ---
-        Player player = (Player) event.getPlayer();
-        Inventory inventory = event.getInventory();
-        String invHash = "N/A";
-        if (inventory != null) { // prevent NPE if inventory is somehow null
-            invHash = String.valueOf(System.identityHashCode(inventory));
-        }
-        String playerName = (player == null) ? "NULL" : player.getName();
-
-        // Use System.out.println to guarantee visibility in console
-        // Also use plugin logger at SEVERE level
-        // --- END OF ADDED LOGGING ---
 
         // Call the GuiManager method that handles this event
         try {

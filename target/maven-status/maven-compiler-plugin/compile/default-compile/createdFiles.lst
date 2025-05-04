@@ -1,11 +1,13 @@
 com\bluenova\floorislava\util\gui\objects\PopUp.class
 com\bluenova\floorislava\command\FILCommandHandler.class
 com\bluenova\floorislava\command\lobbycommands\LobbyKickCmd.class
+com\bluenova\floorislava\util\gui\inventories\lobby\PlayersToInviteInv.class
 com\bluenova\floorislava\game\object\ChaosEventManager.class
 com\bluenova\floorislava\command\lobbycommands\LobbyLeaveCmd.class
 com\bluenova\floorislava\util\worldguard\regionprofiles\IdleProfile.class
 com\bluenova\floorislava\util\GenerateGameTerrain.class
 com\bluenova\floorislava\command\subcommand\SubCommand.class
+com\bluenova\floorislava\util\gui\inventories\lobby\PlayersToKickInv.class
 com\bluenova\floorislava\util\worldguard\RegionProfiles.class
 com\bluenova\floorislava\util\gui\objects\InventoryGui.class
 com\bluenova\floorislava\game\object\GamePlot.class
@@ -17,10 +19,10 @@ com\bluenova\floorislava\util\WorkloadRunnable.class
 com\bluenova\floorislava\config\PlayerDataManager.class
 com\bluenova\floorislava\util\worldguard\regionprofiles\BaseProfile.class
 com\bluenova\floorislava\game\object\GamePlotDivider.class
-com\bluenova\floorislava\util\gui\inventories\util\PopUpInv.class
 com\bluenova\floorislava\util\ElevateLava.class
 com\bluenova\floorislava\FloorIsLava.class
 com\bluenova\floorislava\util\worldguard\RegionProfile.class
+com\bluenova\floorislava\util\gui\inventories\util\AreYouSurePopUp.class
 com\bluenova\floorislava\util\gui\InventoryHandler.class
 com\bluenova\floorislava\command\lobbycommands\LobbyInviteCmd.class
 com\bluenova\floorislava\util\gui\objects\InventoryGui$1.class
@@ -40,7 +42,6 @@ com\bluenova\floorislava\config\MainConfig.class
 com\bluenova\floorislava\command\lobbycommands\LobbyAcceptCmd.class
 com\bluenova\floorislava\util\MakeBarrierWall.class
 com\bluenova\floorislava\command\lobbycommands\LobbyCreateCmd.class
-com\bluenova\floorislava\util\gui\inventories\util\PlayersToInviteInv.class
 com\bluenova\floorislava\util\worldguard\FILRegionManager$1.class
 com\bluenova\floorislava\util\messages\PluginLogger.class
 com\bluenova\floorislava\game\object\gamelobby\GameLobby.class
@@ -49,6 +50,7 @@ com\bluenova\floorislava\game\object\gamelobby\GameLobbyStates.class
 com\bluenova\floorislava\util\gui\GuiManager.class
 com\bluenova\floorislava\util\Tools.class
 com\bluenova\floorislava\util\Workload.class
+com\bluenova\floorislava\util\gui\inventories\game\InGameMenu.class
 com\bluenova\floorislava\util\gui\InventoryButton.class
 com\bluenova\floorislava\game\object\invitelobby\InviteLobby.class
 com\bluenova\floorislava\command\lobbycommands\LobbyListCmd.class

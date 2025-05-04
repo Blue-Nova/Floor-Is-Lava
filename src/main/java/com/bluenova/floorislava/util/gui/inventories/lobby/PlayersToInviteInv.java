@@ -1,4 +1,4 @@
-package com.bluenova.floorislava.util.gui.inventories.util;
+package com.bluenova.floorislava.util.gui.inventories.lobby;
 
 import com.bluenova.floorislava.FloorIsLava;
 import com.bluenova.floorislava.game.object.invitelobby.InviteLobby;
@@ -10,6 +10,7 @@ import com.bluenova.floorislava.util.messages.MiniMessages;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -30,7 +31,7 @@ public class PlayersToInviteInv extends Paginator<Player> {
 
     @Override
     protected Inventory createInventory() {
-        return Bukkit.createInventory(null, (9 * 6), MiniMessages.miniMessage.deserialize("<aqua>Players to Invite"));
+        return Bukkit.createInventory(null, (9 * 6), MiniMessages.miniMessage.deserialize("<bold><gold>Players <white>to <red>Invite"));
     }
 
     @Override
@@ -70,12 +71,15 @@ public class PlayersToInviteInv extends Paginator<Player> {
                     Player eventPlayer = (Player) event.getWhoClicked();
                     InviteLobby lobby = FloorIsLava.getInviteLobbyManager().getLobbyFromOwner(eventPlayer);
                     if (lobby != null){
+                        // if already invited or in lobby
                         if (inviteLobbyManager.isPlayerInOwnersLobby(player, eventPlayer) || inviteLobbyManager.isPlayerInvitedBy(player, eventPlayer)) {
-                            eventPlayer.playSound(eventPlayer.getLocation(), "block.note_block.bass", 1, 1);
+                            eventPlayer.playSound(eventPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                             return;
                         }
+                        // otherwise invite
                         lobby.invite(player);
                         this.decorate(eventPlayer);
+                        eventPlayer.playSound(eventPlayer.getLocation(), Sound.ENTITY_PARROT_FLY, 1f, 1f);
                     }
                 });
     }

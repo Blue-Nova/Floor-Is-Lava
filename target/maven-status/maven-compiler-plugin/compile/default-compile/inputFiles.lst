@@ -29,10 +29,12 @@ C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\FindAllowedLocation.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\GenerateGameTerrain.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\gui\GuiManager.java
+C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\gui\inventories\game\InGameMenu.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\gui\inventories\lobby\LobbyInv.java
+C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\gui\inventories\lobby\PlayersToInviteInv.java
+C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\gui\inventories\lobby\PlayersToKickInv.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\gui\inventories\main\MainMenu.java
-C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\gui\inventories\util\PlayersToInviteInv.java
-C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\gui\inventories\util\PopUpInv.java
+C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\gui\inventories\util\AreYouSurePopUp.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\gui\InventoryButton.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\gui\InventoryHandler.java
 C:\Users\gamer\IdeaProjects\Floor_is_Lava\src\main\java\com\bluenova\floorislava\util\gui\objects\InventoryGui.java

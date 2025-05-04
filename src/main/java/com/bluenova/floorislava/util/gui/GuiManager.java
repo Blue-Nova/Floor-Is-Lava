@@ -1,6 +1,7 @@
 package com.bluenova.floorislava.util.gui;
 
 
+import com.bluenova.floorislava.util.gui.inventories.game.InGameMenu;
 import com.bluenova.floorislava.util.gui.inventories.lobby.LobbyInv;
 import com.bluenova.floorislava.util.gui.inventories.main.MainMenu;
 import com.bluenova.floorislava.util.gui.objects.InventoryGui;
@@ -32,6 +33,7 @@ public class GuiManager {
     }
 
     public void handleClick(InventoryClickEvent event) {
+        // make sure event slot is in our inventory
         InventoryHandler handler = this.activeInventories.get(event.getInventory());
         if (handler != null) {
             handler.onClick(event);
@@ -57,6 +59,7 @@ public class GuiManager {
         return switch (pageId) {
             case MAIN_MENU -> new MainMenu();
             case LOBBY -> new LobbyInv();
+            case GAME_MENU -> new InGameMenu();
             default -> null;
         };
     }

@@ -8,6 +8,8 @@ import com.bluenova.floorislava.command.subcommand.SubCommand;
 import com.bluenova.floorislava.game.object.gamelobby.GameLobbyManager;
 import com.bluenova.floorislava.game.object.invitelobby.InviteLobbyManager;
 // Import MiniMessages and placeholders
+import com.bluenova.floorislava.util.gui.inventories.game.InGameMenu;
+import com.bluenova.floorislava.util.gui.inventories.lobby.LobbyInv;
 import com.bluenova.floorislava.util.gui.inventories.main.MainMenu;
 import com.bluenova.floorislava.util.messages.MiniMessages;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
@@ -59,8 +61,12 @@ public class FILCommandHandler implements CommandExecutor, TabCompleter {
         if (args.length == 0) {
             // Use MiniMessages - Add general.base_usage key to config
             // Example YAML: general.base_usage: "<red>Usage: /fil <group> <subcommand> [args...]</red>"
+            if (gameManager.isPlayerIngame((Player)sender)) {
+                FloorIsLava.getInstance().getGuiManager().openGUI(new InGameMenu(), (Player) sender);
+            } else {
+                FloorIsLava.getInstance().getGuiManager().openGUI(new MainMenu(), (Player) sender);
+            }
 
-            FloorIsLava.getInstance().getGuiManager().openGUI(new MainMenu(), (Player) sender);
 
             return true;
         }
