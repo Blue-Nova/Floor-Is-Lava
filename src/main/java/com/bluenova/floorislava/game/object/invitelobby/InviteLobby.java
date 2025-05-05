@@ -57,7 +57,6 @@ public class InviteLobby extends Lobby {
 
             // If checks pass, send invite and track success
             invite(invitedPlayer); // Sends the actual invite message
-            sentList.add(invitedPlayer);
             successfullyInvitedNames.add(invitedPlayer.getName());
         }
 
@@ -79,9 +78,17 @@ public class InviteLobby extends Lobby {
     }
 
     // Refactored to use MiniMessages and integrated click event
-    private void invite(Player invitedPlayer){
-        invitedPlayer.playSound(invitedPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+    public void invite(Player invitedPlayer){
 
+        if (sentList.contains(invitedPlayer)) {
+            MiniMessages.send(this.getOwner(), "lobby.already_invited_error", Placeholder.unparsed("player", invitedPlayer.getName()));
+            return;
+        }
+        if (players.contains(invitedPlayer)) {
+            MiniMessages.send(this.getOwner(), "lobby.already_invited_error", Placeholder.unparsed("player", invitedPlayer.getName()));
+            return;
+        }
+        invitedPlayer.playSound(invitedPlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
         String ownerName = this.getOwner().getName();
 
 // --- Create the clickable [Accept] component ---
@@ -101,7 +108,7 @@ public class InviteLobby extends Lobby {
             // Create placeholder needed *specifically for the hover text*
             TagResolver hoverPlaceholder = TagResolver.resolver(Placeholder.unparsed("inviter", ownerName));
             // Use the public parser instance directly with the placeholder
-            hoverText = MiniMessages.miniMessage.deserialize(rawHoverText, hoverPlaceholder);
+            hoverText = MiniMessages.miniM.deserialize(rawHoverText, hoverPlaceholder);
         }
         HoverEvent<Component> hoverEvent = HoverEvent.showText(hoverText); // Create hover event
 
@@ -119,6 +126,7 @@ public class InviteLobby extends Lobby {
 
 // Send the main invite_received message
         MiniMessages.send(invitedPlayer, "lobby.invite_received", mainPlaceholders);
+        sentList.add(invitedPlayer);
     }
 
     // Refactored to use MiniMessages and coordinate with manager
@@ -144,6 +152,7 @@ public class InviteLobby extends Lobby {
         MiniMessages.send(player, "lobby.invite_accepted_to_player",
                 Placeholder.unparsed("lobby_owner", this.getOwner().getName())
         );
+        this.getOwner().playSound(this.getOwner().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.7f, 2f);
     }
 
     // Refactored to use MiniMessages and coordinate with manager
@@ -212,10 +221,19 @@ public class InviteLobby extends Lobby {
     public void kickPlayers(ArrayList<Player> playersToKick) {
         for (Player player : playersToKick) {
             if (this.players.contains(player)) {
-                this.players.remove(player);
+                kickPlayer(player);
                 MiniMessages.send(player, "lobby.kicked_player_notification", Placeholder.unparsed("lobby_owner", this.getOwner().getName()));
                 MiniMessages.send(this.getOwner(), "lobby.kicked_player_feedback", Placeholder.unparsed("player", player.getName()));
             }
+        }
+    }
+
+    public void kickPlayer(Player player) {
+        if (this.players.contains(player)) {
+            this.players.remove(player);
+            sentList.remove(player);
+            MiniMessages.send(player, "lobby.kicked_player_notification", Placeholder.unparsed("lobby_owner", this.getOwner().getName()));
+            // inviteLobbyManager.removePlayerFromLobbyMap(player); // Uncomment if needed
         }
     }
 }

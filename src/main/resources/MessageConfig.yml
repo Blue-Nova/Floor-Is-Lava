@@ -61,6 +61,8 @@ game:
   countdown: "<yellow>Game starting in <gold><seconds></gold>...</yellow>"
   teleporting: "<aqua>Teleporting to the arena!</aqua>"
   started: "<red>The game has begun! <gold><bold>Last one standing wins!</bold></gold></red>"
+  start_title_top: "<gold>Lava Is Coming!</gold>"
+  start_title_bottom: "<red>Be the last survivor</red>"
   lava_death: "<aqua><player></aqua> <red>was consumed by the rising lava!</red>"
   other_death: "<aqua><player></aqua> <red>died.</red>"
   death_items_dropped: "<aqua>You died</aqua> <red>and dropped</red> <gold>half your items!</gold>"

@@ -2,33 +2,44 @@ package com.bluenova.floorislava.util.messages;
 
 import com.bluenova.floorislava.FloorIsLava; // Import main plugin class
 import com.bluenova.floorislava.config.MessageConfig; // To get messages
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences; // Import BukkitAudiences
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver; // For later placeholder use
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class MiniMessages {
 
-    public static final MiniMessage miniMessage = MiniMessage.miniMessage();
-    private static BukkitAudiences adventure = null;
+    public static final MiniMessage miniM = MiniMessage.miniMessage();
+    public static BukkitAudiences adventure = null; // Initialize Adventure API
     private static PluginLogger pluginLogger = null;
     private static MessageConfig messageConfig = null;
 
     public static void init(FloorIsLava plugin, PluginLogger logger, MessageConfig config) {
-        if (adventure == null) {
-            adventure = plugin.adventure();
-        }
         if (pluginLogger == null) {
             pluginLogger = logger;
         }
         if (messageConfig == null) {
             messageConfig = config;
         }
+        if (adventure == null) {
+            adventure = FloorIsLava.getAdventure(); // Use helper to get Adventure API
+        }
+    }
+
+    public static String legacy(String string) {
+        // Serialize and deserialize a message
+        Component component = miniM.deserialize(string);
+        LegacyComponentSerializer legacySerializer = LegacyComponentSerializer.builder()
+                .hexColors()
+                .useUnusualXRepeatedCharacterHexFormat()
+                .build();
+        return LegacyComponentSerializer.legacySection()
+                .serialize(component);
     }
 
     public static Component getParsedComponent(String messageKey) {
@@ -38,7 +49,7 @@ public class MiniMessages {
             return Component.text("[MissingKey: " + messageKey + "]", NamedTextColor.RED);
         }
         // Deserialize without additional placeholders
-        return miniMessage.deserialize(rawMessage);
+        return miniM.deserialize(rawMessage);
     }
 
     // --- Existing methods for Player ---
@@ -47,7 +58,6 @@ public class MiniMessages {
     }
 
     public static void send(Player player, String messageKey, TagResolver placeholders) {
-        if (adventure == null) { return; }
 
         String rawPrefix = messageConfig.getRawPrefix();
 
@@ -56,7 +66,7 @@ public class MiniMessages {
 
         Component prefixComponent = Component.empty(); // Default to nothing
         if (rawPrefix != null && !rawPrefix.isEmpty()) {
-            prefixComponent = miniMessage.deserialize(rawPrefix);
+            prefixComponent = miniM.deserialize(rawPrefix);
             // OPTIONAL: Add a space if your prefix doesn't end with one
             if (!rawPrefix.endsWith(" ")) {
                 prefixComponent = prefixComponent.append(Component.space());
@@ -64,7 +74,7 @@ public class MiniMessages {
         }
 
         // Parse
-        Component messageComponent = miniMessage.deserialize(rawMessage, placeholders);
+        Component messageComponent = miniM.deserialize(rawMessage, placeholders);
 
         Component finalComponent = prefixComponent.append(messageComponent);
 
@@ -78,12 +88,6 @@ public class MiniMessages {
     }
 
     public static void send(CommandSender sender, String messageKey, TagResolver placeholders) {
-        if (adventure == null) {
-            // Fallback for console/non-player senders if Adventure isn't ready
-            sender.sendMessage(ChatColor.RED + "[FIL] Message system error.");
-            pluginLogger.severe("[FloorIsLava] MiniMessages not initialized! adventure API is null.");
-            return;
-        }
 
         String rawMessage = getRawMessage(messageKey);
         if (rawMessage == null) {
@@ -94,13 +98,10 @@ public class MiniMessages {
         }
 
         // Parse (same as before)
-        Component parsedComponent = miniMessage.deserialize(rawMessage, placeholders);
-
-        // Get the generic Audience for the sender (works for Player AND Console)
-        Audience audience = adventure.sender(sender);
+        Component parsedComponent = miniM.deserialize(rawMessage, placeholders);
 
         // Send the component
-        audience.sendMessage(parsedComponent);
+        adventure.player((Player) sender).sendMessage(parsedComponent);
     }
 
 

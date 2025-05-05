@@ -25,7 +25,7 @@ public class GameEventManager implements Listener {
     private final GameLobbyManager gameManager;
     private final PlayerDataManager playerDataManager;
 
-    private ArrayList<Listener> eventsList = new ArrayList<>();
+    private final ArrayList<Listener> eventsList = new ArrayList<>();
 
     public GameEventManager(InviteLobbyManager lobbyManager, GameLobbyManager gameManager, PlayerDataManager playerDataManager, PluginLogger pluginLogger) {
         this.lobbyManager = lobbyManager;
@@ -50,6 +50,10 @@ public class GameEventManager implements Listener {
     public void onPlayerDeathEvent(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Player)) return;
         Player player = (Player) event.getEntity();
+
+        if (!(event.getDamage() >= player.getHealth())){
+            return;
+        }
 
         if (gameManager.isPlayerIngame(player)) {
             if (gameManager.getGameFromPlayer(player).getGameState() == GameLobbyStates.GENERATING) {

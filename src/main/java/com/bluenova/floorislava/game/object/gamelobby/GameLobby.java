@@ -77,7 +77,7 @@ public class GameLobby extends Lobby {
     public final Location gameStartLoc; // Plot corner min
     public final Location gameEndLoc;   // Plot corner max
     private boolean gameON = false; // Game active flag
-    public int lavaHeight; // Current lava Y level (public for GameEventManager?)
+    public int lavaHeight;      // Current lava Y level (public for GameEventManager?)
 
     // Task IDs (for later use to have deployable tasks)
     private BukkitTask countdownTask = null;
@@ -128,7 +128,15 @@ public class GameLobby extends Lobby {
         announce("game.generating_terrain");
         playGameSound(Sound.BLOCK_ENCHANTMENT_TABLE_USE); // Play sound for terrain generation
         // Pass 'this' (GameLobby) to FindAllowedLocation if it needs to call back generatePlot
+        InviteLobby originatingLobby = inviteLobbyManager.getLobbyFromOwner(this.owner);
+        if (originatingLobby != null) {
+            inviteLobbyManager.closeLobby(originatingLobby);
+            pluginLogger.debug("Closed invite lobby for owner: " + this.owner.getName());
+        } else {
+            pluginLogger.warning("Could not find original invite lobby for owner: " + this.owner.getName() + " to close.");
+        }
         workloadRunnable.addWorkload(new FindAllowedLocation(this));
+        setGameState(GameLobbyStates.GENERATING); // Set state to generating
     }
 
     /**
@@ -136,7 +144,6 @@ public class GameLobby extends Lobby {
      * Queues tasks to build barrier walls and copy terrain columns.
      */
     public void generatePlot(int sourceX, int sourceZ) {
-        setGameState(GameLobbyStates.GENERATING); // Set state to generating
         int borderStartX = (int) gamePlot.plotStart.getX() - 1;
         int borderStartZ = (int) gamePlot.plotStart.getZ() - 1;
         int plotEndX = (int) gamePlot.plotEnd.getX(); // End X/Z are exclusive for size calc
@@ -219,6 +226,7 @@ public class GameLobby extends Lobby {
         savePlayersInfo(); // Save inventory/stats and clear for game
         teleportPlayersToGame(); // Teleport players to lobby before countdown
         applyWorldBorder(); // Apply world border to the game plot
+        checkWinCondition();
 
         this.setGameState(GameLobbyStates.STARTING);
         // AT THIS POINT THE GAME STATE IS STARTING
@@ -251,6 +259,7 @@ public class GameLobby extends Lobby {
      */
     private void startGame() {
         gameON = true; // Mark game as officially started
+        // check if players are still in the game
 
         // Check if any players remain after teleport attempts
         if (this.players.isEmpty()) {
@@ -260,26 +269,30 @@ public class GameLobby extends Lobby {
             return;
         }
 
+        showStartTitle();
+        scheduler.runTaskTimer(plugin, (task) -> {
+            if (!gameON) {
+                task.cancel();
+                return;
+            }
+            sendOutLavaLevel(); // Send out the current lava level to all players
+        }, 0L, 20L); // Every second
+
         announce("game.started");
-        runBackMusic();
+        if (MainConfig.getInstance().isGameMusicEnabled()) {
+            runBackMusic();
+        }
+
 
         // Remove the InviteLobby that started this game
         // planned update: Do not remove lobby, to allow players to play again right away
-        InviteLobby originatingLobby = inviteLobbyManager.getLobbyFromOwner(this.owner);
-        if (originatingLobby != null) {
-            inviteLobbyManager.closeLobby(originatingLobby);
-            pluginLogger.debug("Closed invite lobby for owner: " + this.owner.getName());
-        } else {
-            pluginLogger.warning("Could not find original invite lobby for owner: " + this.owner.getName() + " to close.");
-        }
-        if (FloorIsLava.getInstance().isWorldGuardAvailable())
-            // Set region profile to GAME
-            this.FILRegionManager.setRegionProfile(gamePlot.worldGuardRegionId, RegionProfiles.BASE);
 
+        this.FILRegionManager.setRegionProfile(gamePlot.worldGuardRegionId, RegionProfiles.BASE);
         // Start game mechanics timers
         beginLavaTimer();
         beginEventTimer(); // If ChaosEventManager is ready
         this.setGameState(GameLobbyStates.STARTED);
+        checkWinCondition(); // Check if any player left the game
     }
 
     /** Starts the timer that potentially triggers chaos events. */
@@ -339,7 +352,7 @@ public class GameLobby extends Lobby {
         Title.Times times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(5), Duration.ofSeconds(2));
         Title fullTitle = Title.title(title, subtitle, times);
 
-        ((FloorIsLava)plugin).adventure().player(player).showTitle(fullTitle);
+        FloorIsLava.getAdventure().player(player).showTitle(fullTitle);
     }
 
     /** Stops game timers, cleans up players, releases plot. */
@@ -407,8 +420,7 @@ public class GameLobby extends Lobby {
         this.playerSpawnLocation.clear();
         LAVA_ANNOUNCE_HEIGHTS.clear(); // Clear announce heights
         this.flush(); // Clear the plot of blocks
-        if (FloorIsLava.getInstance().isWorldGuardAvailable())
-            FILRegionManager.setRegionProfile(gamePlot.worldGuardRegionId, RegionProfiles.IDLE); // Reset region profile
+        FILRegionManager.setRegionProfile(gamePlot.worldGuardRegionId, RegionProfiles.IDLE); // Reset region profile
     }
 
     private void flush(){
@@ -532,7 +544,6 @@ public class GameLobby extends Lobby {
 
     /** Restores player state after leaving/game end. */
     public void returnPlayerInfo(Player player) {
-
         if (gameLobbyManager.restorePlayerData(player)) {
             pluginLogger.debug("Restored player data from save files for: " + player.getName());
         } else {
@@ -668,7 +679,7 @@ public class GameLobby extends Lobby {
             }
         }
 
-        if (checkForPlayersUnderLava){
+        if (checkForPlayersUnderLava) {
             // Check for players under lava level
             for (Player player : this.players) {
                 if (player != null && player.isOnline()) {
@@ -681,7 +692,29 @@ public class GameLobby extends Lobby {
                 }
             }
         }
+    }
 
+    private void showStartTitle() {
+        // Show title to all players
+        for (Player player : this.players) {
+            if (player != null && player.isOnline()) {
+                Component title = MiniMessages.getParsedComponent("game.start_title_top");
+                Component subtitle = MiniMessages.getParsedComponent("game.start_title_bottom");
+                Title.Times times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(3), Duration.ofSeconds(1));
+                Title fullTitle = Title.title(title, subtitle, times);
+                FloorIsLava.getAdventure().player(player).showTitle(fullTitle);
+            }
+        }
+    }
+
+    private void sendOutLavaLevel() {
+        for (Player player : this.players) {
+            if (player != null && player.isOnline()) {
+                FloorIsLava.getAdventure().player(player).sendActionBar(
+                        MiniMessages.miniM.deserialize("<gold>Lava is <bold><red>" + (player.getLocation().getBlockY() - lavaHeight) + "</red></bold><gold> blocks below you!")
+                );
+            }
+        }
     }
 
     private void refillZone(Location playerLoc) {
@@ -767,6 +800,10 @@ public class GameLobby extends Lobby {
         }
 
         // Check win condition ONLY if the game is still running
+        checkWinCondition(); // Check if any players left in game
+    }
+
+    private void checkWinCondition() {
         if (gameON) {
             if (this.players.size() == 1) {
                 // We have a winner!

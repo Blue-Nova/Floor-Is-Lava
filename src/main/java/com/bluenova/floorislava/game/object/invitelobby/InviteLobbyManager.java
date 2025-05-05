@@ -1,9 +1,12 @@
 package com.bluenova.floorislava.game.object.invitelobby;
 
 import com.bluenova.floorislava.FloorIsLava;
+import com.bluenova.floorislava.util.messages.MiniMessages;
 import com.bluenova.floorislava.util.messages.PluginLogger;
+import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -80,10 +83,75 @@ public class InviteLobbyManager {
         return playerList;
     }
 
-    public boolean isPlayerInvited(Player player) {
+    public boolean isPlayerInvitedBy(Player player, Player owner) {
         for (InviteLobby lobby : inviteLobbyList) {
-            if (lobby.sentList.contains(player)) return true;
+            if (lobby.getOwner() == owner) {
+                if (lobby.sentList.contains(player)) return true;
+            }
         }
         return false;
+    }
+
+    public boolean isPlayerInOwnersLobby(Player player, Player owner) {
+        for (InviteLobby lobby : inviteLobbyList) {
+            if (lobby.getOwner() == owner) {
+                if (lobby.players.contains(player)) return true;
+            }
+        }
+        return false;
+    }
+
+    public ArrayList<Player> getPlayersFromOwner(Player player) {
+        for (InviteLobby lobby : inviteLobbyList) {
+            if (lobby.getOwner() == player) {
+                return lobby.players;
+            }
+        }
+        return null;
+    }
+
+    public ArrayList<Player> getInvitedPlayersFromOwner(Player player) {
+        for (InviteLobby lobby : inviteLobbyList) {
+            if (lobby.getOwner() == player) {
+                return lobby.sentList;
+            }
+        }
+        return null;
+    }
+
+    public boolean isLobbyReadyForStart(InviteLobby lobby) {
+        if (lobby.players.size() >= 2) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public @Nullable List<String> generateRequirementsLore(InviteLobby lobby) {
+        List<String> lore = new ArrayList<>();
+        if (lobby.players.size() < 2) {
+            lore.add(MiniMessages.legacy("<red>- At least 2 players in Lobby"));
+        }else{
+            lore.add(MiniMessages.legacy("<green>- At least 2 players in Lobby"));
+        }
+        return lore;
+    }
+
+    public void kickPlayerFromLobby(Player playerToKick, Player owner) {
+        InviteLobby lobby = getLobbyFromOwner(owner);
+        if (lobby != null) {
+            if (lobby.players.contains(playerToKick)) {
+                lobby.kickPlayer(playerToKick);
+            }
+        }
+    }
+
+    public Player getOwnnerFromLobby(InviteLobby inviteLobby) {
+        for (InviteLobby lobby : inviteLobbyList) {
+            if (lobby == inviteLobby) {
+                return lobby.getOwner();
+            }
+        }
+        return null;
     }
 }

@@ -101,6 +101,6 @@ public class LobbyKickCmd implements SubCommand {
 
     @Override
     public String getPermission() {
-        return "";
+        return null;
     }
 }
