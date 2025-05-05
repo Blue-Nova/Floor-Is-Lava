@@ -25,7 +25,7 @@ public class GameEventManager implements Listener {
     private final GameLobbyManager gameManager;
     private final PlayerDataManager playerDataManager;
 
-    private ArrayList<Listener> eventsList = new ArrayList<>();
+    private final ArrayList<Listener> eventsList = new ArrayList<>();
 
     public GameEventManager(InviteLobbyManager lobbyManager, GameLobbyManager gameManager, PlayerDataManager playerDataManager, PluginLogger pluginLogger) {
         this.lobbyManager = lobbyManager;
@@ -59,9 +59,13 @@ public class GameEventManager implements Listener {
             if (gameManager.getGameFromPlayer(player).getGameState() == GameLobbyStates.GENERATING) {
                 return;
             }
+            if (!(event.getDamage() >= player.getHealth())){
+                return;
+            }
             if((event.getCause() == EntityDamageEvent.DamageCause.LAVA) && (player.getLocation().getY()
-                    <= gameManager.getGameFromPlayer(player).lavaHeight))
+                    <= gameManager.getGameFromPlayer(player).lavaHeight)){
                 gameManager.getGameFromPlayer(player).remove(player, true, false);
+            }
             else {
                 gameManager.getGameFromPlayer(player).playerDiedNoLava(player);
             }
