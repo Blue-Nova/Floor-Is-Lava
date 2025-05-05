@@ -61,10 +61,15 @@ public class FILCommandHandler implements CommandExecutor, TabCompleter {
         if (args.length == 0) {
             // Use MiniMessages - Add general.base_usage key to config
             // Example YAML: general.base_usage: "<red>Usage: /fil <group> <subcommand> [args...]</red>"
-            if (gameManager.isPlayerIngame((Player)sender)) {
-                FloorIsLava.getInstance().getGuiManager().openGUI(new InGameMenu(), (Player) sender);
+            Player player = (Player) sender;
+            if (!player.hasPermission("floorislava.menu.use")){
+                MiniMessages.send(sender, "general.no_permission");
+                return true;
+            }
+            if (gameManager.isPlayerIngame(player)) {
+                FloorIsLava.getInstance().getGuiManager().openGUI(new InGameMenu(), player);
             } else {
-                FloorIsLava.getInstance().getGuiManager().openGUI(new MainMenu(), (Player) sender);
+                FloorIsLava.getInstance().getGuiManager().openGUI(new LobbyInv(), player);
             }
 
 

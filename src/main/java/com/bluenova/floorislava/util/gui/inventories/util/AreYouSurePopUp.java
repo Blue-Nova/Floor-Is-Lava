@@ -38,7 +38,7 @@ public class AreYouSurePopUp extends PopUp {
                     ItemStack item = new ItemStack(Material.RED_GLAZED_TERRACOTTA);
                     ItemMeta meta = item.getItemMeta();
                     if (meta != null) {
-                        meta.setDisplayName(MiniMessages.legacy("<bold><gold>Main <red>Menu"));
+                        meta.setDisplayName(MiniMessages.legacy("<bold><red>Are you sure?"));
                         ArrayList<String> lore = new ArrayList<>();
                         lore.add(MiniMessages.legacy("<gray>Click to Confirm"));
                         meta.setLore(lore);
@@ -55,7 +55,9 @@ public class AreYouSurePopUp extends PopUp {
                 .creator(player -> {
                     ItemStack item = new ItemStack(Material.RED_WOOL);
                     ItemMeta meta = item.getItemMeta();
-                    meta.setDisplayName(MiniMessages.legacy("<red>Cancel"));
+                    if (meta != null) {
+                        meta.setDisplayName(MiniMessages.legacy("<red>Cancel"));
+                    }
                     item.setItemMeta(meta);
                     return item;
                 })

@@ -278,6 +278,11 @@ public class LobbyInv extends InventoryGui {
                 .consumer(event -> {
                     if (event.getWhoClicked() instanceof Player) {
                         Player player = (Player) event.getWhoClicked();
+                        if (!player.hasPermission("floorislava.lobby.create")){
+                            MiniMessages.send(player, "general.no_permission");
+                            player.closeInventory();
+                            return;
+                        }
                         inviteLobbyManager.createLobby(player);
                         player.playSound(player.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 1, 1);
                         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.2f, 0.5f);

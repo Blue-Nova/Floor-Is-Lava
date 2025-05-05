@@ -56,6 +56,8 @@ public class Tools {
                 return null; // Couldn't find any block
             }
         }
+        FloorIsLava.getInstance().getPluginLogger()
+                .debug("Found safe block at " + block.getX() + ", " + block.getY() + ", " + block.getZ() + " of type " + block.getType());
         if (block.getType() == Material.LAVA) {
             return null;
         }

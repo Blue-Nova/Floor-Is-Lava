@@ -2,13 +2,13 @@
 # WELCOME TO FLOOR IS LAVA #
 # ------------------------ #
 # Do not change this number pls :).
-config_version: "1.1"
+config_version: "1.2"
 # ------------------------- #
 # ACTTUAL CONFIGURATION
 Plot:
   # How far apart each game plot should be from its neighbor (in blocks)
-  # MINIMUM is the PLOT SIZE + 1 !!!
   # This is to prevent the plots from overlapping. (will fix later)
+  # MINIMUM is the PLOT SIZE + 1 !!!
   Margin: 1000
 
   # How big each plot will be. 50 blocks will have a 50x50 plot of land per game.
@@ -24,16 +24,21 @@ Plot:
   Amount: 5
 
 Game:
+
+  # How long the countdown will be before the players are teleported to the game.
   PreGameCountdown: 3
+
   # How long the countdown will be before the game starts. (in seconds)
-  # Lowering this number will lower the amount of time needed before each start of a game.
   StartCountdown: 10
 
   # How long the lava will take to rise to the top. (in seconds)
   LavaRiseCooldown: 3
 
-    # How much the lava will rise each LavaRiseCooldown. (in blocks)
+  # How much the lava will rise each LavaRiseCooldown. (in blocks)
   LavaRiseAmount: 1
+
+  # Should the game play background music? (Pigstep)
+  PlayMusic: true
 
 Server:
   # This tells how long this plugin is allowed to process each tick. This is a workload distro.

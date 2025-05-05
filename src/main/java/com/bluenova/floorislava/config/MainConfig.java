@@ -7,7 +7,7 @@ import java.io.File;
 
 public class MainConfig {
 
-    private final static String CONFIG_VERSION = "1.1";
+    private final static String CONFIG_VERSION = "1.2";
     private final static MainConfig instance = new MainConfig();
 
     private File file;
@@ -19,6 +19,8 @@ public class MainConfig {
     private int gameStartCountdown;
     private int lavaRiseCooldown;
     private int lavaRiseAmount;
+    private int preGameCountDown;
+    private boolean musicEnabled;
 
     private MainConfig() {
     }
@@ -52,6 +54,8 @@ public class MainConfig {
         gameStartCountdown = config.getInt("Game.StartCountdown");
         lavaRiseCooldown = config.getInt("Game.LavaRiseCooldown");
         lavaRiseAmount = config.getInt("Game.LavaRiseAmount");
+        preGameCountDown = config.getInt("Game.PreGameCountdown");
+        musicEnabled = config.getBoolean("Game.PlayMusic");
 
         // log all values
     }
@@ -102,6 +106,10 @@ public class MainConfig {
     }
 
     public int getPreGameCountdown() {
-        return config.getInt("Game.PreGameCountdown");
+        return preGameCountDown;
+    }
+
+    public boolean isGameMusicEnabled() {
+        return musicEnabled;
     }
 }

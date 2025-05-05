@@ -43,6 +43,10 @@ public class GuiManager {
     public void handleOpen(InventoryOpenEvent event) {
         Inventory inventory = event.getInventory();
         InventoryHandler handler = this.activeInventories.get(inventory);
+        // inventory is not ours
+        if (handler == null) {
+            return;
+        }
         handler.onOpen(event);
     }
 

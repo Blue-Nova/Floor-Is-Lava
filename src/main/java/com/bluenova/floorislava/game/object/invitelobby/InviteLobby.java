@@ -232,6 +232,7 @@ public class InviteLobby extends Lobby {
         if (this.players.contains(player)) {
             this.players.remove(player);
             sentList.remove(player);
+            MiniMessages.send(player, "lobby.kicked_player_notification", Placeholder.unparsed("lobby_owner", this.getOwner().getName()));
             // inviteLobbyManager.removePlayerFromLobbyMap(player); // Uncomment if needed
         }
     }

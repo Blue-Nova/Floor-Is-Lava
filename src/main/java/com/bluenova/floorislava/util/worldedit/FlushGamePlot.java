@@ -20,10 +20,10 @@ import org.bukkit.Material;
 
 public class FlushGamePlot implements Workload {
 
-    private GamePlot gp;
-    private int y;
-    private boolean last;
-    private GameLobby gameLobby;
+    private final GamePlot gp;
+    private final int y;
+    private final boolean last;
+    private final GameLobby gameLobby;
 
     public FlushGamePlot(GameLobby gameLobby, int y, boolean last) {
         this.gameLobby = gameLobby;

@@ -9,11 +9,13 @@ import com.bluenova.floorislava.util.gui.util.PageIds;
 import com.bluenova.floorislava.util.messages.MiniMessages;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -90,11 +92,42 @@ public abstract class InventoryGui implements InventoryHandler {
     protected void renderHeader(PageIds fromPage, Player player, int width) {
         for (int i = 0; i < width; i++) {
             switch (i) {
-                case 0, 3, 4, 5, 6, 7, 8 -> this.addButton(i, this.createStaleButton());
+                case 0, 3, 4, 5, 6, 7 -> this.addButton(i, this.createStaleButton());
                 case 1 -> this.addButton(i , this.createNavigation(fromPage, PageIds.MAIN_MENU, player));
                 case 2 -> this.addButton(i, this.createNavigation(fromPage,PageIds.LOBBY, player));
+                case 8 -> this.addButton(i, this.renderDonateButton());
             }
         }
+    }
+
+    private InventoryButton renderDonateButton() {
+        return new InventoryButton()
+                .creator(player -> {
+                    ItemStack item = new ItemStack(Material.DANDELION); // Example item
+                    ItemMeta itemMeta = item.getItemMeta();
+                    if (itemMeta != null) {
+                        itemMeta.setDisplayName(MiniMessages.legacy("<bold><blue>Support My Work"));
+                        ArrayList<String> lore = new ArrayList<>();
+                        lore.add(MiniMessages.legacy(  "<aqua>----------------------------"));
+                        lore.add(MiniMessages.legacy("<white>I worked very hard on this game"));
+                        lore.add(MiniMessages.legacy("<aqua>Donating helps me keep it alive :)"));
+                        lore.add(MiniMessages.legacy("<font:uniform><gray>This will send you a clickable link"));
+                        itemMeta.setLore(lore);
+                        itemMeta.addEnchant(Enchantment.LURE, 1, true);
+                        itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                        item.setItemMeta(itemMeta);
+                    }
+                    return item;
+                })
+                .consumer(event -> {
+                    Player player = (Player) event.getWhoClicked();
+                    // Open the donation link in the player's browser
+                    player.closeInventory();
+                    player.playSound(player.getLocation(), Sound.ENTITY_CAT_AMBIENT, 1f, 1.2f);
+                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0.8f);
+                    player.sendMessage(MiniMessages.legacy("<aqua>Click the Link<yellow> to support my work :)"));
+                    player.sendMessage(MiniMessages.legacy("<aqua>https://buymeacoffee.com/bluebedworkshop"));
+                });
     }
 
     protected InventoryButton createStaleButton() {

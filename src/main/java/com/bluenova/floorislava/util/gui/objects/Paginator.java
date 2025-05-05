@@ -95,7 +95,7 @@ public abstract class Paginator<T> extends InventoryGui {
                     ItemStack item =  new ItemStack(Material.BARRIER);
                     ItemMeta itemMeta = item.getItemMeta();
                     if (itemMeta != null) {
-                        itemMeta.setDisplayName(MiniMessages.legacy("<red>Close"));
+                        itemMeta.setDisplayName(MiniMessages.legacy("<red>Return"));
                         item.setItemMeta(itemMeta);
                     }
                     return item;

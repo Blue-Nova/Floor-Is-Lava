@@ -269,8 +269,20 @@ public class GameLobby extends Lobby {
             return;
         }
 
+        showStartTitle();
+        scheduler.runTaskTimer(plugin, (task) -> {
+            if (!gameON) {
+                task.cancel();
+                return;
+            }
+            sendOutLavaLevel(); // Send out the current lava level to all players
+        }, 0L, 20L); // Every second
+
         announce("game.started");
-        runBackMusic();
+        if (MainConfig.getInstance().isGameMusicEnabled()) {
+            runBackMusic();
+        }
+
 
         // Remove the InviteLobby that started this game
         // planned update: Do not remove lobby, to allow players to play again right away
@@ -667,7 +679,7 @@ public class GameLobby extends Lobby {
             }
         }
 
-        if (checkForPlayersUnderLava){
+        if (checkForPlayersUnderLava) {
             // Check for players under lava level
             for (Player player : this.players) {
                 if (player != null && player.isOnline()) {
@@ -680,7 +692,29 @@ public class GameLobby extends Lobby {
                 }
             }
         }
+    }
 
+    private void showStartTitle() {
+        // Show title to all players
+        for (Player player : this.players) {
+            if (player != null && player.isOnline()) {
+                Component title = MiniMessages.getParsedComponent("game.start_title_top");
+                Component subtitle = MiniMessages.getParsedComponent("game.start_title_bottom");
+                Title.Times times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(3), Duration.ofSeconds(1));
+                Title fullTitle = Title.title(title, subtitle, times);
+                FloorIsLava.getAdventure().player(player).showTitle(fullTitle);
+            }
+        }
+    }
+
+    private void sendOutLavaLevel() {
+        for (Player player : this.players) {
+            if (player != null && player.isOnline()) {
+                FloorIsLava.getAdventure().player(player).sendActionBar(
+                        MiniMessages.miniM.deserialize("<gold>Lava is <bold><red>" + (player.getLocation().getBlockY() - lavaHeight) + "</red></bold><gold> blocks below you!")
+                );
+            }
+        }
     }
 
     private void refillZone(Location playerLoc) {
