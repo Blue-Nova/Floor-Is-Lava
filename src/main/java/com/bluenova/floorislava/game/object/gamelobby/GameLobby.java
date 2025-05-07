@@ -58,7 +58,7 @@ public class GameLobby extends Lobby {
     private static final int LAVA_INCREMENT = MainConfig.getInstance().getLavaRiseAmount(); // TODO: Make configurable
     private static final int GAME_START_COUNTDOWN = MainConfig.getInstance().getGameStartCountdown(); // TODO: Make configurable
     private static final int LAVA_RISE_COOLDOWN = MainConfig.getInstance().getLavaRiseCooldown(); // TODO: Make configurable
-    private static final AtomicInteger PRE_GAME_COUNTDOWN = new AtomicInteger(MainConfig.getInstance().getPreGameCountdown()); // TODO: Make configurable
+    private static final int PRE_GAME_COUNTDOWN = MainConfig.getInstance().getPreGameCountdown(); // TODO: Make configurable
     private static final double DEATH_ITEM_DROP_CHANCE = 0.5; // TODO: Make configurable
 
     // Player State Storage
@@ -196,7 +196,8 @@ public class GameLobby extends Lobby {
      */
 
     public void startPreGameCountdown() {
-        AtomicInteger countdown = PRE_GAME_COUNTDOWN; // Reset countdown
+        AtomicInteger countdown = new AtomicInteger(); // Reset countdown
+        countdown.set(PRE_GAME_COUNTDOWN); // Set to pre-game countdown value
         playGameSound(Sound.ENTITY_PLAYER_LEVELUP);
         scheduler.runTaskTimer(plugin, (task) -> {
             pluginLogger.debug("Pre-game countdown: " + countdown.get());
