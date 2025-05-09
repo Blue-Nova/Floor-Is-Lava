@@ -14,6 +14,7 @@ import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -81,15 +82,18 @@ public class Tools {
 
     public static void pasteClipboard(Clipboard clipboard, Location targetLocation) {
         BukkitWorld worldEditWorld = new BukkitWorld(targetLocation.getWorld());
-        try (EditSession session = WorldEdit.getInstance().newEditSession(worldEditWorld)) {
-            Operation operation = new ClipboardHolder(clipboard)
-                    .createPaste(session)
-                    .to(BlockVector3.at(targetLocation.getX(), targetLocation.getY(), targetLocation.getZ()))
-                    .ignoreAirBlocks(false)
-                    .build();
-            Operations.complete(operation);
-        } catch (WorldEditException error) {
-            error.printStackTrace();
-        }
+        Bukkit.getScheduler().runTask(FloorIsLava.getInstance(), () -> {
+            try (EditSession session = WorldEdit.getInstance().newEditSession(worldEditWorld)) {
+                Operation operation = new ClipboardHolder(clipboard)
+                        .createPaste(session)
+                        .to(BlockVector3.at(targetLocation.getX(), targetLocation.getY(), targetLocation.getZ()))
+                        .ignoreAirBlocks(false)
+                        .build();
+                Operations.complete(operation);
+            } catch (WorldEditException error) {
+                error.printStackTrace();
+            }
+        });
+
     }
 }
