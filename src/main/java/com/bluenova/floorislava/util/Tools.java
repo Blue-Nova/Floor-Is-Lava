@@ -85,7 +85,7 @@ public class Tools {
             Operation operation = new ClipboardHolder(clipboard)
                     .createPaste(session)
                     .to(BlockVector3.at(targetLocation.getX(), targetLocation.getY(), targetLocation.getZ()))
-                    .ignoreAirBlocks(false)
+                    .ignoreAirBlocks(true)
                     .build();
             Operations.complete(operation);
         } catch (WorldEditException error) {

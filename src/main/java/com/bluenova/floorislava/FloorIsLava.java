@@ -35,6 +35,7 @@ public final class FloorIsLava extends JavaPlugin {
 
     private static World voidWorld;
     private static World normalWorld;
+    private static World skyIslandWorld;
     private static GamePlotDivider gamePlotDivider;
     private static WorkloadRunnable workloadRunnable;
     private static FloorIsLava instance;
@@ -123,8 +124,11 @@ public final class FloorIsLava extends JavaPlugin {
             core.getMVWorldManager().addWorld("fil_normal_world", World.Environment.NORMAL, "", WorldType.NORMAL, true, "");
         if (!core.getMVWorldManager().isMVWorld("fil_void_world"))
             core.getMVWorldManager().addWorld("fil_void_world", World.Environment.NORMAL, "", WorldType.NORMAL, true, "VoidGen");
+        if (!core.getMVWorldManager().isMVWorld("fil_skyisland_world"))
+            core.getMVWorldManager().addWorld("fil_skyisland_world", World.Environment.NORMAL, "", WorldType.NORMAL, false, "CustomWorldGenerator");
         normalWorld = Bukkit.getWorld("fil_normal_world");
         voidWorld = Bukkit.getWorld("fil_void_world");
+        skyIslandWorld = Bukkit.getWorld("fil_skyisland_world");
         voidWorld.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
         voidWorld.setTime(1000);
     }
@@ -186,6 +190,10 @@ public final class FloorIsLava extends JavaPlugin {
 
     public static World getNormalWorld(){
         return normalWorld;
+    }
+
+    public static World getSkyIslandWorld() {
+        return skyIslandWorld;
     }
 
     public static WorkloadRunnable getWorkloadRunnable(){
