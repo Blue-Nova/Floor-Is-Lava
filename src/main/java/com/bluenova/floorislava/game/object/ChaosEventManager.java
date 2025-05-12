@@ -191,7 +191,7 @@ public class ChaosEventManager {
         }),20*120);
     }
     private static double getAboveHighestPlayer(GameLobby gl) {
-        double y=-64;
+        double y=gl.gameStartLoc.getWorld().getMinHeight();
         for (Player p:gl.players) {
             if(p.getLocation().getY()>y)y=p.getLocation().getY();
         }
