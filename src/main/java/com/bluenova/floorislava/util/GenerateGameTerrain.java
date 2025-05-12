@@ -26,8 +26,10 @@ public class GenerateGameTerrain implements Workload {
 
     @Override
     public void compute() {
-        Clipboard clipboard = Tools.createClipboard(FloorIsLava.getNormalWorld(), new CuboidRegion(BlockVector3.at(x_copy, -64, z_copy), BlockVector3.at(x_copy, 319, z_copy)));
-        Tools.pasteClipboard(clipboard, new Location(FloorIsLava.getVoidWorld(), x_paste, -64, z_paste));
+        Clipboard clipboard = Tools.createClipboard( FloorIsLava.getNormalWorld(),
+                                                     new CuboidRegion(BlockVector3.at(x_copy, FloorIsLava.getVoidWorld().getMinHeight(), z_copy),
+                                                                      BlockVector3.at(x_copy, FloorIsLava.getVoidWorld().getMaxHeight()-1, z_copy)));
+        Tools.pasteClipboard(clipboard, new Location(FloorIsLava.getVoidWorld(), x_paste, FloorIsLava.getVoidWorld().getMinHeight(), z_paste));
         if (gp != null) gp.startPreGameCountdown();
     }
 }
