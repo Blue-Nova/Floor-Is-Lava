@@ -16,9 +16,10 @@ import com.sk89q.worldedit.function.visitor.RegionVisitor;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 
-public class FlushGamePlot implements Workload {
+public class FlushGamePlot extends Workload {
 
     private final GamePlot gp;
     private final int y;
@@ -35,19 +36,22 @@ public class FlushGamePlot implements Workload {
 
     @Override
     public void compute() {
-        try (EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(FloorIsLava.getVoidWorld()))) {
-            Region region = new CuboidRegion(BlockVector3.at(gp.plotStart.getX(), y, gp.plotStart.getZ()),
-                    BlockVector3.at(gp.plotEnd.getX() - 1, y, gp.plotEnd.getZ() - 1));
-            Pattern airPattern = BukkitAdapter.adapt(Material.AIR.createBlockData());
-            RegionFunction airFunction = new BlockReplace(editSession, airPattern);
-            RegionVisitor airVisitor = new RegionVisitor(region, airFunction);
+        Bukkit.getScheduler().runTaskAsynchronously(FloorIsLava.getInstance(), () -> {
+            try (EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(FloorIsLava.getVoidWorld()))) {
+                Region region = new CuboidRegion(BlockVector3.at(gp.plotStart.getX(), y, gp.plotStart.getZ()),
+                        BlockVector3.at(gp.plotEnd.getX() - 1, y, gp.plotEnd.getZ() - 1));
+                Pattern airPattern = BukkitAdapter.adapt(Material.AIR.createBlockData());
+                RegionFunction airFunction = new BlockReplace(editSession, airPattern);
+                RegionVisitor airVisitor = new RegionVisitor(region, airFunction);
 
-            Operations.complete(airVisitor);
-            if (last){
-                gameLobby.flushDone();
+                Operations.complete(airVisitor);
+                if (last){
+                    gameLobby.flushDone();
+                }
+            } catch (WorldEditException e) {
+                throw new RuntimeException(e);
             }
-        } catch (WorldEditException e) {
-            throw new RuntimeException(e);
-        }
+        });
+
     }
 }

@@ -25,7 +25,7 @@ public class InGameMenu extends InventoryGui {
 
         gameManager = FloorIsLava.getGameLobbyManager();
 
-        return org.bukkit.Bukkit.createInventory(null, 9, MiniMessages.legacy("<dark_red>In-Game Menu"));
+        return org.bukkit.Bukkit.createInventory(null, 9, MiniMessages.createComponent("<dark_red>In-Game Menu"));
     }
 
     @Override
@@ -48,7 +48,7 @@ public class InGameMenu extends InventoryGui {
                     ItemStack item = new ItemStack(Material.SKELETON_SKULL); // Example item
                     SkullMeta skullMeta = (SkullMeta) item.getItemMeta();
                     if (skullMeta != null) {
-                        skullMeta.setDisplayName(MiniMessages.legacy("<red><bold>Leave Game"));
+                        skullMeta.displayName(MiniMessages.createComponent("<red><bold>Leave Game"));
                         item.setItemMeta(skullMeta);
                     }
                     return item;
@@ -65,12 +65,12 @@ public class InGameMenu extends InventoryGui {
                     ItemStack item = new ItemStack(Material.SKELETON_SKULL); // Example item
                     SkullMeta skullMeta = (SkullMeta) item.getItemMeta();
                     if (skullMeta != null) {
-                        skullMeta.setDisplayName(MiniMessages.legacy("<red><bold>Leave Game"));
+                        skullMeta.displayName(MiniMessages.createComponent("<red><bold>Leave Game"));
                         item.setItemMeta(skullMeta);
                     }
                     return item;
                 }).consumer(event -> {
-                    String title = MiniMessages.legacy("<red><bold>Are you sure?");
+                    Component title = MiniMessages.createComponent("<red><bold>Are you sure?");
                     FloorIsLava.getInstance().getPluginLogger().debug("Title for AreYouSurePopUp:" + title);
                     AreYouSurePopUp popUp = new AreYouSurePopUp(event1 -> {
                         Player player1 = (Player) event1.getWhoClicked();
@@ -86,12 +86,12 @@ public class InGameMenu extends InventoryGui {
                     ItemStack item = new ItemStack(Material.ENDER_EYE); // Example item
                     ItemMeta itemMeta = item.getItemMeta();
                     if (itemMeta != null) {
-                        itemMeta.setDisplayName(MiniMessages.legacy("<red><bold>Lose and Spectate"));
+                        itemMeta.displayName(MiniMessages.createComponent("<red><bold>Lose and Spectate"));
                         item.setItemMeta(itemMeta);
                     }
                     return item;
                 }).consumer(event -> {
-                    String title = MiniMessages.legacy("<red><bold>Are you sure?");
+                    Component title = MiniMessages.createComponent("<red><bold>Are you sure?");
                     FloorIsLava.getInstance().getPluginLogger().debug("Title for AreYouSurePopUp:" + title);
                     AreYouSurePopUp popUp = new AreYouSurePopUp(event1 -> {
                         Player player1 = (Player) event1.getWhoClicked();
