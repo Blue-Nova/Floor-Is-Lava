@@ -65,7 +65,7 @@ public abstract class Paginator<T> extends InventoryGui {
                         ItemStack item = new ItemStack(Material.ARROW);
                         ItemMeta itemMeta = item.getItemMeta();
                         if (itemMeta != null) {
-                            itemMeta.setDisplayName(MiniMessages.legacy("<white>Previous Page"));
+                            itemMeta.displayName(MiniMessages.createComponent("<white>Previous Page"));
                             item.setItemMeta(itemMeta);
                         }
                         return item;
@@ -79,7 +79,7 @@ public abstract class Paginator<T> extends InventoryGui {
                         ItemStack item = new ItemStack(Material.ARROW);
                         ItemMeta itemMeta = item.getItemMeta();
                         if (itemMeta != null) {
-                            itemMeta.setDisplayName(MiniMessages.legacy("<white>Next Page"));
+                            itemMeta.displayName(MiniMessages.createComponent("<white>Next Page"));
                             item.setItemMeta(itemMeta);
                         }
                         return item;
@@ -95,7 +95,7 @@ public abstract class Paginator<T> extends InventoryGui {
                     ItemStack item =  new ItemStack(Material.BARRIER);
                     ItemMeta itemMeta = item.getItemMeta();
                     if (itemMeta != null) {
-                        itemMeta.setDisplayName(MiniMessages.legacy("<red>Return"));
+                        itemMeta.displayName(MiniMessages.createComponent("<red>Return"));
                         item.setItemMeta(itemMeta);
                     }
                     return item;

@@ -16,7 +16,6 @@
         <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
     <build>
         <plugins>
             <plugin>
@@ -42,10 +41,6 @@
                                 <relocation>
                                     <pattern>org.json.simple</pattern>
                                     <shadedPattern>com.bluenova.floorislava.libs.jsonsimple</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>net.kyori.adventure</pattern>
-                                    <shadedPattern>com.bluenova.floorislava.libs.adventure</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
@@ -108,8 +103,8 @@
     </dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
             <version>1.21.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
@@ -150,12 +145,6 @@
             <groupId>net.kyori</groupId>
             <artifactId>adventure-api</artifactId>
             <version>4.20.0</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-platform-bukkit</artifactId>
-            <version>4.3.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

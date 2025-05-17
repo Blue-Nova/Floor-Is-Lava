@@ -40,7 +40,7 @@ public class LobbyInv extends InventoryGui {
     protected Inventory createInventory() {
         width = 9;
         height = 6;
-        return Bukkit.createInventory(null, width*height, MiniMessages.legacy("<bold><gold>Lobby <red>Menu"));
+        return Bukkit.createInventory(null, width*height, MiniMessages.createComponent("<bold><gold>Lobby <red>Menu"));
     }
 
     @Override
@@ -76,17 +76,17 @@ public class LobbyInv extends InventoryGui {
                     ItemStack item = new ItemStack(Material.ANVIL);
                     ItemMeta meta = item.getItemMeta();
                     if (meta != null) {
-                        ArrayList<String> lore = new ArrayList<>();
+                        ArrayList<Component> lore = new ArrayList<>();
                         if (playerIsOwner){
-                            meta.setDisplayName(MiniMessages.legacy("<bold><red>Disband Lobby"));
-                            lore.add(MiniMessages.legacy("<gray>Caution! This will Kick all players!"));
-                            meta.setLore(lore);
+                            meta.displayName(MiniMessages.createComponent("<bold><red>Disband Lobby"));
+                            lore.add(MiniMessages.createComponent("<gray>Caution! This will Kick all players!"));
+                            meta.lore(lore);
                             meta.addEnchant(Enchantment.LURE, 1, true);
                             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                         } else {
-                            meta.setDisplayName(MiniMessages.legacy("<bold><red>Leave Lobby"));
-                            lore.add(MiniMessages.legacy("<gray>Click to leave the lobby"));
-                            meta.setLore(lore);
+                            meta.displayName(MiniMessages.createComponent("<bold><red>Leave Lobby"));
+                            lore.add(MiniMessages.createComponent("<gray>Click to leave the lobby"));
+                            meta.lore(lore);
                         }
                         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
                     }
@@ -124,21 +124,21 @@ public class LobbyInv extends InventoryGui {
                     ItemMeta meta = item.getItemMeta();
 
                     if (meta != null) {
-                        meta.setDisplayName(MiniMessages.legacy("<aqua>Lobby Members"));
-                        ArrayList<String> lore = new ArrayList<>();
-                        lore.add(MiniMessages.legacy("<gray>Click to refresh list"));
+                        meta.displayName(MiniMessages.createComponent("<aqua>Lobby Members"));
+                        ArrayList<Component> lore = new ArrayList<>();
+                        lore.add(MiniMessages.createComponent("<gray>Click to refresh list"));
                         ArrayList<Player> lobbyMembers = inviteLobbyManager.getPlayersFromOwner(owner);
-                        lore.add(MiniMessages.legacy("<bold><green>Joined:"));
+                        lore.add(MiniMessages.createComponent("<bold><green>Joined:"));
                         for (Player member : lobbyMembers) {
-                            lore.add(MiniMessages.legacy("<white>- " + member.getName()));
+                            lore.add(MiniMessages.createComponent("<white>- " + member.getName()));
                         }
 
                         ArrayList<Player> invitedMembers = inviteLobbyManager.getInvitedPlayersFromOwner(owner);
-                        lore.add(MiniMessages.legacy("<bold><yellow>Invted:"));
+                        lore.add(MiniMessages.createComponent("<bold><yellow>Invted:"));
                         for (Player member : invitedMembers) {
-                            lore.add(MiniMessages.legacy("<gray>- " + member.getName()));
+                            lore.add(MiniMessages.createComponent("<gray>- " + member.getName()));
                         }
-                        meta.setLore(lore);
+                        meta.lore(lore);
                         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
                         item.setItemMeta(meta);
                     }
@@ -157,10 +157,10 @@ public class LobbyInv extends InventoryGui {
                     ItemStack item = new ItemStack(Material.FILLED_MAP);
                     ItemMeta meta = item.getItemMeta();
                     if (meta != null) {
-                        meta.setDisplayName(MiniMessages.legacy("<white>Invite Players"));
-                        ArrayList<String> lore = new ArrayList<>();
-                        lore.add(MiniMessages.legacy("<gray>Click to invite players"));
-                        meta.setLore(lore);
+                        meta.displayName(MiniMessages.createComponent("<white>Invite Players"));
+                        ArrayList<Component> lore = new ArrayList<>();
+                        lore.add(MiniMessages.createComponent("<gray>Click to invite players"));
+                        meta.lore(lore);
                         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
                     }
@@ -184,10 +184,10 @@ public class LobbyInv extends InventoryGui {
                     // if game already is generating, show clock
                     if (gameLobbyManager.isPlayerIngame(player)) {
                         if (meta != null) {
-                            meta.setDisplayName(MiniMessages.legacy("<aqua>Generating Game..."));
-                            ArrayList<String> lore = new ArrayList<>();
-                            lore.add(MiniMessages.legacy("<gray>You can exit the menu now"));
-                            meta.setLore(lore);
+                            meta.displayName(MiniMessages.createComponent("<aqua>Generating Game..."));
+                            ArrayList<Component> lore = new ArrayList<>();
+                            lore.add(MiniMessages.createComponent("<gray>You can exit the menu now"));
+                            meta.lore(lore);
                             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
                         }
@@ -199,10 +199,10 @@ public class LobbyInv extends InventoryGui {
                     if (inviteLobbyManager.isLobbyReadyForStart(lobby)){
                         item = new ItemStack(Material.DIAMOND_SWORD);
                         if (meta != null) {
-                            meta.setDisplayName(MiniMessages.legacy("<white>Start Game"));
-                            ArrayList<String> lore = new ArrayList<>();
-                            lore.add(MiniMessages.legacy("<gray>Click to start the game"));
-                            meta.setLore(lore);
+                            meta.displayName(MiniMessages.createComponent("<white>Start Game"));
+                            ArrayList<Component> lore = new ArrayList<>();
+                            lore.add(MiniMessages.createComponent("<gray>Click to start the game"));
+                            meta.lore(lore);
                             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
                         }
@@ -210,8 +210,8 @@ public class LobbyInv extends InventoryGui {
                         item = new ItemStack(Material.WOODEN_SWORD);
                         meta = item.getItemMeta();
                         if (meta != null) {
-                            meta.setDisplayName(MiniMessages.legacy("<red>Missing Requirements"));
-                            meta.setLore(inviteLobbyManager.generateRequirementsLore(lobby));
+                            meta.displayName(MiniMessages.createComponent("<red>Missing Requirements"));
+                            meta.lore(inviteLobbyManager.generateRequirementsLore(lobby));
                             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
                         }
@@ -236,10 +236,10 @@ public class LobbyInv extends InventoryGui {
                     ItemStack item = new ItemStack(Material.IRON_SWORD);
                     ItemMeta meta = item.getItemMeta();
                     if (meta != null) {
-                        meta.setDisplayName(MiniMessages.legacy("<red>Kick Player"));
-                        ArrayList<String> lore = new ArrayList<>();
-                        lore.add(MiniMessages.legacy("<gray>Click to kick a player"));
-                        meta.setLore(lore);
+                        meta.displayName(MiniMessages.createComponent("<red>Kick Player"));
+                        ArrayList<Component> lore = new ArrayList<>();
+                        lore.add(MiniMessages.createComponent("<gray>Click to kick a player"));
+                        meta.lore(lore);
                         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
                     }
@@ -265,10 +265,10 @@ public class LobbyInv extends InventoryGui {
                     ItemStack item = new ItemStack(Material.WRITABLE_BOOK);
                     ItemMeta meta = item.getItemMeta();
                     if (meta != null) {
-                        meta.setDisplayName(MiniMessages.legacy("<white>Create lobby<gold>+"));
-                        ArrayList<String> lore = new ArrayList<>();
-                        lore.add(MiniMessages.legacy("<gray>Click to create a lobby"));
-                        meta.setLore(lore);
+                        meta.displayName(MiniMessages.createComponent("<white>Create lobby<gold>+"));
+                        ArrayList<Component> lore = new ArrayList<>();
+                        lore.add(MiniMessages.createComponent("<gray>Click to create a lobby"));
+                        meta.lore(lore);
                         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
                     }

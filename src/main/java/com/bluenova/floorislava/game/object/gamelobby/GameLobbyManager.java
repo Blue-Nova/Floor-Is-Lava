@@ -78,7 +78,7 @@ public class GameLobbyManager {
         if (game != null) {
             game.remove(player1, true, false);
         } else {
-            player1.sendMessage(MiniMessages.legacy("<red>Could not find game to spectate</red>"));
+            player1.sendMessage(MiniMessages.createComponent("<red>Could not find game to spectate</red>"));
         }
     }
 
