@@ -28,8 +28,8 @@ public class GamePlotDivider {
         int mag_x = x * plotMargin;
         int mag_z = z * plotMargin;
         GamePlot plot = new GamePlot(world,
-                new Location(world, mag_x, -64, mag_z),
-                new Location(world, (mag_x) + plotSize, 319, (mag_z) + plotSize));
+                new Location(world, mag_x, world.getMinHeight(), mag_z),
+                new Location(world, (mag_x) + plotSize, world.getMaxHeight()-1, (mag_z) + plotSize));
         plotList.add(plot);
     }
 
