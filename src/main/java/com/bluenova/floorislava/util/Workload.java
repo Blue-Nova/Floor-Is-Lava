@@ -2,8 +2,7 @@ package com.bluenova.floorislava.util;
 
 import com.sk89q.worldedit.WorldEditException;
 
-public interface Workload {
+public abstract class Workload {
 
-    void compute() throws WorldEditException;
-
+    protected abstract void compute() throws WorldEditException;
 }

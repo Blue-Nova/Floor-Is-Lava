@@ -16,6 +16,13 @@ import com.bluenova.floorislava.util.worldedit.FlushGamePlot;
 // Adventure Imports
 import com.bluenova.floorislava.util.messages.MiniMessages;
 import com.bluenova.floorislava.util.worldguard.RegionProfiles;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
+import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.regions.CuboidRegion;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
@@ -58,7 +65,7 @@ public class GameLobby extends Lobby {
     private static final int LAVA_INCREMENT = MainConfig.getInstance().getLavaRiseAmount(); // TODO: Make configurable
     private static final int GAME_START_COUNTDOWN = MainConfig.getInstance().getGameStartCountdown(); // TODO: Make configurable
     private static final int LAVA_RISE_COOLDOWN = MainConfig.getInstance().getLavaRiseCooldown(); // TODO: Make configurable
-    private static final AtomicInteger PRE_GAME_COUNTDOWN = new AtomicInteger(MainConfig.getInstance().getPreGameCountdown()); // TODO: Make configurable
+    private static final int PRE_GAME_COUNTDOWN = MainConfig.getInstance().getPreGameCountdown(); // TODO: Make configurable
     private static final double DEATH_ITEM_DROP_CHANCE = 0.5; // TODO: Make configurable
 
     // Player State Storage
@@ -143,7 +150,7 @@ public class GameLobby extends Lobby {
      * Called by FindAllowedLocation Workload task once source coords (x, z) are found.
      * Queues tasks to build barrier walls and copy terrain columns.
      */
-    public void generatePlot(int sourceX, int sourceZ) {
+    public void generatePlot(int x_copy_start, int z_copy_start) {
         int borderStartX = (int) gamePlot.plotStart.getX() - 1;
         int borderStartZ = (int) gamePlot.plotStart.getZ() - 1;
         int plotEndX = (int) gamePlot.plotEnd.getX(); // End X/Z are exclusive for size calc
@@ -157,38 +164,52 @@ public class GameLobby extends Lobby {
         // Build barrier walls if not already done for this plot instance
         if (!gamePlot.hasBorders()) {
             pluginLogger.info("Generating borders for plot at " + gamePlot.plotStart.getBlockX() + "," + gamePlot.plotStart.getBlockZ());
-            for (int y = minY; y < maxY; y++) {
-                // Use plot End X/Z which are likely +size from start
-                workloadRunnable.addWorkload(new MakeBarrierWall(borderStartX, borderStartZ, plotEndX, borderStartZ, y, voidWorld));     // Side 1 (Z constant)
-                workloadRunnable.addWorkload(new MakeBarrierWall(borderStartX, borderStartZ + 1, borderStartX, plotEndZ - 1, y, voidWorld)); // Side 2 (X constant)
-                workloadRunnable.addWorkload(new MakeBarrierWall(plotEndX, borderStartZ + 1, plotEndX, plotEndZ - 1, y, voidWorld));       // Side 3 (X constant)
-                workloadRunnable.addWorkload(new MakeBarrierWall(borderStartX + 1, plotEndZ, plotEndX - 1, plotEndZ, y, voidWorld));         // Side 4 (Z constant) - Adjust corners if needed
-            }
+            // Queue barrier wall tasks
+            workloadRunnable.addWorkload(new MakeBarrierWall(voidWorld,
+                    BlockVector3.at(borderStartX, minY, borderStartZ),
+                    BlockVector3.at(plotEndX, maxY, borderStartZ)));
+
+            workloadRunnable.addWorkload(new MakeBarrierWall(voidWorld,
+                    BlockVector3.at(borderStartX, minY, borderStartZ),
+                    BlockVector3.at(borderStartX, maxY, plotEndZ)));
+
+            workloadRunnable.addWorkload(new MakeBarrierWall(voidWorld,
+                    BlockVector3.at(plotEndX, minY, plotEndZ),
+                    BlockVector3.at(borderStartX, maxY, plotEndZ)));
+
+            workloadRunnable.addWorkload(new MakeBarrierWall(voidWorld,
+                    BlockVector3.at(plotEndX, minY, plotEndZ),
+                    BlockVector3.at(plotEndX, maxY, borderStartZ)));
+
             gamePlot.setHasBorders(true);
         }
+
+        int x_copy_end = x_copy_start + (plotSize-1);
+        int z_copy_end = z_copy_start + (plotSize-1);
 
         // Queue terrain copy tasks
         int pasteStartX = (int) gamePlot.plotStart.getX();
         int pasteStartZ = (int) gamePlot.plotStart.getZ();
         GameLobby finalTaskSignal = null; // Used to trigger startGameCountdown
 
-        pluginLogger.debug("Queueing terrain copy for plot at " + pasteStartX + "," + pasteStartZ + " from " + sourceX + "," + sourceZ);
-        for (int x_index = 0; x_index < plotSize; x_index++) {
-            for (int z_index = 0; z_index < plotSize; z_index++) {
-                // Assign 'this' only to the very last task in the grid
-                if (x_index == plotSize - 1 && z_index == plotSize - 1) {
-                    finalTaskSignal = this;
-                }
-                // Pass dependencies needed by GenerateGameTerrain constructor
-                workloadRunnable.addWorkload(new GenerateGameTerrain(
-                        finalTaskSignal,
-                        sourceX + x_index, sourceZ + z_index, // Source coords
-                        pasteStartX + x_index, pasteStartZ + z_index // Paste coords
-                        // Pass worlds needed
-                ));
-            }
-        }
+        pluginLogger.debug("Queueing terrain copy for plot at " + pasteStartX + "," + pasteStartZ + " from " + x_copy_start + "," + z_copy_start);
+
+        GenerateGameTerrain terrainTask = new GenerateGameTerrain(
+                x_copy_start,x_copy_end,
+                z_copy_start,z_copy_end,
+                pasteStartX, pasteStartZ);
+
+        workloadRunnable.addWorkload(terrainTask);
         pluginLogger.debug("Finished queueing terrain copy tasks.");
+        Bukkit.getScheduler().runTaskTimer(plugin, (task)->{
+            if (terrainTask.isComplete()) {
+                pluginLogger.debug("Terrain copy complete for plot at " + pasteStartX + "," + pasteStartZ);
+                // Start pre-game countdown
+                startPreGameCountdown();
+                // Cancel this task
+                task.cancel();
+            }
+        },0L,1L); // Dummy task to allow async tasks to finish
     }
 
     /**
@@ -196,7 +217,8 @@ public class GameLobby extends Lobby {
      */
 
     public void startPreGameCountdown() {
-        AtomicInteger countdown = PRE_GAME_COUNTDOWN; // Reset countdown
+        AtomicInteger countdown = new AtomicInteger(); // Reset countdown
+        countdown.set(PRE_GAME_COUNTDOWN); // Set to pre-game countdown value
         playGameSound(Sound.ENTITY_PLAYER_LEVELUP);
         scheduler.runTaskTimer(plugin, (task) -> {
             pluginLogger.debug("Pre-game countdown: " + countdown.get());
@@ -352,7 +374,7 @@ public class GameLobby extends Lobby {
         Title.Times times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(5), Duration.ofSeconds(2));
         Title fullTitle = Title.title(title, subtitle, times);
 
-        FloorIsLava.getAdventure().player(player).showTitle(fullTitle);
+        player.showTitle(fullTitle);
     }
 
     /** Stops game timers, cleans up players, releases plot. */
@@ -702,7 +724,7 @@ public class GameLobby extends Lobby {
                 Component subtitle = MiniMessages.getParsedComponent("game.start_title_bottom");
                 Title.Times times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(3), Duration.ofSeconds(1));
                 Title fullTitle = Title.title(title, subtitle, times);
-                FloorIsLava.getAdventure().player(player).showTitle(fullTitle);
+                player.showTitle(fullTitle);
             }
         }
     }
@@ -710,7 +732,7 @@ public class GameLobby extends Lobby {
     private void sendOutLavaLevel() {
         for (Player player : this.players) {
             if (player != null && player.isOnline()) {
-                FloorIsLava.getAdventure().player(player).sendActionBar(
+                player.sendActionBar(
                         MiniMessages.miniM.deserialize("<gold>Lava is <bold><red>" + (player.getLocation().getBlockY() - lavaHeight) + "</red></bold><gold> blocks below you!")
                 );
             }

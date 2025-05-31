@@ -2,7 +2,6 @@ package com.bluenova.floorislava.util.messages;
 
 import com.bluenova.floorislava.FloorIsLava; // Import main plugin class
 import com.bluenova.floorislava.config.MessageConfig; // To get messages
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -15,7 +14,6 @@ import org.bukkit.entity.Player;
 public class MiniMessages {
 
     public static final MiniMessage miniM = MiniMessage.miniMessage();
-    public static BukkitAudiences adventure = null; // Initialize Adventure API
     private static PluginLogger pluginLogger = null;
     private static MessageConfig messageConfig = null;
 
@@ -26,20 +24,11 @@ public class MiniMessages {
         if (messageConfig == null) {
             messageConfig = config;
         }
-        if (adventure == null) {
-            adventure = FloorIsLava.getAdventure(); // Use helper to get Adventure API
-        }
     }
 
-    public static String legacy(String string) {
+    public static Component createComponent(String string) {
         // Serialize and deserialize a message
-        Component component = miniM.deserialize(string);
-        LegacyComponentSerializer legacySerializer = LegacyComponentSerializer.builder()
-                .hexColors()
-                .useUnusualXRepeatedCharacterHexFormat()
-                .build();
-        return LegacyComponentSerializer.legacySection()
-                .serialize(component);
+        return miniM.deserialize(string);
     }
 
     public static Component getParsedComponent(String messageKey) {
@@ -79,7 +68,7 @@ public class MiniMessages {
         Component finalComponent = prefixComponent.append(messageComponent);
 
         // Send using player audience
-        adventure.player(player).sendMessage(finalComponent);
+        player.sendMessage(finalComponent);
     }
 
     // --- NEW methods for CommandSender ---
@@ -101,7 +90,7 @@ public class MiniMessages {
         Component parsedComponent = miniM.deserialize(rawMessage, placeholders);
 
         // Send the component
-        adventure.player((Player) sender).sendMessage(parsedComponent);
+        sender.sendMessage(parsedComponent);
     }
 
 

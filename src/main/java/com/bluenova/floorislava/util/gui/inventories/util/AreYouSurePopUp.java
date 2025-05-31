@@ -38,10 +38,10 @@ public class AreYouSurePopUp extends PopUp {
                     ItemStack item = new ItemStack(Material.RED_GLAZED_TERRACOTTA);
                     ItemMeta meta = item.getItemMeta();
                     if (meta != null) {
-                        meta.setDisplayName(MiniMessages.legacy("<bold><red>Are you sure?"));
-                        ArrayList<String> lore = new ArrayList<>();
-                        lore.add(MiniMessages.legacy("<gray>Click to Confirm"));
-                        meta.setLore(lore);
+                        meta.displayName(MiniMessages.createComponent("<bold><red>Are you sure?"));
+                        ArrayList<Component> lore = new ArrayList<>();
+                        lore.add(MiniMessages.createComponent("<gray>Click to Confirm"));
+                        meta.lore(lore);
                         meta.addEnchant(Enchantment.LURE, 1, true);
                         meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
                         item.setItemMeta(meta);
@@ -56,7 +56,7 @@ public class AreYouSurePopUp extends PopUp {
                     ItemStack item = new ItemStack(Material.RED_WOOL);
                     ItemMeta meta = item.getItemMeta();
                     if (meta != null) {
-                        meta.setDisplayName(MiniMessages.legacy("<red>Cancel"));
+                        meta.displayName(MiniMessages.createComponent("<red>Cancel"));
                     }
                     item.setItemMeta(meta);
                     return item;
@@ -80,6 +80,6 @@ public class AreYouSurePopUp extends PopUp {
 
     @Override
     protected Inventory createInventory() {
-        return Bukkit.createInventory(null, 9, MiniMessages.legacy("<red><bold>Are you sure?"));
+        return Bukkit.createInventory(null, 9, MiniMessages.createComponent("<red><bold>Are you sure?"));
     }
 }

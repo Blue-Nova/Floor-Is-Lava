@@ -14,9 +14,10 @@ import com.sk89q.worldedit.function.visitor.RegionVisitor;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 
-public class ElevateLava implements Workload {
+public class ElevateLava extends Workload {
 
     GamePlot gp;
     int y;
@@ -28,17 +29,18 @@ public class ElevateLava implements Workload {
 
     @Override
     public void compute() {
-        try (EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(FloorIsLava.getVoidWorld()))) {
-            Region region = new CuboidRegion(BlockVector3.at(gp.plotStart.getX(), y, gp.plotStart.getZ()),
-                    BlockVector3.at(gp.plotEnd.getX() - 1, y, gp.plotEnd.getZ() - 1));
-            Pattern lavaPattern = BukkitAdapter.adapt(Material.LAVA.createBlockData());
-            RegionFunction lavaFunction = new BlockReplace(editSession, lavaPattern);
-            RegionVisitor lavaVisitor = new RegionVisitor(region, lavaFunction);
-
-            Operations.complete(lavaVisitor);
-        } catch (WorldEditException e) {
-            throw new RuntimeException(e);
-        }
+        Bukkit.getScheduler().runTaskAsynchronously(FloorIsLava.getInstance(), () -> {
+            try (EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(FloorIsLava.getVoidWorld()))) {
+                Region region = new CuboidRegion(BlockVector3.at(gp.plotStart.getX(), y, gp.plotStart.getZ()),
+                        BlockVector3.at(gp.plotEnd.getX() - 1, y, gp.plotEnd.getZ() - 1));
+                Pattern lavaPattern = BukkitAdapter.adapt(Material.LAVA.createBlockData());
+                RegionFunction lavaFunction = new BlockReplace(editSession, lavaPattern);
+                RegionVisitor lavaVisitor = new RegionVisitor(region, lavaFunction);
+                Operations.complete(lavaVisitor);
+            } catch (WorldEditException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 }
 

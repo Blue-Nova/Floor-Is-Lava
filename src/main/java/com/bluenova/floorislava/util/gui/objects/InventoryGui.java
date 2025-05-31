@@ -7,6 +7,7 @@ import com.bluenova.floorislava.util.gui.inventories.lobby.LobbyInv;
 import com.bluenova.floorislava.util.gui.inventories.main.MainMenu;
 import com.bluenova.floorislava.util.gui.util.PageIds;
 import com.bluenova.floorislava.util.messages.MiniMessages;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.enchantments.Enchantment;
@@ -106,13 +107,13 @@ public abstract class InventoryGui implements InventoryHandler {
                     ItemStack item = new ItemStack(Material.DANDELION); // Example item
                     ItemMeta itemMeta = item.getItemMeta();
                     if (itemMeta != null) {
-                        itemMeta.setDisplayName(MiniMessages.legacy("<bold><blue>Support My Work"));
-                        ArrayList<String> lore = new ArrayList<>();
-                        lore.add(MiniMessages.legacy(  "<aqua>----------------------------"));
-                        lore.add(MiniMessages.legacy("<white>I worked very hard on this game"));
-                        lore.add(MiniMessages.legacy("<aqua>Donating helps me keep it alive :)"));
-                        lore.add(MiniMessages.legacy("<font:uniform><gray>This will send you a clickable link"));
-                        itemMeta.setLore(lore);
+                        itemMeta.displayName(MiniMessages.createComponent("<bold><blue>Support My Work"));
+                        ArrayList<Component> lore = new ArrayList<>();
+                        lore.add(MiniMessages.createComponent(  "<aqua>----------------------------"));
+                        lore.add(MiniMessages.createComponent("<white>I worked very hard on this game"));
+                        lore.add(MiniMessages.createComponent("<aqua>Donating helps me keep it alive :)"));
+                        lore.add(MiniMessages.createComponent("<font:uniform><gray>This will send you a clickable link"));
+                        itemMeta.lore(lore);
                         itemMeta.addEnchant(Enchantment.LURE, 1, true);
                         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                         item.setItemMeta(itemMeta);
@@ -125,8 +126,7 @@ public abstract class InventoryGui implements InventoryHandler {
                     player.closeInventory();
                     player.playSound(player.getLocation(), Sound.ENTITY_CAT_AMBIENT, 1f, 1.2f);
                     player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0.8f);
-                    player.sendMessage(MiniMessages.legacy("<aqua>Click the Link<yellow> to support my work :)"));
-                    player.sendMessage(MiniMessages.legacy("<aqua>https://buymeacoffee.com/bluebedworkshop"));
+                    player.sendMessage(MiniMessages.createComponent("<aqua><click:open_url:https://buymeacoffee.com/bluebedworkshop>Click Here</click><yellow> to support my work :)"));
                 });
     }
 
@@ -136,7 +136,7 @@ public abstract class InventoryGui implements InventoryHandler {
                     ItemStack item = new ItemStack(Material.GRAY_STAINED_GLASS_PANE); // Example item
                     ItemMeta itemMeta = item.getItemMeta();
                     if (itemMeta != null) {
-                        itemMeta.setDisplayName(" ");
+                        itemMeta.displayName(MiniMessages.createComponent(""));
                         item.setItemMeta(itemMeta);
                     }
                     return item;
@@ -153,10 +153,10 @@ public abstract class InventoryGui implements InventoryHandler {
                     ItemStack item = new ItemStack(Material.BARRIER);
                     ItemMeta meta = item.getItemMeta();
                     if (meta != null) {
-                        meta.setDisplayName(MiniMessages.legacy("<red>Exit Menu"));
-                        ArrayList<String> lore = new ArrayList<>();
-                        lore.add(MiniMessages.legacy("<gray>Click to exit menu"));
-                        meta.setLore(lore);
+                        meta.displayName(MiniMessages.createComponent("<red>Exit Menu"));
+                        ArrayList<Component> lore = new ArrayList<>();
+                        lore.add(MiniMessages.createComponent("<gray>Click to exit menu"));
+                        meta.lore(lore);
                     }
                     item.setItemMeta(meta);
                     return item;
@@ -178,7 +178,7 @@ public abstract class InventoryGui implements InventoryHandler {
                             ItemMeta itemMeta = item.getItemMeta();
                             if (itemMeta != null) {
                                 // set display name with formatting
-                                itemMeta.setDisplayName(MiniMessages.legacy("<bold><gold>Main <red>Menu"));
+                                itemMeta.displayName(MiniMessages.createComponent("<bold><gold>Main <red>Menu"));
                                 item.setItemMeta(itemMeta);
                             }
                             return item;
@@ -194,7 +194,7 @@ public abstract class InventoryGui implements InventoryHandler {
                             ItemMeta meta = item.getItemMeta();
                             if (meta != null) {
                                 // set display name with formatting
-                                meta.setDisplayName(MiniMessages.legacy("<bold><gold>Lobby <red>Menu"));
+                                meta.displayName(MiniMessages.createComponent("<bold><gold>Lobby <red>Menu"));
                                 item.setItemMeta(meta);
                             }
                             return item;

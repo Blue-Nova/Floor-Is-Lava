@@ -20,7 +20,6 @@ import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.World;
@@ -29,9 +28,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class FloorIsLava extends JavaPlugin {
-
-    // Adventure api bukkit adapter
-    private static BukkitAudiences bukkitAudiences;
 
     private static World voidWorld;
     private static World normalWorld;
@@ -61,7 +57,6 @@ public final class FloorIsLava extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
-        bukkitAudiences = BukkitAudiences.create(this);
         // Load the MainConfig
         MainConfig mainConfig = MainConfig.getInstance();
         mainConfig.load();
@@ -98,9 +93,9 @@ public final class FloorIsLava extends JavaPlugin {
     @Override
     public void onDisable() {
         // Clean up games, lobbies, tasks etc.
-        if (gameLobbyManager != null) {
-            gameLobbyManager.shutdownAllGames(); // Need method in manager to force end games (WIP)
-        }
+        //if (gameLobbyManager != null) {
+        //    gameLobbyManager.shutdownAllGames(); // Need method in manager to force end games (WIP)
+        //}
         // Stop workload runnable? (May not be necessary if tasks are self-cancelling)
         pluginLogger.info(getName() + " Disabled.");
     }
@@ -125,6 +120,7 @@ public final class FloorIsLava extends JavaPlugin {
             core.getMVWorldManager().addWorld("fil_void_world", World.Environment.NORMAL, "", WorldType.NORMAL, true, "VoidGen");
         normalWorld = Bukkit.getWorld("fil_normal_world");
         voidWorld = Bukkit.getWorld("fil_void_world");
+        assert voidWorld != null;
         voidWorld.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
         voidWorld.setTime(1000);
     }
@@ -165,10 +161,6 @@ public final class FloorIsLava extends JavaPlugin {
             return regionManager;
         }
         return null;
-    }
-
-    public static BukkitAudiences getAdventure() {
-        return bukkitAudiences;
     }
 
     public boolean isWorldGuardAvailable() {

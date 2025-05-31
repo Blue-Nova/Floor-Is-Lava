@@ -7,13 +7,10 @@ import com.bluenova.floorislava.command.lobbycommands.*;
 import com.bluenova.floorislava.command.subcommand.SubCommand;
 import com.bluenova.floorislava.game.object.gamelobby.GameLobbyManager;
 import com.bluenova.floorislava.game.object.invitelobby.InviteLobbyManager;
-// Import MiniMessages and placeholders
 import com.bluenova.floorislava.util.gui.inventories.game.InGameMenu;
 import com.bluenova.floorislava.util.gui.inventories.lobby.LobbyInv;
-import com.bluenova.floorislava.util.gui.inventories.main.MainMenu;
 import com.bluenova.floorislava.util.messages.MiniMessages;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 // Bukkit/Spigot imports
 import org.bukkit.ChatColor; // Remove this if no longer needed after conversion
 import org.bukkit.command.Command;
