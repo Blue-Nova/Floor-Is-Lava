@@ -32,8 +32,13 @@ public class GenerateGameTerrain extends Workload {
     public void compute() {
         FloorIsLava.getInstance().getPluginLogger().debug("Generating game terrain at " + x_paste + ", " + z_paste);
         try {
-            Clipboard clipboard = Tools.createClipboard(FloorIsLava.getNormalWorld(), new CuboidRegion(BlockVector3.at(x_copy_start, -64, z_copy_start), BlockVector3.at(x_copy_end, 319, z_copy_end)));
-            Tools.pasteClipboard(clipboard, new Location(FloorIsLava.getVoidWorld(), x_paste, -64, z_paste));
+            Clipboard clipboard = Tools.createClipboard(FloorIsLava.getNormalWorld(),
+                    new CuboidRegion(
+                            BlockVector3.at(x_copy_start, FloorIsLava.getVoidWorld().getMinHeight(), z_copy_start),
+                            BlockVector3.at(x_copy_end, FloorIsLava.getVoidWorld().getMaxHeight() - 1, z_copy_end)));
+          
+            Tools.pasteClipboard(clipboard, new Location(FloorIsLava.getVoidWorld(), x_paste,
+                                 FloorIsLava.getVoidWorld().getMinHeight(), z_paste));
         } catch (Exception e) {
             e.printStackTrace();
         }finally {
