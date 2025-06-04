@@ -1,3 +1,14 @@
+# Floor is Lava *(Changelog v1.0.6)*
+- Added Manual Respawn Anchor item:
+  - Players receive a special item (default: Red Bed) at the start of the game.
+  - Right-clicking this item sets a one-time manual respawn point for the current match.
+  - The item is consumed on use.
+  - If the manual spawn point becomes unsafe (e.g., covered by lava), respawn logic falls back to automatic safe spawning.
+  - This feature is toggleable in `config.yml` (`Game.ManualSpawnPoint.Enabled`, default: true).
+  - The item's appearance (material, name, lore) is customizable in `config.yml`.
+  - If the item is dropped before use, it vanishes.
+  - The item is not lost on non-lava deaths if it hasn't been used yet.
+
 # Floor is Lava *(Changelog v1.0.4)*
 - Better player data saving (data is saved on disk to avoid any data loss)
 - Players now only lose half of their items when dying from non-lava reasons

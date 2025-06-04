@@ -22,6 +22,7 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.WorldType;
 import org.bukkit.plugin.Plugin;
@@ -34,6 +35,7 @@ public final class FloorIsLava extends JavaPlugin {
     private static GamePlotDivider gamePlotDivider;
     private static WorkloadRunnable workloadRunnable;
     private static FloorIsLava instance;
+    public static NamespacedKey RESPAWN_ANCHOR_KEY;
 
     // Logger for the plugin
     private PluginLogger pluginLogger;
@@ -57,6 +59,8 @@ public final class FloorIsLava extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        RESPAWN_ANCHOR_KEY = new NamespacedKey(this, "respawn_anchor_item");
+        
         // Load the MainConfig
         MainConfig mainConfig = MainConfig.getInstance();
         mainConfig.load();

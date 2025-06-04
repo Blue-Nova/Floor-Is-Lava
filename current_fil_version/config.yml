@@ -2,7 +2,7 @@
 # WELCOME TO FLOOR IS LAVA #
 # ------------------------ #
 # Do not change this number pls :).
-config_version: "1.2"
+config_version: "1.3"
 # ------------------------- #
 # ACTTUAL CONFIGURATION
 Plot:
@@ -39,6 +39,16 @@ Game:
 
   # Should the game play background music? (Pigstep)
   PlayMusic: true
+
+  ManualSpawnPoint:
+    Enabled: true
+    ItemMaterial: "RED_BED" # Any valid Material name
+    ItemName: "<gold>Respawn Anchor</gold>"
+    ItemLore:
+      - "<gray>Right-click to set your respawn point!"
+      - "<gray>One-time use for this match."
+      - "<italic><dark_gray>Becomes unusable if lava reaches it.</dark_gray>"
+    ItemIsGlowing: true # Optional: make the item glow if you like
 
 Server:
   # This tells how long this plugin is allowed to process each tick. This is a workload distro.

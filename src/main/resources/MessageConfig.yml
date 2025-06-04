@@ -76,6 +76,11 @@ game:
   game_over: "<red>Game Over!</red>"
   teleport_back_notice: "<yellow>Teleporting back shortly...</yellow>"
   # chaos_tnt_shower: "<gold>Look out below! TNT Shower!</gold>"
+  manual_spawn_set: "<green>Respawn Anchor set at your current location!</green>"
+  manual_spawn_unsafe: "<yellow>Your Respawn Anchor point is now in lava! Finding a new safe spot...</yellow>"
+  manual_spawn_target_unsafe: "<red>You cannot set your Respawn Anchor here, it's already in lava or unsafe!</red>"
+  manual_spawn_already_used: "<red>You have already used your Respawn Anchor for this match.</red>"
+  manual_spawn_item_interact_fail_state: "<red>You can only set your Respawn Anchor while the game is active!</red>"
 
 command_usage:
   lobby_invite: "<red>Usage: /fil lobby invite <player1> [player2]...</red>"
