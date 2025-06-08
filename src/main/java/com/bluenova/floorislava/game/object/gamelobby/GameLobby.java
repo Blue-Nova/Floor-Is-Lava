@@ -36,10 +36,16 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.block.Block;
 
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Represents an active "Floor is Lava" game session.
@@ -91,6 +97,11 @@ public class GameLobby extends Lobby {
     private BukkitTask musicTask = null;
     private BukkitTask eventTask = null;
     private BukkitTask lavaTask = null;
+
+    // fields for manual spawn tool
+    public final Map<UUID, Location> manualSpawnPoints = new HashMap<>();
+    public final Set<UUID> manualSpawnItemUsed = new HashSet<>();
+
 
     /**
      * Creates a new Game Lobby instance.
@@ -443,6 +454,12 @@ public class GameLobby extends Lobby {
         LAVA_ANNOUNCE_HEIGHTS.clear(); // Clear announce heights
         this.flush(); // Clear the plot of blocks
         FILRegionManager.setRegionProfile(gamePlot.worldGuardRegionId, RegionProfiles.IDLE); // Reset region profile
+
+        // Clear manual spawn data AFTER all players are processed and potentially teleported
+        this.manualSpawnPoints.clear();
+        this.manualSpawnItemUsed.clear();
+        pluginLogger.debug("Cleared manual spawn data for game at " + gamePlot.plotStart.toString());
+        
     }
 
     private void flush(){
@@ -560,6 +577,11 @@ public class GameLobby extends Lobby {
                 }
                 // Set gamemode? (Should be survival)
                 player.setGameMode(GameMode.SURVIVAL);
+
+                // Give manual spawn item if enabled
+                if (MainConfig.getInstance().isManualSpawnEnabled()) {
+                    giveManualSpawnItem(player);
+                }
             }
         }
     }
@@ -839,10 +861,92 @@ public class GameLobby extends Lobby {
         }
     }
 
+    // New method to give the manual spawn item
+    private void giveManualSpawnItem(Player player) {
+        if (manualSpawnItemUsed.contains(player.getUniqueId())) {
+            return; // Don't give if already used (e.g., if this method was called again for some reason)
+        }
+
+        MainConfig config = MainConfig.getInstance();
+        Material itemMaterial = Material.matchMaterial(config.getManualSpawnItemMaterial());
+        if (itemMaterial == null) {
+            pluginLogger.warning("Invalid material for manual spawn item: " + config.getManualSpawnItemMaterial() + ". Defaulting to RED_BED.");
+            itemMaterial = Material.RED_BED;
+        }
+
+        ItemStack spawnAnchorItem = new ItemStack(itemMaterial, 1);
+        ItemMeta meta = spawnAnchorItem.getItemMeta();
+        if (meta != null) {
+            meta.displayName(MiniMessages.miniM.deserialize(config.getManualSpawnItemName()));
+            List<Component> loreComponents = config.getManualSpawnItemLore().stream()
+                    .map(MiniMessages.miniM::deserialize)
+                    .collect(Collectors.toList());
+            meta.lore(loreComponents);
+
+            // Add NBT tag to identify the item
+            meta.getPersistentDataContainer().set(FloorIsLava.RESPAWN_ANCHOR_KEY, PersistentDataType.BYTE, (byte) 1);
+
+            if (config.isManualSpawnItemIsGlowing()) {
+                meta.addEnchant(Enchantment.LURE, 1, false); // Dummy enchant for glow
+                meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            }
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES); // Hide attributes like "When placed..." for beds
+            spawnAnchorItem.setItemMeta(meta);
+        }
+        player.getInventory().addItem(spawnAnchorItem);
+    }
+    
+    // helper method
+    public boolean isLocationSafeForRespawn(Location loc) {
+        if (loc == null) return false;
+        World world = loc.getWorld();
+        if (world == null) return false;
+
+        // Check if above lava
+        if (loc.getBlockY() <= lavaHeight) return false;
+
+        // Check block at feet and head height for solidity
+        // Ensure there's a 2-block high air gap for the player
+        Block blockAtFeet = loc.getBlock();
+        Block blockAtHead = loc.clone().add(0, 1, 0).getBlock();
+
+        // Check for sufficient space (2 blocks high, 1 block wide)
+        if (blockAtFeet.getType().isSolid() || blockAtHead.getType().isSolid()) {
+            pluginLogger.debug("Respawn location " + loc.toString() + " unsafe: feet or head in solid block.");
+            return false; // Spawning inside a solid block
+        }
+        
+        // Optional: check block below feet for solid ground
+        // Block blockBelowFeet = loc.clone().subtract(0,1,0).getBlock();
+        // if (!blockBelowFeet.getType().isSolid() && blockBelowFeet.getType() != Material.WATER && blockBelowFeet.getType() != Material.LAVA) {
+        //     pluginLogger.debug("Respawn location " + loc.toString() + " unsafe: no solid ground directly below.");
+        //     return false; // No solid ground to stand on
+        // }
+
+        return true; // Location seems safe enough
+    }
+
     /** Handles player deaths not caused by the main lava mechanic. */
     public void playerDiedNoLava(Player player) {
         if (player == null || !this.players.contains(player)) return; // Ensure player is actually alive in this game
         announce("game.other_death", Placeholder.unparsed("player", player.getName()));
+
+        ItemStack manualSpawnItemToRestore = null;
+        // Special handling for keeping the manual spawn item if unused
+        if (MainConfig.getInstance().isManualSpawnEnabled() && !manualSpawnItemUsed.contains(player.getUniqueId())) {
+            for (int i = 0; i < player.getInventory().getSize(); i++) {
+                ItemStack item = player.getInventory().getItem(i);
+                if (item != null && item.hasItemMeta()) {
+                    ItemMeta meta = item.getItemMeta();
+                    if (meta.getPersistentDataContainer().has(FloorIsLava.RESPAWN_ANCHOR_KEY, PersistentDataType.BYTE)) {
+                        manualSpawnItemToRestore = item.clone();
+                        player.getInventory().clear(i); // Remove it from this specific slot
+                        pluginLogger.debug("Temporarily removed Respawn Anchor for " + player.getName() + " before non-lava death drop processing.");
+                        break;
+                    }
+                }
+            }
+        }
 
         // Drop items at death location
         // each item has a 50% chance to drop
@@ -868,28 +972,71 @@ public class GameLobby extends Lobby {
         player.setExp(0); // Drop XP? Standard death does.
         player.setLevel(0);
 
-        // Teleport back to spawn point within the game plot
-        Location spawn = playerSpawnLocation.get(player);
-        if (spawn == null) {
-            plugin.getLogger().warning("Spawn location missing for " + player.getName() + ", finding new safe spot...");
-            spawn = Tools.getSafeLocation(voidWorld, gamePlot);
+        // Respawn Logic
+        Location respawnLocation = null;
+
+        if (MainConfig.getInstance().isManualSpawnEnabled() && manualSpawnPoints.containsKey(player.getUniqueId())) {
+            Location manualSpawn = manualSpawnPoints.get(player.getUniqueId());
+            if (isLocationSafeForRespawn(manualSpawn)) {
+                respawnLocation = manualSpawn;
+                pluginLogger.debug("Using manual respawn point for " + player.getName() + " at " + respawnLocation);
+            } else {
+                MiniMessages.send(player, "game.manual_spawn_unsafe");
+                pluginLogger.debug("Manual respawn point for " + player.getName() + " at " + manualSpawn + " is unsafe (lava: " + lavaHeight + "). Falling back.");
+            }
         }
 
-        if (spawn != null) {
-            // Teleport async for potentially unloaded chunks? Safer maybe.
-            player.teleport(spawn);
-            // Restore health/food AFTER teleport completes
+        if (respawnLocation == null) { // fallback to 'automatic' plot spawn
+            respawnLocation = playerSpawnLocation.get(player);
+            if (respawnLocation != null && !isLocationSafeForRespawn(respawnLocation)) {
+                    pluginLogger.debug("Original plot spawn for " + player.getName() + " at " + respawnLocation + " is unsafe. Finding new.");
+                    respawnLocation = null; // Mark as unsafe to trigger Tools.getSafeLocation
+            } else if (respawnLocation != null) {
+                    pluginLogger.debug("Using original plot spawn for " + player.getName() + " at " + respawnLocation);
+            }
+        }
+        
+        if (respawnLocation == null) {
+            pluginLogger.warning("Original/Manual spawn location missing or unsafe for " + player.getName() + ", finding new safe spot...");
+            respawnLocation = Tools.getSafeLocation(voidWorld, gamePlot);
+            pluginLogger.debug("Found new safe spot for " + player.getName() + " at " + respawnLocation);
+        }
+
+        // capture the state of manualSpawnItemToRestore
+        final ItemStack finalManualSpawnItemToRestore = manualSpawnItemToRestore;
+
+        if (respawnLocation == null) {
+            pluginLogger.severe("Could not find ANY safe spawn for " + player.getName() + " after non-lava death! Removing from game.");
+            remove(player, false, false); // Kick if cannot respawn
+            // If manualSpawnItemToRestore was set, it's lost as player is removed.
+            // Consider dropping it at their death location if this happens.
+            if (finalManualSpawnItemToRestore != null) {
+                    voidWorld.dropItemNaturally(player.getLocation(), finalManualSpawnItemToRestore);
+                    pluginLogger.debug("Dropped Respawn Anchor for " + player.getName() + " as they were removed due to no safe spawn.");
+            }
+            return;
+        }
+
+        // Teleport and restore state
+        final Location finalRespawnLocation = respawnLocation;
+        scheduler.runTask(plugin, () -> {
+            player.teleport(finalRespawnLocation);
             player.setHealth(player.getMaxHealth());
             player.setFoodLevel(20);
-            // Apply brief invulnerability?
-            player.setNoDamageTicks(60); // 3 seconds
-            playSoundSpecificPlayer(Sound.BLOCK_ANVIL_LAND, player); // Play sound for death
-        } else {
-            plugin.getLogger().severe("Could not find any safe spawn for " + player.getName() + " after non-lava death!");
-            remove(player, false, false); // Kick if cannot respawn
-        }
-    }
+            player.setFireTicks(0); // Clear fire
+            for (PotionEffect effect : player.getActivePotionEffects()) { // Clear potions
+                player.removePotionEffect(effect.getType());
+            }
+            player.setNoDamageTicks(60); // 3 seconds invulnerability
+            playSoundSpecificPlayer(Sound.BLOCK_ANVIL_LAND, player);
 
+            // Restore the manual spawn item if it was temporarily held and player wasn't kicked
+            if (finalManualSpawnItemToRestore != null) {
+                player.getInventory().addItem(finalManualSpawnItemToRestore);
+                pluginLogger.debug("Restored Respawn Anchor to " + player.getName() + " after non-lava death respawn.");
+            }
+        });
+    }
     // Helper to safely cancel tasks
     private void cancelTask(BukkitTask task) {
         if (task != null && !task.isCancelled()) {
