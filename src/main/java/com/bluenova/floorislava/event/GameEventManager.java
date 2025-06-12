@@ -3,9 +3,12 @@ package com.bluenova.floorislava.event;
 import com.bluenova.floorislava.FloorIsLava;
 import com.bluenova.floorislava.config.MainConfig;
 import com.bluenova.floorislava.config.PlayerDataManager;
-import com.bluenova.floorislava.event.events.PlayerDropsRespawnAnchorItem;
-import com.bluenova.floorislava.event.events.PlayerSetsRespawnPoint;
-import com.bluenova.floorislava.event.events.onPlayerMove;
+import com.bluenova.floorislava.event.events.PlayerDropsRespawnAnchorEvent;
+import com.bluenova.floorislava.event.events.PlayerDeathEvent;
+import com.bluenova.floorislava.event.events.PlayerMovesEvent;
+import com.bluenova.floorislava.event.events.PlayerJoinServerEvent;
+import com.bluenova.floorislava.event.events.PlayerQuitServerEvent;
+import com.bluenova.floorislava.event.events.PlayerSetsRespawnPointEvent;
 import com.bluenova.floorislava.game.object.gamelobby.GameLobbyManager;
 import com.bluenova.floorislava.game.object.gamelobby.GameLobby;
 import com.bluenova.floorislava.game.object.gamelobby.GameLobbyStates;
@@ -48,9 +51,12 @@ public class GameEventManager implements Listener {
         this.playerDataManager = playerDataManager;
         this.pluginLogger = pluginLogger;
 
-        eventsList.add(new onPlayerMove(gameManager, pluginLogger));
-        eventsList.add(new PlayerSetsRespawnPoint(gameManager, pluginLogger));
-        eventsList.add(new PlayerDropsRespawnAnchorItem(gameManager, pluginLogger));
+        eventsList.add(new PlayerMovesEvent(gameManager, pluginLogger));
+        eventsList.add(new PlayerSetsRespawnPointEvent(gameManager, pluginLogger));
+        eventsList.add(new PlayerDropsRespawnAnchorEvent(gameManager, pluginLogger));
+        eventsList.add(new PlayerJoinServerEvent(playerDataManager, pluginLogger));
+        eventsList.add(new PlayerDeathEvent(gameManager, pluginLogger));
+        eventsList.add(new PlayerQuitServerEvent(gameManager, lobbyManager, pluginLogger));
 
         for (Listener event : eventsList) {
             pluginLogger.debug("Registering event: " + event.getClass().getSimpleName());
@@ -58,46 +64,7 @@ public class GameEventManager implements Listener {
         }
     }
 
-    @EventHandler
-    public void onPlayerJoinEvent(PlayerJoinEvent event) {
-        playerDataManager.restoreStateIfNecessary(event.getPlayer());
-    }
 
-    @EventHandler
-    public void onPlayerDeathEvent(EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof Player)) return;
-        Player player = (Player) event.getEntity();
-
-        if (!(event.getDamage() >= player.getHealth())){
-            return;
-        }
-
-        if (gameManager.isPlayerIngame(player)) {
-            if (gameManager.getGameFromPlayer(player).getGameState() == GameLobbyStates.GENERATING) {
-                pluginLogger.debug("Player " + player.getName() + " took fatal damage during GENERATING state. Ignoring.");
-                return;
-            }
-            if (!(event.getDamage() >= player.getHealth())){
-                return;
-            }
-            if((event.getCause() == EntityDamageEvent.DamageCause.LAVA) && (player.getLocation().getY()
-                    <= gameManager.getGameFromPlayer(player).lavaHeight)){
-                gameManager.getGameFromPlayer(player).remove(player, true, false);
-            }
-            else {
-                gameManager.getGameFromPlayer(player).playerDiedNoLava(player);
-            }
-            event.setCancelled(true);
-            player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_BREAK,1,1);
-        }
-    }
-
-    @EventHandler
-    public void onPlayerQuitEvent(PlayerQuitEvent event) {
-        Player player = event.getPlayer();
-        if (gameManager.isPlayerIngame(player)) gameManager.getGameFromPlayer(player).remove(player, false, true);
-        if (lobbyManager.isPlayerInLobby(player)) lobbyManager.getLobbyFromPlayer(player).removePlayer(player);
-    }
 
     public ArrayList<Listener> getEventsList() {
         return eventsList;
