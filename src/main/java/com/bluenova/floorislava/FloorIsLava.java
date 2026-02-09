@@ -4,7 +4,6 @@ import com.bluenova.floorislava.command.FILCommandHandler;
 import com.bluenova.floorislava.config.MessageConfig;
 import com.bluenova.floorislava.config.PlayerDataManager;
 import com.bluenova.floorislava.event.GameEventManager;
-import com.bluenova.floorislava.event.events.GuiListener;
 import com.bluenova.floorislava.game.object.GamePlotDivider;
 import com.bluenova.floorislava.config.MainConfig;
 import com.bluenova.floorislava.game.object.gamelobby.GameLobbyManager;
@@ -14,8 +13,6 @@ import com.bluenova.floorislava.util.gui.GuiManager;
 import com.bluenova.floorislava.util.messages.MiniMessages;
 import com.bluenova.floorislava.util.messages.PluginLogger;
 import com.bluenova.floorislava.util.worldguard.FILRegionManager;
-import com.onarandombox.MultiverseCore.MultiverseCore;
-
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.managers.RegionManager;
@@ -26,6 +23,8 @@ import org.bukkit.World;
 import org.bukkit.WorldType;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.mvplugins.multiverse.core.MultiverseCoreApi;
+import org.mvplugins.multiverse.core.world.options.CreateWorldOptions;
 
 public final class FloorIsLava extends JavaPlugin {
 
@@ -107,17 +106,31 @@ public final class FloorIsLava extends JavaPlugin {
 
     private void registerEvents() {
         getServer().getPluginManager().registerEvents(new GameEventManager(inviteLobbyManager, gameLobbyManager, playerDataManager,pluginLogger), this);
-        getServer().getPluginManager().registerEvents(new GuiListener(guiManager), this);
     }
 
     // Multiverse setup
     private void setupMVC() {
-        MultiverseCore core = (MultiverseCore) Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");
+        MultiverseCoreApi core = MultiverseCoreApi.get();
         assert core != null;
-        if (!core.getMVWorldManager().isMVWorld("fil_normal_world"))
-            core.getMVWorldManager().addWorld("fil_normal_world", World.Environment.NORMAL, "", WorldType.NORMAL, true, "");
-        if (!core.getMVWorldManager().isMVWorld("fil_void_world"))
-            core.getMVWorldManager().addWorld("fil_void_world", World.Environment.NORMAL, "", WorldType.NORMAL, true, "VoidGen");
+        // check if the world already exists before creating it, to prevent errors on plugin reload
+        if (!core.getWorldManager().isWorld("fil_normal_world")) {
+            CreateWorldOptions options = CreateWorldOptions.worldName("fil_normal_world");
+            options.environment(World.Environment.NORMAL);
+            options.worldType(WorldType.NORMAL);
+
+            core.getWorldManager().createWorld(options);
+        }
+            // core.getWorldManager().createWorld("fil_normal_world", World.Environment.NORMAL, "", WorldType.NORMAL, true, "");
+        if (!core.getWorldManager().isWorld("fil_void_world")) {
+            CreateWorldOptions options = CreateWorldOptions.worldName("fil_void_world");
+            options.environment(World.Environment.NORMAL);
+            options.worldType(WorldType.NORMAL);
+            options.generator("VoidGen");
+
+            core.getWorldManager().createWorld(options);
+
+        }
+            //core.getMVWorldManager().addWorld("fil_void_world", World.Environment.NORMAL, "", WorldType.NORMAL, true, "VoidGen");
         normalWorld = Bukkit.getWorld("fil_normal_world");
         voidWorld = Bukkit.getWorld("fil_void_world");
         assert voidWorld != null;

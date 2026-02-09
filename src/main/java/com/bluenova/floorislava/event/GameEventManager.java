@@ -2,6 +2,8 @@ package com.bluenova.floorislava.event;
 
 import com.bluenova.floorislava.FloorIsLava;
 import com.bluenova.floorislava.config.PlayerDataManager;
+import com.bluenova.floorislava.event.events.GuiListener;
+import com.bluenova.floorislava.event.events.game.UsePortalEvent;
 import com.bluenova.floorislava.event.events.onPlayerMove;
 import com.bluenova.floorislava.game.object.gamelobby.GameLobbyManager;
 import com.bluenova.floorislava.game.object.gamelobby.GameLobbyStates;
@@ -33,6 +35,8 @@ public class GameEventManager implements Listener {
         this.playerDataManager = playerDataManager;
 
         eventsList.add(new onPlayerMove(gameManager, pluginLogger));
+        eventsList.add(new GuiListener(FloorIsLava.getInstance().getGuiManager()));
+        eventsList.add(new UsePortalEvent());
 
         for (Listener event : eventsList) {
             pluginLogger.debug("Registering event: " + event.getClass().getSimpleName());

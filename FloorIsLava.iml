@@ -1,5 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module version="4">
+  <component name="AdditionalModuleElements">
+    <content url="file://$MODULE_DIR$" dumb="true">
+      <excludeFolder url="file://$MODULE_DIR$/server_1.20.6" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.11/cache" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.11/config" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.11/fil_normal_world" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.11/fil_void_world" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.11/libraries" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.11/logs" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.11/plugins/.paper-remapped" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.11/plugins/FastAsyncWorldEdit" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.11/plugins/FloorIsLava" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.11/plugins/Multiverse-Core" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.11/plugins/VoidGen" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.11/plugins/WorldGuard" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.11/plugins/bStats" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.11/plugins/spark" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.11/versions" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.11/world" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.11/world_nether" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.11/world_the_end" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.4/cache" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.4/config" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.4/fil_normal_world" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.4/fil_void_world" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.4/libraries" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.4/logs" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.4/plugins" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.4/versions" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.4/world" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.4/world_nether" />
+      <excludeFolder url="file://$MODULE_DIR$/server_1.21.4/world_the_end" />
+    </content>
+  </component>
   <component name="FacetManager">
     <facet type="minecraft" name="Minecraft">
       <configuration>

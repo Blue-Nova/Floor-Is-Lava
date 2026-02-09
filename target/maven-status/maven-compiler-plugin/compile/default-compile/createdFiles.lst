@@ -4,6 +4,7 @@ com\bluenova\floorislava\command\lobbycommands\LobbyKickCmd.class
 com\bluenova\floorislava\util\gui\inventories\lobby\PlayersToInviteInv.class
 com\bluenova\floorislava\game\object\ChaosEventManager.class
 com\bluenova\floorislava\command\lobbycommands\LobbyLeaveCmd.class
+com\bluenova\floorislava\event\events\game\UsePortalEvent.class
 com\bluenova\floorislava\util\worldguard\regionprofiles\IdleProfile.class
 com\bluenova\floorislava\util\GenerateGameTerrain.class
 com\bluenova\floorislava\command\subcommand\SubCommand.class

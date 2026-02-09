@@ -2,6 +2,7 @@ package com.bluenova.floorislava.game.object.gamelobby;
 
 import com.bluenova.floorislava.FloorIsLava; // Needed for casting plugin instance
 import com.bluenova.floorislava.config.MainConfig;
+import com.bluenova.floorislava.game.object.ChaosEventManager;
 import com.bluenova.floorislava.game.object.GamePlot;
 import com.bluenova.floorislava.game.object.GamePlotDivider; // Import actual class
 import com.bluenova.floorislava.game.object.Lobby;
@@ -312,7 +313,7 @@ public class GameLobby extends Lobby {
         this.FILRegionManager.setRegionProfile(gamePlot.worldGuardRegionId, RegionProfiles.BASE);
         // Start game mechanics timers
         beginLavaTimer();
-        beginEventTimer(); // If ChaosEventManager is ready
+        //beginEventTimer(); // If ChaosEventManager is ready
         this.setGameState(GameLobbyStates.STARTED);
         checkWinCondition(); // Check if any player left the game
     }
@@ -328,7 +329,7 @@ public class GameLobby extends Lobby {
         long delay = 200L;   // TODO: Configurable (10 seconds)
         long period = 300L;  // TODO: Configurable (15 seconds)
 
-        /*scheduler.runTaskTimer(plugin, (task) -> {
+        scheduler.runTaskTimer(plugin, (task) -> {
             if (!gameON){ task.cancel(); return; }
 
             int currentChance = eventSpawnChance.addAndGet(increment); // Increment first
@@ -338,7 +339,7 @@ public class GameLobby extends Lobby {
                 eventSpawnChance.set(0); // Reset chance
             }
         }, delay, period);
-        */
+
     }
 
     /** Starts the timer that raises the lava level. */
