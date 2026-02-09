@@ -4,10 +4,12 @@ import com.bluenova.floorislava.FloorIsLava;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 public class MainConfig {
 
-    private final static String CONFIG_VERSION = "1.2";
+    private final static String CONFIG_VERSION = "1.3";
     private final static MainConfig instance = new MainConfig();
 
     private File file;
@@ -21,6 +23,14 @@ public class MainConfig {
     private int lavaRiseAmount;
     private int preGameCountDown;
     private boolean musicEnabled;
+
+    // Manual Spawn Point fields
+    private boolean manualSpawnEnabled;
+    private String manualSpawnItemMaterial;
+    private String manualSpawnItemName;
+    private List<String> manualSpawnItemLore;
+    private boolean manualSpawnItemIsGlowing;
+
 
     private MainConfig() {
     }
@@ -40,7 +50,7 @@ public class MainConfig {
         }
 
         // Check for version and if version is not the same, update
-        if (!config.getString("config_version").equals(CONFIG_VERSION)) {
+        if (!config.getString("config_version", "0.0").equals(CONFIG_VERSION)) { // added default "0.0" for safety
             FloorIsLava.getInstance().getLogger().warning("Config version mismatch! You have: " +
                     config.getString("config_version") + " but the plugin is: " + CONFIG_VERSION);
             FloorIsLava.getInstance().getLogger().warning("To update your config, delete the current FloorIsLava/Config.yml file and restart the server.");
@@ -56,6 +66,20 @@ public class MainConfig {
         lavaRiseAmount = config.getInt("Game.LavaRiseAmount");
         preGameCountDown = config.getInt("Game.PreGameCountdown");
         musicEnabled = config.getBoolean("Game.PlayMusic");
+        
+        // Load Manual Spawn Point settings
+        manualSpawnEnabled = config.getBoolean("Game.ManualSpawnPoint.Enabled", true);
+        manualSpawnItemMaterial = config.getString("Game.ManualSpawnPoint.ItemMaterial", "RED_BED");
+        manualSpawnItemName = config.getString("Game.ManualSpawnPoint.ItemName", "<gold>Respawn Anchor</gold>");
+        manualSpawnItemLore = config.getStringList("Game.ManualSpawnPoint.ItemLore");
+        if (manualSpawnItemLore.isEmpty()) { // Default lore if not specified or empty
+            manualSpawnItemLore = Arrays.asList(
+               "<gray>Right-click to set your respawn point!",
+                    "<gray>One-time use for this match.",
+                    "<italic><dark_gray>Becomes unusable if lava reaches it.</dark_gray>"
+            );
+        }
+        manualSpawnItemIsGlowing = config.getBoolean("Game.ManualSpawnPoint.ItemIsGlowing", false);
 
         // log all values
     }
@@ -112,4 +136,11 @@ public class MainConfig {
     public boolean isGameMusicEnabled() {
         return musicEnabled;
     }
+
+    // New Getters for Manual Spawn Point
+    public boolean isManualSpawnEnabled() { return manualSpawnEnabled; }
+    public String getManualSpawnItemMaterial() { return manualSpawnItemMaterial; }
+    public String getManualSpawnItemName() { return manualSpawnItemName; }
+    public List<String> getManualSpawnItemLore() { return manualSpawnItemLore; }
+    public boolean isManualSpawnItemIsGlowing() { return manualSpawnItemIsGlowing; }
 }

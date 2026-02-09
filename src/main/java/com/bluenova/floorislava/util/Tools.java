@@ -35,7 +35,7 @@ public class Tools {
     public static Location getSafeLocation(World gameWorld, GamePlot plot) {
         int x_local = new Random().nextInt(FloorIsLava.getGamePlotDivider().plotSize);
         int z_local = new Random().nextInt(FloorIsLava.getGamePlotDivider().plotSize);
-        Location safeLoc = new Location(gameWorld, x_local, 319, z_local);
+        Location safeLoc = new Location(gameWorld, x_local, gameWorld.getMaxHeight()-1, z_local);
         Location chunkGlobal = new Location(gameWorld, plot.plotStart.getX(), 1, plot.plotStart.getZ());
         safeLoc.setX(chunkGlobal.getX() + x_local);
         safeLoc.setZ(chunkGlobal.getZ() + z_local);
