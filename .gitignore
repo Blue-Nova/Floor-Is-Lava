@@ -1,2 +1,6 @@
-server
+server_1.20.6
+server_1.21.4
+server_1.21.11
 target
+/server_1.21.11/plugins/
+/temp_plugins/

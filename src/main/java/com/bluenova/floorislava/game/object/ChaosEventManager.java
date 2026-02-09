@@ -120,7 +120,7 @@ public class ChaosEventManager {
     private static void givePvPKit(GameLobby GL) {
         for (Player p:GL.players) {
             ItemStack chestPlate = new ItemStack(Material.LEATHER_CHESTPLATE);
-            chestPlate.addEnchantment(Enchantment.PROTECTION,1);
+            chestPlate.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL,1);
             ItemStack boots = new ItemStack(Material.IRON_BOOTS);ItemStack sword = new ItemStack(Material.IRON_SWORD);
             ItemStack beef = new ItemStack(Material.BEEF); beef.setAmount(12);
 

@@ -53,6 +53,9 @@ public class BaseProfile extends RegionProfile {
         region.setFlag(Flags.SLEEP, StateFlag.State.DENY);
         region.setFlag(Flags.RESPAWN_ANCHORS, StateFlag.State.DENY);
         region.setFlag(Flags.CHORUS_TELEPORT, StateFlag.State.DENY);
+        region.setFlag(Flags.EXIT_VIA_TELEPORT, StateFlag.State.DENY);
+        // blocking nether portals will be done manually in the events package
+
     }
 
     public Map<Flag<?>, Object> getFlags() {
